@@ -5,18 +5,54 @@ using UnityEngine.AI;
 
 public class PersonModel : MonoBehaviour
 {
-    Transform Model { set; get; }
     Animator animator;
     Rigidbody Rigidbody { set; get; } = null;
     RagDollHandler ragDollHandler;
     NavMeshAgent NavMeshAgent { set; get; }
+    public Renderer ModelRender { protected set; get; }
 
     private void Awake()
     {
-        Model = transform.Find("Model");
-        animator = Model.GetComponent<Animator>();
-        Rigidbody = Model.GetComponent<Rigidbody>();
-        ragDollHandler = Model.GetComponent<RagDollHandler>();
-        NavMeshAgent = Model.GetComponent<NavMeshAgent>();
+        animator = GetComponent<Animator>();
+        Rigidbody = GetComponent<Rigidbody>();
+        ragDollHandler = GetComponent<RagDollHandler>();
+        NavMeshAgent = GetComponent<NavMeshAgent>();
+
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            var nowObj = transform.GetChild(i).gameObject;
+            if (nowObj.activeSelf)
+            {
+                ModelRender = nowObj.GetComponent<Renderer>();
+                break;
+            }
+        }
+    }
+
+    public void SetNextPosition(Vector3 worldPosition)
+    {
+        NavMeshAgent.SetDestination(worldPosition);
+    }
+
+    private void FixedUpdate()
+    {
+        var degree = Mathf.Round(Vector3.Angle(transform.forward, NavMeshAgent.velocity.normalized));
+        var cross = Vector3.Cross(transform.forward, NavMeshAgent.velocity.normalized);
+        degree *= cross.y >= 0 ? 1 : -1;
+
+        animator.SetFloat("WalkY", Mathf.Cos(degree * Mathf.Deg2Rad));
+        animator.SetFloat("WalkX", Mathf.Sin(degree * Mathf.Deg2Rad));
+    }
+
+    public virtual void GetHit()
+    {
+        animator.enabled = false;
+        ragDollHandler.TrunOnRigid(true);
+        NavMeshAgent.enabled = false;
+    }
+
+    public void SetBelong(Material material)
+    {
+        ModelRender.material = material;
     }
 }

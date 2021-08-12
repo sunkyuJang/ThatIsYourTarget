@@ -11,6 +11,7 @@ public class FovSensor : ObjDetector
         {
             if (IsTargetOnlyCloseOne(other))
             {
+                Debug.DrawLine(rayStartPoint, other.transform.position, Color.red, 2f);
                 I_OnContecting?.OnContecting(this, other);
             }
         }
@@ -30,7 +31,6 @@ public class FovSensor : ObjDetector
                 && hit.collider.transform != transform)
             {
                 var nowDist = Vector3.Distance(rayStartPoint, hit.point);
-                print(hit.collider.name + "//" + nowDist + "//" + headDist);
                 if (nowDist < headDist)
                 {
                     return false;

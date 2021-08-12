@@ -12,12 +12,11 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
     Transform TrackingPositionGroup;
     Transform NextPosition { set; get; } = null;
 
-    enum AliveState { Alive, Stun, Dead }
-    AliveState nowAliveState = AliveState.Alive;
+    public enum AliveState { Alive, Stun, Dead }
+    public AliveState NowAliveState { protected set; get; } = AliveState.Alive;
 
-    enum AlertLevel { Normal, Notice, Attack, Avoid }
-    AlertLevel nowAlertLevel = AlertLevel.Normal;
-
+    public enum AlertLevel { Normal, Notice, Attack, Avoid }
+    public AlertLevel NowAlertLevel { protected set; get; } = AlertLevel.Normal;
 
     private void Awake()
     {
@@ -31,25 +30,18 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
     {
         var nextPosition = GetNextPosition();
         NextPosition = nextPosition == null ? NextPosition : nextPosition;
-        NavMeshAgent.SetDestination(NextPosition.position);
-        var degree = Mathf.Round(Vector3.Angle(Model.forward, NavMeshAgent.velocity.normalized));
-        var cross = Vector3.Cross(Model.forward, NavMeshAgent.velocity.normalized);
-        degree *= cross.y >= 0 ? 1 : -1;
-
-        animator.SetFloat("WalkY", Mathf.Cos(degree * Mathf.Deg2Rad));
-        animator.SetFloat("WalkX", Mathf.Sin(degree * Mathf.Deg2Rad));
+        model.SetNextPosition(NextPosition.position);
     }
 
-    public virtual void GetHit()
+    public void GetHit()
     {
-        animator.enabled = false;
-        ragDollHandler.TrunOnRigid(true);
-        NavMeshAgent.enabled = false;
+
+        model.GetHit();
     }
 
     Transform GetNextPosition()
     {
-        if (Vector3.Distance(Model.position, NextPosition.position) < 1f)
+        if (Vector3.Distance(model.transform.position, NextPosition.position) < 1f)
         {
             var index = NextPosition.GetSiblingIndex();
             index = (index + 1) % TrackingPositionGroup.childCount;
@@ -63,5 +55,10 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
     {
 
         //throw new System.NotImplementedException();
+    }
+
+    public void SetBelongTo(Material material)
+    {
+        model.SetBelong(material);
     }
 }
