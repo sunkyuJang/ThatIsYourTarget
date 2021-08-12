@@ -4,31 +4,33 @@ using UnityEngine;
 
 public class FovSensor : ObjDetector
 {
-    public Vector3 rayStatPoint { get { return transform.position + transform.forward * 0.5f; } }
+    public Vector3 rayStartPoint { get { return transform.position + transform.forward * 0.2f; } }
     protected override void OnTriggerStay(Collider other)
     {
         if (IsFind(other))
         {
-            var headDist = Vector3.Distance(rayStatPoint, other.transform.position);
+            var headDist = Vector3.Distance(rayStartPoint, other.transform.position);
 
-            var hits = Physics.RaycastAll(rayStatPoint, other.transform.position);
-            print("isIN");
+            var dir = other.transform.position - transform.position;
+            var hits = Physics.RaycastAll(rayStartPoint, dir, headDist);
+
             foreach (var hit in hits)
             {
                 if (hit.collider.gameObject.layer != LayerMask.NameToLayer("Hand")
-                    && hit.collider.gameObject.layer != LayerMask.NameToLayer("HandPlayer"))
+                    && hit.collider.gameObject.layer != LayerMask.NameToLayer("HandPlayer")
+                    && hit.collider.transform != transform)
                 {
-                    var nowDist = Vector3.Distance(rayStatPoint, hit.transform.position);
+                    var nowDist = Vector3.Distance(rayStartPoint, hit.point);
+                    print(hit.collider.name + "//" + nowDist + "//" + headDist);
                     if (nowDist < headDist)
                     {
-                        print(hit.collider.name);
                         return;
                     }
                 }
             }
 
             print(true);
-            Debug.DrawLine(rayStatPoint, other.transform.position, Color.red, 2f);
+            Debug.DrawLine(rayStartPoint, other.transform.position, Color.red, 2f);
         }
     }
 }
