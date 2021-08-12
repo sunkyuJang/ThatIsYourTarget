@@ -11,7 +11,7 @@ public class FovSensor : ObjDetector
         {
             if (IsTargetOnlyCloseOne(other))
             {
-                Debug.DrawLine(rayStartPoint, other.transform.position, Color.red, 2f);
+                I_OnContecting?.OnContecting(this, other);
             }
         }
     }
