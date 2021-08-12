@@ -9,28 +9,35 @@ public class FovSensor : ObjDetector
     {
         if (IsFind(other))
         {
-            var headDist = Vector3.Distance(rayStartPoint, other.transform.position);
-
-            var dir = other.transform.position - transform.position;
-            var hits = Physics.RaycastAll(rayStartPoint, dir, headDist);
-
-            foreach (var hit in hits)
+            if (IsTargetOnlyCloseOne(other))
             {
-                if (hit.collider.gameObject.layer != LayerMask.NameToLayer("Hand")
-                    && hit.collider.gameObject.layer != LayerMask.NameToLayer("HandPlayer")
-                    && hit.collider.transform != transform)
+                Debug.DrawLine(rayStartPoint, other.transform.position, Color.red, 2f);
+            }
+        }
+    }
+
+    bool IsTargetOnlyCloseOne(Collider other)
+    {
+        var headDist = Vector3.Distance(rayStartPoint, other.transform.position);
+
+        var dir = other.transform.position - transform.position;
+        var hits = Physics.RaycastAll(rayStartPoint, dir, headDist);
+
+        foreach (var hit in hits)
+        {
+            if (hit.collider.gameObject.layer != LayerMask.NameToLayer("Hand")
+                && hit.collider.gameObject.layer != LayerMask.NameToLayer("HandPlayer")
+                && hit.collider.transform != transform)
+            {
+                var nowDist = Vector3.Distance(rayStartPoint, hit.point);
+                print(hit.collider.name + "//" + nowDist + "//" + headDist);
+                if (nowDist < headDist)
                 {
-                    var nowDist = Vector3.Distance(rayStartPoint, hit.point);
-                    print(hit.collider.name + "//" + nowDist + "//" + headDist);
-                    if (nowDist < headDist)
-                    {
-                        return;
-                    }
+                    return false;
                 }
             }
-
-            print(true);
-            Debug.DrawLine(rayStartPoint, other.transform.position, Color.red, 2f);
         }
+
+        return true;
     }
 }
