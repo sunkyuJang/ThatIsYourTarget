@@ -54,8 +54,24 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
     public void OnContecting(ObjDetector detector, Collider collider)
     {
 
+        var nowDist = Vector3.Distance(detector.transform.position, collider.transform.position);
+        if (nowDist < 3f)
+        {
+            if (NowAlertLevel != AlertLevel.Attack)
+                NowAlertLevel = AlertLevel.Attack;
+        }
         //throw new System.NotImplementedException();
     }
+
+    protected void MakeAlertLevel(AlertLevel alertLevel)
+    {
+        switch (alertLevel)
+        {
+            case AlertLevel.Attack: break;
+        }
+    }
+
+
 
     public void SetBelongTo(Material material)
     {
