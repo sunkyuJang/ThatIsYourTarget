@@ -23,13 +23,16 @@ public class PersonHandler : MonoBehaviour
 
     public List<Person> SetEnemy(int enemyCount)
     {
-        var nowPersonList = new List<Person>(0);
+        var nowPersonList = new List<Person>();
         for (int i = 0; i < enemyCount; i++)
         {
-            var nowPerson = Persons[Random.Range(0, Persons.Count)];
+            var index = Random.Range(0, Persons.Count);
+            var nowPerson = Persons[index];
+            Persons.RemoveAt(index);
             nowPerson.SetBelongTo(TargetColor);
             nowPersonList.Add(nowPerson);
         }
+        Persons.AddRange(nowPersonList);
 
         return nowPersonList;
     }

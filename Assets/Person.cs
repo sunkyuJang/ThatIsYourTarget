@@ -35,7 +35,6 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
 
     public void GetHit()
     {
-
         model.GetHit();
     }
 
@@ -70,8 +69,6 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
             case AlertLevel.Attack: break;
         }
     }
-
-
 
     public void SetBelongTo(Material material)
     {

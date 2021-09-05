@@ -8,7 +8,7 @@ public class TargetManager : MonoBehaviour
     public static bool IsExist { get { return instance != null; } }
     public PersonHandler personHandler;
     public int targetCount = 1;
-    List<Person> TargetPerson;
+    List<Person> TargetPerson = new List<Person>();
     private void Awake()
     {
         if (instance == null)
@@ -26,5 +26,15 @@ public class TargetManager : MonoBehaviour
         yield return new WaitUntil(() => personHandler.isStartPass);
 
         TargetPerson = personHandler.SetEnemy(targetCount);
+    }
+
+    public int GetLeftTarget()
+    {
+        var left = 0;
+        for (int i = 0; i < TargetPerson.Count; i++)
+        {
+            left += TargetPerson[i].NowAliveState == Person.AliveState.Alive ? 1 : 0;
+        }
+        return left;
     }
 }
