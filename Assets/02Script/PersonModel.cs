@@ -55,4 +55,43 @@ public class PersonModel : MonoBehaviour
     {
         ModelRender.material = material;
     }
+
+    public void MakeLookAt(Vector3 dir)
+    {
+        NavMeshAgent.isStopped = true;
+        StartCoroutine(DoLookAtWithSpeed(dir));
+    }
+    IEnumerator DoLookAtWithSpeed(Vector3 dir)
+    {
+        var dirWithQ = Quaternion.Euler(dir.x, dir.y, dir.z);
+        var t = 0f;
+        var maxT = 5f;
+        while (t < maxT)
+        {
+            var ratio = Mathf.InverseLerp(0, maxT, t);
+            transform.rotation = Quaternion.Lerp(transform.rotation, dirWithQ, ratio);
+            t += Time.fixedDeltaTime;
+
+            yield return new WaitForFixedUpdate();
+
+            print(Quaternion.Dot(dirWithQ, transform.rotation.normalized));
+            print(transform.rotation.eulerAngles);
+            if (dirWithQ == transform.rotation) break;
+        }
+        print(true);
+    }
+
+    public void SetSittingAnimation(int sittingLevel)
+    {
+        animator.SetInteger("SittingLevel", sittingLevel);
+        NavMeshAgent.isStopped = true;
+    }
+
+    public void SetToIdleAnimation()
+    {
+        NavMeshAgent.isStopped = false;
+        animator.SetInteger("SittingLevel", 0);
+        animator.SetBool("LookAround", false);
+        animator.SetBool("ShouldTurn", false);
+    }
 }
