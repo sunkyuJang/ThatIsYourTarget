@@ -63,23 +63,38 @@ public class PersonModel : MonoBehaviour
     }
     IEnumerator DoLookAtWithSpeed(Vector3 dir)
     {
-        var dirWithQ = Quaternion.Euler(dir.x, dir.y, dir.z);
-        var nowRotation = transform.forward;
+        var startForward = transform.forward;
+        var oppositForward = transform.forward * -1f;
         var t = 0f;
-        var maxT = 1f;
-        while (true)
+        var maxT = 2f;
+        var xRatio = 1 - Mathf.InverseLerp(transform.forward.x, oppositForward.x, dir.x);
+        t = Mathf.Lerp(0, maxT, xRatio);
+
+        while (t < maxT)
         {
-            var ratio = Mathf.InverseLerp(0, maxT, t);
-            transform.forward = Vector3.Lerp(nowRotation, dir, ratio);
-            print(transform.rotation);
+            var nowRatio = Mathf.Lerp(0, maxT, t);
+            transform.forward = Vector3.Lerp(startForward, dir, nowRatio);
             t += Time.fixedDeltaTime;
 
-            yield return new WaitForFixedUpdate();
+            //if (Vector3.Distance(transform.forward, dir) < 0.05f) break;
 
-            if (Vector3.Distance(transform.forward, dir) < 0.05f) break;
+            yield return new WaitForFixedUpdate();
         }
         print(true);
     }
+    // IEnumerator DoLookAtWithSpeed(Vector3 dir)
+    // {
+    //     var dirWithQ = Quaternion.Euler(dir.x, dir.y, dir.z);
+    //     var nowRotation = transform.forward;
+    //     while (true)
+    //     {
+    //         transform.forward = Vector3.Slerp(nowRotation, dir, NavMeshAgent.speed);
+
+    //         yield return new WaitForFixedUpdate();
+
+    //         if (Vector3.Distance(transform.forward, dir) < 0.05f) break;
+    //     }
+    // }
 
     public void SetSittingAnimation(int sittingLevel)
     {

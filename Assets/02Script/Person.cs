@@ -40,7 +40,6 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
 
             if (nextActionPoint.state != actionPoint.StateKind.non)
             {
-                print(nextActionPoint.transform.forward);
                 model.MakeLookAt(nextActionPoint.transform.forward);
 
                 switch (nextActionPoint.state)
