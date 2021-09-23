@@ -64,19 +64,19 @@ public class PersonModel : MonoBehaviour
     IEnumerator DoLookAtWithSpeed(Vector3 dir)
     {
         var dirWithQ = Quaternion.Euler(dir.x, dir.y, dir.z);
+        var nowRotation = transform.forward;
         var t = 0f;
-        var maxT = 5f;
-        while (t < maxT)
+        var maxT = 1f;
+        while (true)
         {
             var ratio = Mathf.InverseLerp(0, maxT, t);
-            transform.rotation = Quaternion.Lerp(transform.rotation, dirWithQ, ratio);
+            transform.forward = Vector3.Lerp(nowRotation, dir, ratio);
+            print(transform.rotation);
             t += Time.fixedDeltaTime;
 
             yield return new WaitForFixedUpdate();
 
-            print(Quaternion.Dot(dirWithQ, transform.rotation.normalized));
-            print(transform.rotation.eulerAngles);
-            if (dirWithQ == transform.rotation) break;
+            if (Vector3.Distance(transform.forward, dir) < 0.05f) break;
         }
         print(true);
     }
@@ -89,9 +89,16 @@ public class PersonModel : MonoBehaviour
 
     public void SetToIdleAnimation()
     {
-        NavMeshAgent.isStopped = false;
         animator.SetInteger("SittingLevel", 0);
         animator.SetBool("LookAround", false);
         animator.SetBool("ShouldTurn", false);
+        StartCoroutine(DoNavMeshAgentWork());
+    }
+
+    IEnumerator DoNavMeshAgentWork()
+    {
+        yield return new WaitForSeconds(2f);
+
+        NavMeshAgent.isStopped = false;
     }
 }

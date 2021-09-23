@@ -36,7 +36,7 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
         {
             var nextActionPoint = actionPointHandler.GetActionPoint(actionIndex++);
             model.SetNextPosition(nextActionPoint.transform.position);
-            yield return new WaitUntil(() => Vector3.Distance(model.transform.position, nextActionPoint.transform.position) <= 1f);
+            yield return new WaitUntil(() => Vector3.Distance(model.transform.position, nextActionPoint.transform.position) <= 0.5f);
 
             if (nextActionPoint.state != actionPoint.StateKind.non)
             {
@@ -47,12 +47,11 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
                 {
                     case actionPoint.StateKind.sitting: model.SetSittingAnimation(1); break;
                 }
-            }
 
-            nextActionPoint.StartTimeCount();
-            yield return new WaitUntil(() => !nextActionPoint.IsDoing);
-            model.SetToIdleAnimation();
-            yield return new WaitForSeconds(1f);
+                nextActionPoint.StartTimeCount();
+                yield return new WaitUntil(() => !nextActionPoint.IsDoing);
+                model.SetToIdleAnimation();
+            }
 
             actionIndex %= actionPointHandler.GetActionCount;
 
