@@ -64,37 +64,22 @@ public class PersonModel : MonoBehaviour
     IEnumerator DoLookAtWithSpeed(Vector3 dir)
     {
         var startForward = transform.forward;
-        var oppositForward = transform.forward * -1f;
-        var t = 0f;
-        var maxT = 2f;
-        var xRatio = 1 - Mathf.InverseLerp(transform.forward.x, oppositForward.x, dir.x);
-        t = Mathf.Lerp(0, maxT, xRatio);
+        var cross = Vector3.Cross(Vector3.up, startForward);
+        var dot = Vector3.Dot(cross, dir);
+        var isLeft = dot < 0;
 
-        while (t < maxT)
+        var lastAngle = Vector3.Angle(transform.forward, dir);
+        while (true)
         {
-            var nowRatio = Mathf.Lerp(0, maxT, t);
-            transform.forward = Vector3.Lerp(startForward, dir, nowRatio);
-            t += Time.fixedDeltaTime;
-
-            //if (Vector3.Distance(transform.forward, dir) < 0.05f) break;
-
+            transform.Rotate(isLeft ? Vector3.down : Vector3.up, 200f * Time.fixedDeltaTime);
+            var nowAngle = Vector3.Angle(transform.forward, dir);
+            if (nowAngle > lastAngle) break;
+            else lastAngle = nowAngle;
             yield return new WaitForFixedUpdate();
         }
-        print(true);
+        yield return null;
+
     }
-    // IEnumerator DoLookAtWithSpeed(Vector3 dir)
-    // {
-    //     var dirWithQ = Quaternion.Euler(dir.x, dir.y, dir.z);
-    //     var nowRotation = transform.forward;
-    //     while (true)
-    //     {
-    //         transform.forward = Vector3.Slerp(nowRotation, dir, NavMeshAgent.speed);
-
-    //         yield return new WaitForFixedUpdate();
-
-    //         if (Vector3.Distance(transform.forward, dir) < 0.05f) break;
-    //     }
-    // }
 
     public void SetSittingAnimation(int sittingLevel)
     {
