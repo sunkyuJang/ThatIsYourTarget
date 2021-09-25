@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ActionPointHandler : MonoBehaviour
 {
-    List<actionPoint> actionPoints = new List<actionPoint>();
+    List<ActionPoint> actionPoints = new List<ActionPoint>();
     public int GetActionCount { get { return actionPoints.Count; } }
     private void Awake()
     {
@@ -15,11 +15,11 @@ public class ActionPointHandler : MonoBehaviour
     {
         for (int i = 0; i < transform.childCount; i++)
         {
-            actionPoints.Add(transform.GetChild(i).GetComponent<actionPoint>());
+            actionPoints.Add(transform.GetChild(i).GetComponent<ActionPoint>());
         }
     }
 
-    public actionPoint GetActionPoint(int index)
+    public ActionPoint GetActionPoint(int index)
     {
         return actionPoints[index];
     }

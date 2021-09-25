@@ -44,6 +44,7 @@ public class PersonModel : MonoBehaviour
         animator.SetFloat("WalkX", Mathf.Sin(degree * Mathf.Deg2Rad));
     }
 
+
     public virtual void GetHit()
     {
         animator.enabled = false;
@@ -67,32 +68,59 @@ public class PersonModel : MonoBehaviour
         var cross = Vector3.Cross(Vector3.up, startForward);
         var dot = Vector3.Dot(cross, dir);
         var isLeft = dot < 0;
-
+        var rotateSpeed = 300f;
         var lastAngle = Vector3.Angle(transform.forward, dir);
         while (true)
         {
-            transform.Rotate(isLeft ? Vector3.down : Vector3.up, 200f * Time.fixedDeltaTime);
+            transform.Rotate(isLeft ? Vector3.down : Vector3.up, rotateSpeed * Time.fixedDeltaTime);
             var nowAngle = Vector3.Angle(transform.forward, dir);
             if (nowAngle > lastAngle) break;
             else lastAngle = nowAngle;
             yield return new WaitForFixedUpdate();
         }
-        yield return null;
 
+        //make correctly
+        if (Vector3.Angle(transform.forward, dir) * Mathf.Rad2Deg > 3f)
+        {
+            var t = 0f;
+            var maxT = 1f;
+            startForward = transform.forward;
+            while (t < maxT)
+            {
+                var ratio = Mathf.InverseLerp(0, maxT, t);
+                transform.forward = Vector3.Lerp(startForward, dir, ratio);
+                t += Time.fixedDeltaTime;
+                yield return new WaitForFixedUpdate();
+            }
+        }
+        yield return null;
     }
 
     public void SetSittingAnimation(int sittingLevel)
     {
         animator.SetInteger("SittingLevel", sittingLevel);
-        NavMeshAgent.isStopped = true;
     }
 
-    public void SetToIdleAnimation()
+    public void SetLookAroundAnimation()
     {
+        animator.SetBool("LookAround", true);
+    }
+    public void SetWaitingAnimation()
+    {
+        animator.SetBool("ShouldDoIdle", true);
+    }
+
+    public void SetToWalkAnimation()
+    {
+        var isStateWasIdle = animator.GetBool("ShouldDoIdle");
         animator.SetInteger("SittingLevel", 0);
         animator.SetBool("LookAround", false);
         animator.SetBool("ShouldTurn", false);
-        StartCoroutine(DoNavMeshAgentWork());
+        animator.SetBool("ShouldDoIdle", false);
+
+        if (!isStateWasIdle)
+            StartCoroutine(DoNavMeshAgentWork());
+        else { NavMeshAgent.isStopped = false; }
     }
 
     IEnumerator DoNavMeshAgentWork()

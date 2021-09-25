@@ -38,18 +38,20 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
             model.SetNextPosition(nextActionPoint.transform.position);
             yield return new WaitUntil(() => Vector3.Distance(model.transform.position, nextActionPoint.transform.position) <= 0.5f);
 
-            if (nextActionPoint.state != actionPoint.StateKind.non)
+            if (nextActionPoint.state != ActionPoint.StateKind.non)
             {
                 model.MakeLookAt(nextActionPoint.transform.forward);
 
                 switch (nextActionPoint.state)
                 {
-                    case actionPoint.StateKind.sitting: model.SetSittingAnimation(1); break;
+                    case ActionPoint.StateKind.sitting: model.SetSittingAnimation(nextActionPoint.SittingNum); break;
+                    case ActionPoint.StateKind.lookAround: model.SetLookAroundAnimation(); break;
+                    case ActionPoint.StateKind.waiting: model.SetWaitingAnimation(); break;
                 }
 
                 nextActionPoint.StartTimeCount();
                 yield return new WaitUntil(() => !nextActionPoint.IsDoing);
-                model.SetToIdleAnimation();
+                model.SetToWalkAnimation();
             }
 
             actionIndex %= actionPointHandler.GetActionCount;
