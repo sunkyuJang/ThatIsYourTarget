@@ -6,7 +6,7 @@ using UnityEditor;
 [System.Serializable]
 public class ActionPoint : MonoBehaviour
 {
-    public enum StateKind { non = 0, waiting, lookAround, sitting }
+    public enum StateKind { non = 0, idle, lookAround, sitting }
     public StateKind state = 0;
     protected int beforeState = -1;
     public float during = 0;
@@ -48,7 +48,7 @@ public class ActionPointEditor : Editor
                     SetSittingInspector(ap);
                     break;
                 }
-            case ActionPoint.StateKind.waiting:
+            case ActionPoint.StateKind.idle:
                 {
                     SetWaitingInspector(ap);
                     break;

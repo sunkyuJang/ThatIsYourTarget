@@ -46,7 +46,7 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
                 {
                     case ActionPoint.StateKind.sitting: model.SetSittingAnimation(nextActionPoint.SittingNum); break;
                     case ActionPoint.StateKind.lookAround: model.SetLookAroundAnimation(); break;
-                    case ActionPoint.StateKind.waiting: model.SetWaitingAnimation(); break;
+                    case ActionPoint.StateKind.idle: model.SetIdleAnimation(); break;
                 }
 
                 nextActionPoint.StartTimeCount();

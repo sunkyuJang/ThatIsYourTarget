@@ -105,7 +105,7 @@ public class PersonModel : MonoBehaviour
     {
         animator.SetBool("LookAround", true);
     }
-    public void SetWaitingAnimation()
+    public void SetIdleAnimation()
     {
         animator.SetBool("ShouldDoIdle", true);
     }
@@ -125,7 +125,7 @@ public class PersonModel : MonoBehaviour
 
     IEnumerator DoNavMeshAgentWork()
     {
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(1f);
 
         NavMeshAgent.isStopped = false;
     }
