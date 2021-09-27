@@ -18,6 +18,7 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
     public enum AlertLevel { Normal, Notice, Attack, Avoid }
     public AlertLevel NowAlertLevel { protected set; get; } = AlertLevel.Normal;
     Coroutine nowPlayingAPs;
+    public bool IsStandingOnPosition { protected set; get; }
     private void Awake()
     {
         model = transform.Find("Model").GetComponent<PersonModel>();
@@ -39,9 +40,11 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
     {
         while (true)
         {
+            IsStandingOnPosition = false;
             var nextActionPoint = actionPointHandler.GetNextActionPoint();
             model.SetNextPosition(nextActionPoint.transform.position);
             yield return new WaitUntil(() => Vector3.Distance(model.transform.position, nextActionPoint.transform.position) <= 0.5f);
+            IsStandingOnPosition = true;
 
             if (nextActionPoint.state != ActionPoint.StateKind.non)
             {

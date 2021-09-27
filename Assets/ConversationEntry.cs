@@ -18,13 +18,11 @@ public class ConversationEntry : MonoBehaviour
     {
         if (other.CompareTag("PersonModel"))
         {
-            print("1pass");
             for (int i = 0; i < targetPersonList.Count; i++)
             {
                 var nowPersonName = targetPersonList[i].name;
                 if (other.transform.parent.gameObject.name == nowPersonName)
                 {
-                    print("2pass");
                     targetIncount++;
                     SetConversationBuild(other.transform.parent.GetComponent<Person>());
                     break;
@@ -34,7 +32,7 @@ public class ConversationEntry : MonoBehaviour
 
         if (targetIncount == targetPersonList.Count)
         {
-            StartConversation();
+            StartCoroutine(DoConversation());
         }
     }
 
@@ -51,6 +49,27 @@ public class ConversationEntry : MonoBehaviour
         }
     }
 
+    IEnumerator DoConversation()
+    {
+        var canPass = false;
+        while (!canPass)
+        {
+            canPass = true;
+            for (int i = 0; i < targetPersonList.Count; i++)
+            {
+                if (!targetPersonList[i].IsStandingOnPosition)
+                {
+                    print(true);
+                    canPass = false;
+                    break;
+                }
+            }
+            yield return new WaitForFixedUpdate();
+        }
+
+        StartConversation();
+        yield return null;
+    }
     void StartConversation()
     {
         for (int i = 0; i < APGroup.childCount; i++)
@@ -58,21 +77,4 @@ public class ConversationEntry : MonoBehaviour
             APGroup.GetChild(i).GetComponent<ActionPointHandler>().GetActionPoint(0).during = 0;
         }
     }
-    // void SetConversationBuild()
-    // {
-    //     for (int i = 0; i < APGroup.childCount; i++)
-    //     {
-    //         var nowGroup = APGroup.GetChild(i).GetComponent<ActionPointHandler>();
-    //         for (int targetIndex = 0; targetIndex < targetPersonList.Count; targetIndex++)
-    //         {
-    //             var nowTarget = targetPersonList[targetIndex];
-    //             if (nowGroup.name.Equals(nowTarget.name))
-    //             {
-    //                 print(true);
-    //                 nowTarget.InterruptAPs(nowGroup);
-    //                 break;
-    //             }
-    //         }
-    //     }
-    // }
 }
