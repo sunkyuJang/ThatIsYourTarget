@@ -112,7 +112,7 @@ public class PersonModel : MonoBehaviour
 
     public void SetToWalkAnimation()
     {
-        var isStateWasIdle = animator.GetBool("ShouldDoIdle");
+        var isStateWasIdle = animator.GetBool("ShouldDoIdle") || animator.GetBool("LookAround");
         animator.SetInteger("SittingLevel", 0);
         animator.SetBool("LookAround", false);
         animator.SetBool("ShouldTurn", false);

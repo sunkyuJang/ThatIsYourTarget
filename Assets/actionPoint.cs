@@ -24,11 +24,22 @@ public class ActionPoint : MonoBehaviour
         IsDoing = true;
         var t = 0f;
         var maxT = during;
-        while (t < maxT)
+        if (during >= 0)
         {
-            t += Time.fixedDeltaTime;
-            yield return new WaitForFixedUpdate();
+            while (t < maxT)
+            {
+                t += Time.fixedDeltaTime;
+                yield return new WaitForFixedUpdate();
+            }
         }
+        else
+        {
+            while (during < 0)
+            {
+                yield return new WaitForFixedUpdate();
+            }
+        }
+
         IsDoing = false;
     }
 }

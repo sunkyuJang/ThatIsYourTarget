@@ -8,6 +8,7 @@ TagManager:
   - HandPosition
   - Person
   - PlayerHead
+  - PersonModel
   layers:
   - Default
   - TransparentFX

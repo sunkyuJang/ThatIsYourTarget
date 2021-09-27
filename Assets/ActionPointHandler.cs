@@ -5,7 +5,9 @@ using UnityEngine;
 public class ActionPointHandler : MonoBehaviour
 {
     List<ActionPoint> actionPoints = new List<ActionPoint>();
+    List<ActionPoint> originalAPs = new List<ActionPoint>();
     public int GetActionCount { get { return actionPoints.Count; } }
+    public int index = 0;
     private void Awake()
     {
         SetActionPoint();
@@ -17,10 +19,18 @@ public class ActionPointHandler : MonoBehaviour
         {
             actionPoints.Add(transform.GetChild(i).GetComponent<ActionPoint>());
         }
+        originalAPs = actionPoints;
+    }
+
+    public ActionPoint GetNextActionPoint()
+    {
+        index %= GetActionCount;
+        return GetActionPoint(index++);
     }
 
     public ActionPoint GetActionPoint(int index)
     {
-        return actionPoints[index];
+        var ap = actionPoints[index];
+        return ap;
     }
 }

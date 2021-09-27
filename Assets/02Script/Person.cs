@@ -17,6 +17,7 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
 
     public enum AlertLevel { Normal, Notice, Attack, Avoid }
     public AlertLevel NowAlertLevel { protected set; get; } = AlertLevel.Normal;
+    Coroutine nowPlayingAPs;
     private void Awake()
     {
         model = transform.Find("Model").GetComponent<PersonModel>();
@@ -26,15 +27,19 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
 
     private void Start()
     {
-        StartCoroutine(DoAction());
+        StartAPs();
+    }
+
+    void StartAPs()
+    {
+        nowPlayingAPs = StartCoroutine(DoAction());
     }
 
     IEnumerator DoAction()
     {
-        var actionIndex = 0;
         while (true)
         {
-            var nextActionPoint = actionPointHandler.GetActionPoint(actionIndex++);
+            var nextActionPoint = actionPointHandler.GetNextActionPoint();
             model.SetNextPosition(nextActionPoint.transform.position);
             yield return new WaitUntil(() => Vector3.Distance(model.transform.position, nextActionPoint.transform.position) <= 0.5f);
 
@@ -53,8 +58,6 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
                 yield return new WaitUntil(() => !nextActionPoint.IsDoing);
                 model.SetToWalkAnimation();
             }
-
-            actionIndex %= actionPointHandler.GetActionCount;
 
             yield return new WaitForFixedUpdate();
         }
@@ -85,5 +88,16 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
     public void SetBelongTo(Material material)
     {
         model.SetBelong(material);
+    }
+
+    public void InterruptAPs(ActionPointHandler APHandler)
+    {
+        StopCoroutine(nowPlayingAPs);
+        if (APHandler == null)
+            actionPointHandler = transform.Find("ActionPointHandler").GetComponent<ActionPointHandler>();
+        else
+            actionPointHandler = APHandler;
+
+        StartAPs();
     }
 }
