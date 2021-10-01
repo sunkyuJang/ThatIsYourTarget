@@ -93,7 +93,7 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
         model.SetBelong(material);
     }
 
-    public void InterruptAPs(ActionPointHandler APHandler)
+    public void InterruptAPHandler(ActionPointHandler APHandler)
     {
         StopCoroutine(nowPlayingAPs);
         if (APHandler == null)

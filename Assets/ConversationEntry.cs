@@ -16,6 +16,23 @@ public class ConversationEntry : MonoBehaviour
     }
     private void OnTriggerEnter(Collider other)
     {
+        if (isRandomTarget)
+        {
+
+        }
+        else
+        {
+            CheckFixedTarget(other);
+        }
+
+        if (targetIncount == targetPersonList.Count)
+        {
+            StartCoroutine(DoConversation());
+        }
+    }
+
+    void CheckFixedTarget(Collider other)
+    {
         if (other.CompareTag("PersonModel"))
         {
             for (int i = 0; i < targetPersonList.Count; i++)
@@ -29,11 +46,6 @@ public class ConversationEntry : MonoBehaviour
                 }
             }
         }
-
-        if (targetIncount == targetPersonList.Count)
-        {
-            StartCoroutine(DoConversation());
-        }
     }
 
     void SetConversationBuild(Person target)
@@ -44,7 +56,7 @@ public class ConversationEntry : MonoBehaviour
             if (target.gameObject.name == nowGroup.gameObject.name)
             {
                 nowGroup.GetActionPoint(0).during = -1;
-                target.InterruptAPs(nowGroup);
+                target.InterruptAPHandler(nowGroup);
             }
         }
     }
@@ -59,7 +71,6 @@ public class ConversationEntry : MonoBehaviour
             {
                 if (!targetPersonList[i].IsStandingOnPosition)
                 {
-                    print(true);
                     canPass = false;
                     break;
                 }

@@ -10,7 +10,7 @@ public class PersonModel : MonoBehaviour
     RagDollHandler ragDollHandler;
     NavMeshAgent NavMeshAgent { set; get; }
     public Renderer ModelRender { protected set; get; }
-
+    public Transform threeDIconGroup;
     private void Awake()
     {
         animator = GetComponent<Animator>();
@@ -43,8 +43,6 @@ public class PersonModel : MonoBehaviour
         animator.SetFloat("WalkY", Mathf.Cos(degree * Mathf.Deg2Rad));
         animator.SetFloat("WalkX", Mathf.Sin(degree * Mathf.Deg2Rad));
     }
-
-
     public virtual void GetHit()
     {
         animator.enabled = false;
@@ -128,5 +126,10 @@ public class PersonModel : MonoBehaviour
         yield return new WaitForSeconds(1f);
 
         NavMeshAgent.isStopped = false;
+    }
+
+    public void DoTalk(bool shouldShow)
+    {
+        //Icon
     }
 }
