@@ -7,7 +7,7 @@ using UnityEngine.AI;
 
 public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
 {
-    PersonModel model;
+    public PersonModel model { private set; get; }
 
     ActionPointHandler actionPointHandler;
     Transform NextPosition { set; get; } = null;

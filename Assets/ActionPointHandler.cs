@@ -8,6 +8,8 @@ public class ActionPointHandler : MonoBehaviour
     List<ActionPoint> originalAPs = new List<ActionPoint>();
     public int GetActionCount { get { return actionPoints.Count; } }
     public int index = 0;
+    public bool ShouldLoop = true;
+    public bool IsReachedToEnd = false;
     private void Awake()
     {
         SetActionPoint();
@@ -24,7 +26,15 @@ public class ActionPointHandler : MonoBehaviour
 
     public ActionPoint GetNextActionPoint()
     {
-        index %= GetActionCount;
+        if (ShouldLoop)
+            index %= GetActionCount;
+        else
+            if (index >= GetActionCount)
+        {
+            index = GetActionCount;
+            IsReachedToEnd = true;
+        }
+
         return GetActionPoint(index++);
     }
 

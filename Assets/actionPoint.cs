@@ -42,6 +42,10 @@ public class ActionPoint : MonoBehaviour
 
         IsDoing = false;
     }
+    public bool IsThisLastAP()
+    {
+        return (transform.parent.childCount - 1) == transform.GetSiblingIndex();
+    }
 }
 
 [CustomEditor(typeof(ActionPoint)), CanEditMultipleObjects]

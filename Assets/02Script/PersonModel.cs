@@ -11,6 +11,7 @@ public class PersonModel : MonoBehaviour
     NavMeshAgent NavMeshAgent { set; get; }
     public Renderer ModelRender { protected set; get; }
     public Transform threeDIconGroup;
+    public enum ThreeD_IconList { Exclamation = 0, Question, SpeechBubble }
     private void Awake()
     {
         animator = GetComponent<Animator>();
@@ -62,6 +63,7 @@ public class PersonModel : MonoBehaviour
     }
     IEnumerator DoLookAtWithSpeed(Vector3 dir)
     {
+        //Roughly
         var startForward = transform.forward;
         var cross = Vector3.Cross(Vector3.up, startForward);
         var dot = Vector3.Dot(cross, dir);
@@ -77,7 +79,7 @@ public class PersonModel : MonoBehaviour
             yield return new WaitForFixedUpdate();
         }
 
-        //make correctly
+        //Correctly
         if (Vector3.Angle(transform.forward, dir) * Mathf.Rad2Deg > 3f)
         {
             var t = 0f;
@@ -128,8 +130,16 @@ public class PersonModel : MonoBehaviour
         NavMeshAgent.isStopped = false;
     }
 
-    public void DoTalk(bool shouldShow)
+    public void HideAllThreeD_Icon()
     {
-        //Icon
+        for (int i = 0; i < threeDIconGroup.childCount; i++)
+        {
+            threeDIconGroup.GetChild(i).gameObject.SetActive(false);
+        }
+    }
+    public void ShowThreeD_Icon(ThreeD_IconList iconName)
+    {
+        HideAllThreeD_Icon();
+        threeDIconGroup.Find(iconName.ToString()).gameObject.SetActive(true);
     }
 }
