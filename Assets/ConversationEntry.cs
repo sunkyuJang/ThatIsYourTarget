@@ -10,6 +10,7 @@ public class ConversationEntry : MonoBehaviour
     public bool isTalkingByVoice;
     public bool isRandomTarget;
     public int targetIncount = 0;
+    public bool isStartConversation = false;
     private void Awake()
     {
         var APGroup = transform.Find("APGroup");
@@ -29,8 +30,10 @@ public class ConversationEntry : MonoBehaviour
             CheckFixedTarget(other);
         }
 
-        if (targetIncount == targetPersonList.Count)
+        if (!isStartConversation
+            && targetIncount == targetPersonList.Count)
         {
+            isStartConversation = true;
             StartCoroutine(DoConversation());
         }
     }
@@ -60,7 +63,7 @@ public class ConversationEntry : MonoBehaviour
             if (target.gameObject.name == nowGroup.gameObject.name)
             {
                 nowGroup.GetActionPoint(0).during = -1;
-                target.InterruptAPHandler(nowGroup);
+                target.ChangeAPHandler(nowGroup);
             }
         }
     }
@@ -91,17 +94,15 @@ public class ConversationEntry : MonoBehaviour
         {
             APHList[i].GetActionPoint(0).during = 0;
         }
-
-        print(true);
         StartCoroutine(StartTalk());
     }
 
     IEnumerator StartTalk()
     {
-        print(APHList.Count);
-        while (APHList.Find(x => !x.IsReachedToEnd))
+        var canPass = false;
+        do
         {
-            var nowPerson = targetPersonList[Random.Range(0, targetPersonList.Count)];
+            var nowPerson = targetPersonList[0];
             targetPersonList.Remove(nowPerson);
 
             print("pass in pick person");
@@ -118,7 +119,35 @@ public class ConversationEntry : MonoBehaviour
 
             print("insert");
             nowPerson.model.HideAllThreeD_Icon();
+
+
+            for (int i = 0, counting = 0; i < APHList.Count; i++)
+            {
+                if (APHList[i].IsReachedToEnd)
+                {
+                    APHList[i].MemorizeLastAPStateUntillIsReachedEnd();
+                    counting += 1;
+                }
+                if (APHList.Count == counting)
+                {
+                    canPass = true;
+                    break;
+                }
+            }
+        } while (!canPass);
+
+        for (int i = 0; i < targetPersonList.Count; i++)
+        {
+            var nowTarget = targetPersonList[i];
+            nowTarget.ChangeAPHandler(null);
         }
+
+        for (int i = 0; i < APHList.Count; i++)
+        {
+            APHList[i].IsReachedToEnd = false;
+        }
+
+        isStartConversation = false;
         yield return null;
     }
 }
