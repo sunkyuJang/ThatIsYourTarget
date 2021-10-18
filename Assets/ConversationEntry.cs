@@ -34,7 +34,7 @@ public class ConversationEntry : MonoBehaviour
             && targetIncount == targetPersonList.Count)
         {
             isStartConversation = true;
-            StartCoroutine(DoConversation());
+            StartCoroutine(WaitForStandingOnStartPosition());
         }
     }
 
@@ -62,13 +62,12 @@ public class ConversationEntry : MonoBehaviour
             var nowGroup = APHList[i];
             if (target.gameObject.name == nowGroup.gameObject.name)
             {
-                nowGroup.GetActionPoint(0).during = -1;
                 target.ChangeAPHandler(nowGroup);
             }
         }
     }
 
-    IEnumerator DoConversation()
+    IEnumerator WaitForStandingOnStartPosition()
     {
         var canPass = false;
         while (!canPass)
@@ -85,57 +84,43 @@ public class ConversationEntry : MonoBehaviour
             yield return new WaitForFixedUpdate();
         }
 
-        StartConversation();
+        StartTalk();
         yield return null;
     }
-    void StartConversation()
+    void StartTalk()
     {
         for (int i = 0; i < APHList.Count; i++)
         {
-            APHList[i].GetActionPoint(0).during = 0;
+            APHList[i].WaitForStartToNext(false);
         }
-        StartCoroutine(StartTalk());
+        StartCoroutine(DoStartTalk());
     }
 
-    IEnumerator StartTalk()
+    IEnumerator DoStartTalk()
     {
-        var canPass = false;
         do
         {
             var nowPerson = targetPersonList[0];
             targetPersonList.Remove(nowPerson);
 
-            print("pass in pick person");
             nowPerson.model.ShowThreeD_Icon(PersonModel.ThreeD_IconList.SpeechBubble);
             var timeData = TimeCounter.Instance.SetTimeCounting(Random.Range(1, 5), 1f, nowPerson.model.gameObject);
-            print(timeData.maxTime);
             yield return new WaitUntil(() => !timeData.IsCounting);
             TimeCounter.Instance.RemoveProcessCounting(timeData);
-            print("pass time");
             if (targetPersonList.Count > 1)
                 targetPersonList.Insert(Random.Range(1, targetPersonList.Count), nowPerson);
             else
                 targetPersonList.Add(nowPerson);
 
-            print("insert");
             nowPerson.model.HideAllThreeD_Icon();
+        } while (APHList.Find(x => !x.IsReachedToEnd));
 
+        MakeReset();
+        yield return null;
+    }
 
-            for (int i = 0, counting = 0; i < APHList.Count; i++)
-            {
-                if (APHList[i].IsReachedToEnd)
-                {
-                    APHList[i].MemorizeLastAPStateUntillIsReachedEnd();
-                    counting += 1;
-                }
-                if (APHList.Count == counting)
-                {
-                    canPass = true;
-                    break;
-                }
-            }
-        } while (!canPass);
-
+    void MakeReset()
+    {
         for (int i = 0; i < targetPersonList.Count; i++)
         {
             var nowTarget = targetPersonList[i];
@@ -145,9 +130,11 @@ public class ConversationEntry : MonoBehaviour
         for (int i = 0; i < APHList.Count; i++)
         {
             APHList[i].IsReachedToEnd = false;
+            APHList[i].WaitForStartToNext(true);
+            APHList[i].ResetIndex();
         }
 
         isStartConversation = false;
-        yield return null;
+        targetIncount = 0;
     }
 }
