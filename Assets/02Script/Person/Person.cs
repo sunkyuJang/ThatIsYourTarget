@@ -100,6 +100,7 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
         if (APHandler == null)
         {
             actionPointHandler = transform.Find("ActionPointHandler").GetComponent<ActionPointHandler>();
+            model.MakeLookAt(model.transform.forward);
             model.SetToWalkAnimation();
         }
         else
