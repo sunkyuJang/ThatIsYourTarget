@@ -38,7 +38,7 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
 
     IEnumerator DoAction()
     {
-        //ActionPoint lastAP = null;
+        model.SetToWalkAnimation();
         while (true)
         {
             IsStandingOnPosition = false;
@@ -98,11 +98,7 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
     {
         StopCoroutine(nowPlayingAPs);
         if (APHandler == null)
-        {
             actionPointHandler = transform.Find("ActionPointHandler").GetComponent<ActionPointHandler>();
-            model.MakeLookAt(model.transform.forward);
-            model.SetToWalkAnimation();
-        }
         else
             actionPointHandler = APHandler;
 

@@ -98,6 +98,7 @@ public class ConversationEntry : MonoBehaviour
 
     IEnumerator DoStartTalk()
     {
+        var canPass = false;
         do
         {
             var nowPerson = targetPersonList[0];
@@ -113,7 +114,32 @@ public class ConversationEntry : MonoBehaviour
                 targetPersonList.Add(nowPerson);
 
             nowPerson.model.HideAllThreeD_Icon();
-        } while (APHList.Find(x => !x.IsReachedToEnd));
+
+            //checking for standing on end of AP
+            canPass = true;
+            for (int i = 0; i < APHList.Count; i++)
+            {
+                var nowAPH = APHList[i];
+                if (!nowAPH.IsReachedToEnd)
+                {
+                    canPass = false;
+                    break;
+                }
+            }
+
+            if (canPass)
+            {
+                for (int i = 0; i < targetPersonList.Count; i++)
+                {
+                    var p = targetPersonList[i];
+                    if (!p.IsStandingOnPosition)
+                    {
+                        canPass = false;
+                        break;
+                    }
+                }
+            }
+        } while (!canPass);
 
         MakeReset();
         yield return null;
