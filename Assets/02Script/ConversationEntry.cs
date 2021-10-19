@@ -84,6 +84,8 @@ public class ConversationEntry : MonoBehaviour
             yield return new WaitForFixedUpdate();
         }
 
+        yield return StartCoroutine(GivingSomeTimeForPlayAPAnimation());
+
         StartTalk();
         yield return null;
     }
@@ -141,6 +143,8 @@ public class ConversationEntry : MonoBehaviour
             }
         } while (!canPass);
 
+        yield return StartCoroutine(GivingSomeTimeForPlayAPAnimation());
+
         MakeReset();
         yield return null;
     }
@@ -162,5 +166,10 @@ public class ConversationEntry : MonoBehaviour
 
         isStartConversation = false;
         targetIncount = 0;
+    }
+
+    IEnumerator GivingSomeTimeForPlayAPAnimation()
+    {
+        yield return new WaitForSeconds(1f);
     }
 }
