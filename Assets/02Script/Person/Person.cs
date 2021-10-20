@@ -9,7 +9,7 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
 {
     public PersonModel model { private set; get; }
 
-    ActionPointHandler actionPointHandler;
+    public ActionPointHandler actionPointHandler;
     Transform NextPosition { set; get; } = null;
 
     public enum AliveState { Alive, Stun, Dead }
@@ -18,7 +18,10 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
     public enum AlertLevel { Normal, Notice, Attack, Avoid }
     public AlertLevel NowAlertLevel { protected set; get; } = AlertLevel.Normal;
     Coroutine nowPlayingAPs;
-    public bool IsStandingOnPosition { protected set; get; }
+    public bool IsStandingOnPosition(Vector3 targetWorldPosition)
+    {
+        return Vector3.Distance(model.transform.position, targetWorldPosition) <= 0.5f;
+    }
     private void Awake()
     {
         model = transform.Find("Model").GetComponent<PersonModel>();
@@ -38,14 +41,16 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
 
     IEnumerator DoAction()
     {
-        model.SetToWalkAnimation();
         while (true)
         {
-            IsStandingOnPosition = false;
             var nextActionPoint = actionPointHandler.GetNextActionPoint();
-            model.SetNextPosition(nextActionPoint.transform.position);
-            yield return new WaitUntil(() => Vector3.Distance(model.transform.position, nextActionPoint.transform.position) <= 0.5f);
-            IsStandingOnPosition = true;
+
+            if (!IsStandingOnPosition(nextActionPoint.transform.position))
+            {
+                model.SetWalkState(NowAlertLevel == AlertLevel.Normal ? 1 : 2);
+                model.SetNextPosition(nextActionPoint.transform.position);
+                yield return new WaitUntil(() => IsStandingOnPosition(nextActionPoint.transform.position));
+            }
 
             if (nextActionPoint.state != ActionPoint.StateKind.non)
             {
@@ -60,7 +65,6 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
 
                 nextActionPoint.StartTimeCount();
                 yield return new WaitUntil(() => !nextActionPoint.IsDoing);
-                model.SetToWalkAnimation();
             }
 
             yield return new WaitForFixedUpdate();

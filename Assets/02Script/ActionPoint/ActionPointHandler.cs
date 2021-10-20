@@ -70,6 +70,10 @@ public class ActionPointHandler : MonoBehaviour
         return ap;
     }
 
+    public ActionPoint GetLastActionPoint
+    {
+        get { return actionPoints[actionPoints.Count - 1]; }
+    }
     public void WaitForStartToNext(bool ShouldWait)
     {
         actionPoints[0].during = ShouldWait ? -1 : 0;

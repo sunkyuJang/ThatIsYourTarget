@@ -5,10 +5,11 @@ using UnityEngine.AI;
 
 public class PersonModel : MonoBehaviour
 {
+    Person person;
     Animator animator;
     Rigidbody Rigidbody { set; get; } = null;
     RagDollHandler ragDollHandler;
-    NavMeshAgent NavMeshAgent { set; get; }
+    public NavMeshAgent NavMeshAgent { set; get; }
     public Renderer ModelRender { protected set; get; }
     public Transform threeDIconGroup;
     public enum ThreeD_IconList { Exclamation = 0, Question, SpeechBubble }
@@ -99,22 +100,33 @@ public class PersonModel : MonoBehaviour
     public void SetSittingAnimation(int sittingLevel)
     {
         animator.SetInteger("SittingLevel", sittingLevel);
+        animator.SetInteger("WalkAroundLevel", 0);
     }
 
     public void SetLookAroundAnimation()
     {
         animator.SetBool("LookAround", true);
+        animator.SetInteger("WalkAroundLevel", 0);
     }
     public void SetIdleAnimation()
     {
         animator.SetBool("ShouldDoIdle", true);
+        animator.SetInteger("WalkAroundLevel", 0);
     }
 
-    public void SetToWalkAnimation()
+    public void SetWalkState(int walkLevel)
+    {
+        StartCoroutine(DoWalkAnimation(walkLevel));
+    }
+
+    IEnumerator DoWalkAnimation(int walkLevel)
     {
         var isStateWasIdle = animator.GetBool("ShouldDoIdle")
-                                || animator.GetBool("LookAround")
-                                || NavMeshAgent.velocity != Vector3.zero;
+                                || animator.GetBool("LookAround");
+
+        var isThisWasStop = NavMeshAgent.velocity == Vector3.zero;
+
+        animator.SetInteger("WalkAroundLevel", walkLevel);
 
         animator.SetInteger("SittingLevel", 0);
         animator.SetBool("LookAround", false);
@@ -122,15 +134,18 @@ public class PersonModel : MonoBehaviour
         animator.SetBool("ShouldDoIdle", false);
 
         if (!isStateWasIdle)
-            StartCoroutine(DoNavMeshAgentWork());
-        else { NavMeshAgent.isStopped = false; }
+        {
+            if (isThisWasStop)
+            {
+                yield return StartCoroutine(DoNavMeshAgentWork());
+            }
+        }
+        NavMeshAgent.isStopped = false;
     }
 
     IEnumerator DoNavMeshAgentWork()
     {
         yield return new WaitForSeconds(1f);
-
-        NavMeshAgent.isStopped = false;
     }
 
     public void HideAllThreeD_Icon()

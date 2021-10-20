@@ -75,7 +75,8 @@ public class ConversationEntry : MonoBehaviour
             canPass = true;
             for (int i = 0; i < targetPersonList.Count; i++)
             {
-                if (!targetPersonList[i].IsStandingOnPosition)
+                var targetP = targetPersonList[i];
+                if (!targetP.IsStandingOnPosition(targetP.actionPointHandler.GetActionPoint(0).transform.position))
                 {
                     canPass = false;
                     break;
@@ -134,7 +135,7 @@ public class ConversationEntry : MonoBehaviour
                 for (int i = 0; i < targetPersonList.Count; i++)
                 {
                     var p = targetPersonList[i];
-                    if (!p.IsStandingOnPosition)
+                    if (!p.IsStandingOnPosition(p.actionPointHandler.GetLastActionPoint.transform.position))
                     {
                         canPass = false;
                         break;
