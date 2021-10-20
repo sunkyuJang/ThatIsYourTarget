@@ -20,7 +20,7 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
     Coroutine nowPlayingAPs;
     public bool IsStandingOnPosition(Vector3 targetWorldPosition)
     {
-        return Vector3.Distance(model.transform.position, targetWorldPosition) <= 0.5f;
+        return Vector3.Distance(model.transform.position, targetWorldPosition) <= 0.25f;
     }
     private void Awake()
     {
@@ -48,8 +48,10 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
             if (!IsStandingOnPosition(nextActionPoint.transform.position))
             {
                 model.SetWalkState(NowAlertLevel == AlertLevel.Normal ? 1 : 2);
+                yield return new WaitUntil(() => model.NavMeshAgent.enabled);
                 model.SetNextPosition(nextActionPoint.transform.position);
                 yield return new WaitUntil(() => IsStandingOnPosition(nextActionPoint.transform.position));
+                model.SetPositionCorrectly(nextActionPoint.transform.position);
             }
 
             if (nextActionPoint.state != ActionPoint.StateKind.non)

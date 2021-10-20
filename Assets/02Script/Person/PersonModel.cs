@@ -10,6 +10,7 @@ public class PersonModel : MonoBehaviour
     Rigidbody Rigidbody { set; get; } = null;
     RagDollHandler ragDollHandler;
     public NavMeshAgent NavMeshAgent { set; get; }
+    public NavMeshObstacle navMeshObstacle { set; get; }
     public Renderer ModelRender { protected set; get; }
     public Transform threeDIconGroup;
     public enum ThreeD_IconList { Exclamation = 0, Question, SpeechBubble }
@@ -19,6 +20,9 @@ public class PersonModel : MonoBehaviour
         Rigidbody = GetComponent<Rigidbody>();
         ragDollHandler = GetComponent<RagDollHandler>();
         NavMeshAgent = GetComponent<NavMeshAgent>();
+        navMeshObstacle = GetComponent<NavMeshObstacle>();
+
+        navMeshObstacle.enabled = false;
 
         for (int i = 0; i < transform.childCount; i++)
         {
@@ -34,6 +38,25 @@ public class PersonModel : MonoBehaviour
     public void SetNextPosition(Vector3 worldPosition)
     {
         NavMeshAgent.SetDestination(worldPosition);
+    }
+
+    public void SetPositionCorrectly(Vector3 worldPosition)
+    {
+        StartCoroutine(DoSetPositionCorrectly(worldPosition));
+    }
+
+    IEnumerator DoSetPositionCorrectly(Vector3 worldPosition)
+    {
+        var t = 0f;
+        var maxT = 0.5f;
+        var beforePosition = transform.position;
+        while (t < maxT)
+        {
+            yield return new WaitForFixedUpdate();
+            t += Time.fixedDeltaTime;
+            var ratio = Mathf.InverseLerp(0, maxT, t);
+            transform.position = Vector3.Lerp(beforePosition, worldPosition, ratio);
+        }
     }
 
     private void FixedUpdate()
@@ -59,7 +82,8 @@ public class PersonModel : MonoBehaviour
 
     public void MakeLookAt(Vector3 dir)
     {
-        NavMeshAgent.isStopped = true;
+        if (NavMeshAgent.enabled)
+            NavMeshAgent.isStopped = true;
         StartCoroutine(DoLookAtWithSpeed(dir));
     }
     IEnumerator DoLookAtWithSpeed(Vector3 dir)
@@ -101,6 +125,7 @@ public class PersonModel : MonoBehaviour
     {
         animator.SetInteger("SittingLevel", sittingLevel);
         animator.SetInteger("WalkAroundLevel", 0);
+        MakeItFixed(true);
     }
 
     public void SetLookAroundAnimation()
@@ -140,6 +165,7 @@ public class PersonModel : MonoBehaviour
                 yield return StartCoroutine(DoNavMeshAgentWork());
             }
         }
+        MakeItFixed(false);
         NavMeshAgent.isStopped = false;
     }
 
@@ -159,5 +185,19 @@ public class PersonModel : MonoBehaviour
     {
         HideAllThreeD_Icon();
         threeDIconGroup.Find(iconName.ToString()).gameObject.SetActive(true);
+    }
+
+    void MakeItFixed(bool IsNeedToFixed)
+    {
+        if (IsNeedToFixed)
+        {
+            NavMeshAgent.enabled = !IsNeedToFixed;
+            navMeshObstacle.enabled = IsNeedToFixed;
+        }
+        else
+        {
+            navMeshObstacle.enabled = IsNeedToFixed;
+            NavMeshAgent.enabled = !IsNeedToFixed;
+        }
     }
 }
