@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -19,24 +20,20 @@ public class TimeCounter : MonoBehaviour
             print("there has two TimeCounter Exist");
         }
     }
-    public TimeCountData SetTimeCounting(float maxTime, float timeUnit, GameObject requestObj)
+    public TimeCountData SetTimeCounting(float maxTime, float timeUnit, Action function)
     {
-        var find = countingList.Find(x => x.requestObj.Equals(requestObj));
+        var find = countingList.Find(x => x.requestFunction.Equals(function));
         if (find != null)
         {
             find.nowTime = find.maxTime;
-            print("in TimeCount, the Key already exist, this key name is : " + requestObj.name);
+            print("in TimeCount, the Key already exist, this key name is : " + function);
         }
-        var timeData = new TimeCountData(maxTime, timeUnit, requestObj);
+        var timeData = new TimeCountData(maxTime, timeUnit, function);
         var processingTimeCounting = StartCoroutine(DoTimeCounting(timeData));
         timeData.processingTimeCounting = processingTimeCounting;
 
         countingList.Add(timeData);
         return timeData;
-    }
-    public TimeCountData GetTimeCountData(GameObject requestObj)
-    {
-        return countingList.Find(x => x.requestObj.Equals(requestObj));
     }
     IEnumerator DoTimeCounting(TimeCountData data)
     {
@@ -45,6 +42,9 @@ public class TimeCounter : MonoBehaviour
             yield return new WaitForSeconds(data.timeUnit);
             data.nowTime += data.timeUnit;
         }
+
+        data.requestFunction.Invoke();
+        RemoveProcessCounting(data);
         yield return null;
     }
     public void RemoveProcessCounting(TimeCountData data)
@@ -62,14 +62,14 @@ public class TimeCounter : MonoBehaviour
             get { return nowTime < maxTime; }
         }
 
-        public GameObject requestObj;
+        public Action requestFunction;
         public Coroutine processingTimeCounting;
 
-        public TimeCountData(float maxTime, float timeUnit, GameObject requestObj)
+        public TimeCountData(float maxTime, float timeUnit, Action requestFunc)
         {
             this.maxTime = maxTime;
             this.timeUnit = timeUnit;
-            this.requestObj = requestObj;
+            this.requestFunction = requestFunc;
         }
     }
 }

@@ -6,12 +6,17 @@ public class ActionPointHandler : MonoBehaviour
 {
     List<ActionPoint> actionPoints = new List<ActionPoint>();
     List<ActionPoint> originalAPs = new List<ActionPoint>();
-    public int GetActionCount { get { return actionPoints.Count; } }
+    public int GetActionCount { get { return transform.childCount; } }
     public int index = 0;
     public bool ShouldLoop = true;
     public bool IsReachedToEnd = false;
     Coroutine processingMemorizeStateUntillIsReachedEnd;
-    private void Awake()
+    public void Awake()
+    {
+        SetAPs();
+    }
+
+    public void SetAPs()
     {
         SetActionPoint();
         CheckLastAP();

@@ -9,15 +9,18 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
 {
     public PersonModel model { private set; get; }
 
+    [HideInInspector]
     public ActionPointHandler actionPointHandler;
     Transform NextPosition { set; get; } = null;
 
     public enum AliveState { Alive, Stun, Dead }
     public AliveState NowAliveState { protected set; get; } = AliveState.Alive;
 
-    public enum AlertLevel { Normal, Notice, Attack, Avoid }
+    public enum AlertLevel { Normal, Notice, Attack, Avoid, Non }
     public AlertLevel NowAlertLevel { protected set; get; } = AlertLevel.Normal;
+    AlertLevel BeforeAlertLevel { set; get; } = AlertLevel.Non;
     Coroutine nowPlayingAPs;
+
     public bool IsStandingOnPosition(Vector3 targetWorldPosition)
     {
         return Vector3.Distance(model.transform.position, targetWorldPosition) <= 0.25f;
@@ -77,22 +80,32 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
         model.GetHit();
     }
 
+
     public void OnContecting(ObjDetector detector, Collider collider)
     {
         var nowDist = Vector3.Distance(detector.transform.position, collider.transform.position);
-        if (nowDist < 3f)
+        ChangeAlertState(nowDist > 5f ? AlertLevel.Notice : AlertLevel.Attack);
+    }
+
+    void ChangeAlertState(AlertLevel level)
+    {
+        if (NowAlertLevel != BeforeAlertLevel)
         {
-            if (NowAlertLevel != AlertLevel.Attack)
-                NowAlertLevel = AlertLevel.Attack;
+            BeforeAlertLevel = NowAlertLevel;
+
+            if (BeforeAlertLevel == AlertLevel.Notice || BeforeAlertLevel == AlertLevel.Attack)
+            {
+                var timeData = TimeCounter.Instance.SetTimeCounting(5f, 1f, TimeOutForFinding);
+
+            }
+            model.SetAlertLevel(AlertLevel.Notice);
         }
     }
 
-    protected void MakeAlertLevel(AlertLevel alertLevel)
+
+    void TimeOutForFinding()
     {
-        switch (alertLevel)
-        {
-            case AlertLevel.Attack: break;
-        }
+
     }
 
     public void SetBelongTo(Material material)

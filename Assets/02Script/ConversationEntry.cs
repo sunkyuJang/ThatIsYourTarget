@@ -108,9 +108,8 @@ public class ConversationEntry : MonoBehaviour
             targetPersonList.Remove(nowPerson);
 
             nowPerson.model.ShowThreeD_Icon(PersonModel.ThreeD_IconList.SpeechBubble);
-            var timeData = TimeCounter.Instance.SetTimeCounting(Random.Range(1, 5), 1f, nowPerson.model.gameObject);
-            yield return new WaitUntil(() => !timeData.IsCounting);
-            TimeCounter.Instance.RemoveProcessCounting(timeData);
+            yield return new WaitForSeconds(Random.Range(1, 5));
+
             if (targetPersonList.Count > 1)
                 targetPersonList.Insert(Random.Range(1, targetPersonList.Count), nowPerson);
             else

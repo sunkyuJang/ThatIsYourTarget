@@ -35,6 +35,32 @@ public class PersonModel : MonoBehaviour
         }
     }
 
+    public void SetAlertLevel(Person.AlertLevel level)
+    {
+        ResetAnimatorWeight();
+        var index = -1;
+        switch (level)
+        {
+            case Person.AlertLevel.Normal:
+                {
+                    index = 0;
+                    break;
+                }
+            case Person.AlertLevel.Notice: index = 1; break;
+            case Person.AlertLevel.Attack: index = 2; break;
+            case Person.AlertLevel.Avoid: index = 3; break;
+        }
+        animator.SetLayerWeight(index, 1);
+    }
+
+    void ResetAnimatorWeight()
+    {
+        for (int i = 0; i < animator.layerCount; i++)
+        {
+            animator.SetLayerWeight(i, 0);
+        }
+    }
+
     public void SetNextPosition(Vector3 worldPosition)
     {
         NavMeshAgent.SetDestination(worldPosition);
@@ -123,6 +149,7 @@ public class PersonModel : MonoBehaviour
 
     public void SetSittingAnimation(int sittingLevel)
     {
+
         animator.SetInteger("SittingLevel", sittingLevel);
         animator.SetInteger("WalkAroundLevel", 0);
         MakeItFixed(true);

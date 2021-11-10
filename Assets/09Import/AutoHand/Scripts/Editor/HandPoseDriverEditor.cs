@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEditor.Experimental.SceneManagement;
+
 using UnityEngine;
 
 namespace Autohand {
@@ -20,7 +20,7 @@ namespace Autohand {
                 return;
             }
 
-            if(poseDriver.gameObject != null && PrefabStageUtility.GetPrefabStage(poseDriver.gameObject) == null){
+            if(poseDriver.gameObject != null && UnityEditor.SceneManagement.PrefabStageUtility.GetPrefabStage(poseDriver.gameObject) == null){
                 DrawDefaultInspector();
                 EditorUtility.SetDirty(poseDriver);
 

@@ -26,14 +26,17 @@ public class FovSensor : ObjDetector
 
         foreach (var hit in hits)
         {
-            if (hit.collider.gameObject.layer != LayerMask.NameToLayer("Hand")
-                && hit.collider.gameObject.layer != LayerMask.NameToLayer("HandPlayer")
-                && hit.collider.transform != transform)
+            if (!hit.transform.Equals(other.transform))
             {
-                var nowDist = Vector3.Distance(rayStartPoint, hit.point);
-                if (nowDist < headDist)
+                if (hit.collider.gameObject.layer != LayerMask.NameToLayer("Hand")
+                    && hit.collider.gameObject.layer != LayerMask.NameToLayer("HandPlayer")
+                    && hit.collider.transform != transform)
                 {
-                    return false;
+                    var nowDist = Vector3.Distance(rayStartPoint, hit.point);
+                    if (nowDist < headDist)
+                    {
+                        return false;
+                    }
                 }
             }
         }

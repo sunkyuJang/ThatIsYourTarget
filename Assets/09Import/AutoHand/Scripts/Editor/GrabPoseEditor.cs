@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEditor.Experimental.SceneManagement;
+
 using UnityEngine;
 
 
@@ -22,7 +22,7 @@ namespace Autohand {
                 return;
             }
 
-            if(grabbablePose.gameObject != null && PrefabStageUtility.GetPrefabStage(grabbablePose.gameObject) == null){
+            if(grabbablePose.gameObject != null && UnityEditor.SceneManagement.PrefabStageUtility.GetPrefabStage(grabbablePose.gameObject) == null){
                 DrawDefaultInspector();
                 EditorUtility.SetDirty(grabbablePose);
             

@@ -9,6 +9,7 @@ TagManager:
   - Person
   - PlayerHead
   - PersonModel
+  - Chair
   layers:
   - Default
   - TransparentFX
