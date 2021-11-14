@@ -14,6 +14,8 @@ public class PersonModel : MonoBehaviour
     public Renderer ModelRender { protected set; get; }
     public Transform threeDIconGroup;
     public enum ThreeD_IconList { Exclamation = 0, Question, SpeechBubble }
+    enum AniamtionLayoutName { BasicMotion, HoldingHandGun, HoldingAR }
+    public Coroutine WaitingForStateAnimationChange;
     private void Awake()
     {
         animator = GetComponent<Animator>();
@@ -37,22 +39,44 @@ public class PersonModel : MonoBehaviour
 
     public void SetAlertLevel(Person.AlertLevel level)
     {
-        ResetAnimatorWeight();
         var index = -1;
         switch (level)
         {
             case Person.AlertLevel.Normal:
                 {
+                    CheckAnimationBeforeGoingToNormalState();
                     index = 0;
                     break;
                 }
-            case Person.AlertLevel.Notice: index = 1; break;
+            case Person.AlertLevel.Notice: index = 1; animator.SetBool("PrepareAttack", true); animator.SetLayerWeight(index, 1); break;
             case Person.AlertLevel.Attack: index = 2; break;
             case Person.AlertLevel.Avoid: index = 3; break;
         }
-        animator.SetLayerWeight(index, 1);
+    }
+    void CheckAnimationBeforeGoingToNormalState()
+    {
+        if (animator.GetBool("PrepareAttack"))
+        {
+            StartCoroutine(DoWaitingForStateAnimationChange());
+        }
     }
 
+    IEnumerator DoWaitingForStateAnimationChange()
+    {
+        animator.SetBool("PrepareAttack", false);
+
+        for (int i = 1; i < animator.layerCount; i++)
+        {
+            if (animator.GetLayerWeight(i) == 1)
+            {
+                yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(i).IsName("BasicMotions@Idle01"));
+                yield return new WaitForSeconds(1f);
+                animator.SetLayerWeight(i, 0);
+                break;
+            }
+        }
+        yield return null;
+    }
     void ResetAnimatorWeight()
     {
         for (int i = 0; i < animator.layerCount; i++)

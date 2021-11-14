@@ -10,6 +10,7 @@ public class ActionPoint : MonoBehaviour
     public StateKind state = 0;
     protected int beforeState = -1;
     public float during = 0;
+    float originalDuring = 0;
     [Range(1, 4)]
     public int SittingNum = 0;
 
@@ -19,6 +20,15 @@ public class ActionPoint : MonoBehaviour
         if (!IsDoing)
             StartCoroutine(DoTimeCount());
     }
+
+    public void BackUpTime(float insteadTime)
+    {
+        originalDuring = during;
+        during = insteadTime;
+    }
+
+    public void RecoverTime() => during = originalDuring;
+
     IEnumerator DoTimeCount()
     {
         IsDoing = true;

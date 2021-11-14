@@ -35,17 +35,31 @@ public class APHManager : MonoBehaviour
         }
     }
 
-    public ActionPointHandler GetAPHForNotice(Vector3 targetPosition)
+    public ActionPointHandler GetAPHForNotice(Vector3 targetPosition, Vector3 positionFromRequester)
     {
         var ap = APPooler.GetNewOne<ActionPoint>();
         ap.transform.position = targetPosition;
+        ap.transform.LookAt(targetPosition - positionFromRequester);
+        ap.state = ActionPoint.StateKind.non;
+        ap.during = 0f;
+
+        ap = APPooler.GetNewOne<ActionPoint>();
+        ap.transform.position = targetPosition;
+        ap.transform.LookAt(targetPosition - positionFromRequester);
         ap.state = ActionPoint.StateKind.lookAround;
+        ap.during = 1.5f;
 
         var aph = APHPooler.GetNewOne<ActionPointHandler>();
-        aph.ShouldLoop = true;
+        aph.ShouldLoop = false;
         aph.SetAPs();
         ap.transform.SetParent(aph.transform);
 
         return aph;
+    }
+
+    public void ReturnAPH(ActionPointHandler handler)
+    {
+        handler.actionPoints.ForEach(x => APPooler.ReturnTargetObj(x.gameObject));
+        APHPooler.ReturnTargetObj(handler.gameObject);
     }
 }

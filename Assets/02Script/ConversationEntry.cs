@@ -6,6 +6,8 @@ public class ConversationEntry : MonoBehaviour
 {
     public List<Person> targetPersonList = new List<Person>();
     List<ActionPointHandler> APHList = new List<ActionPointHandler>();
+    // List<ActionPoint> firstAPs = new List<ActionPoint>();
+    //    List<float> firstDuringTime = new List<float>();
     public bool isStartingByForce;
     public bool isTalkingByVoice;
     public bool isRandomTarget;
@@ -18,6 +20,12 @@ public class ConversationEntry : MonoBehaviour
         {
             APHList.Add(APGroup.GetChild(i).GetComponent<ActionPointHandler>());
         }
+
+    }
+
+    private void Start()
+    {
+        APHList.ForEach(x => x.WaitForStartToNext(x.actionPoints.Count - 1, true));
     }
     private void OnTriggerEnter(Collider other)
     {
@@ -62,6 +70,7 @@ public class ConversationEntry : MonoBehaviour
             var nowGroup = APHList[i];
             if (target.gameObject.name == nowGroup.gameObject.name)
             {
+                nowGroup.WaitForStartToNext(0, true);
                 target.ChangeAPHandler(nowGroup);
             }
         }
@@ -94,7 +103,7 @@ public class ConversationEntry : MonoBehaviour
     {
         for (int i = 0; i < APHList.Count; i++)
         {
-            APHList[i].WaitForStartToNext(false);
+            APHList[i].WaitForStartToNext(0, false);
         }
         StartCoroutine(DoStartTalk());
     }
@@ -160,7 +169,6 @@ public class ConversationEntry : MonoBehaviour
         for (int i = 0; i < APHList.Count; i++)
         {
             APHList[i].IsReachedToEnd = false;
-            APHList[i].WaitForStartToNext(true);
             APHList[i].ResetIndex();
         }
 

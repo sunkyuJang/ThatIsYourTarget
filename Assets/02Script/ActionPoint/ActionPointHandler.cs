@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class ActionPointHandler : MonoBehaviour
 {
-    List<ActionPoint> actionPoints = new List<ActionPoint>();
-    List<ActionPoint> originalAPs = new List<ActionPoint>();
+    public List<ActionPoint> actionPoints { private set; get; } = new List<ActionPoint>();
+    List<ActionPoint> originalAPs { set; get; } = new List<ActionPoint>();
     public int GetActionCount { get { return transform.childCount; } }
     public int index = 0;
     public bool ShouldLoop = true;
@@ -19,7 +19,7 @@ public class ActionPointHandler : MonoBehaviour
     public void SetAPs()
     {
         SetActionPoint();
-        CheckLastAP();
+        //CheckLastAP();
     }
 
     void SetActionPoint()
@@ -79,9 +79,13 @@ public class ActionPointHandler : MonoBehaviour
     {
         get { return actionPoints[actionPoints.Count - 1]; }
     }
-    public void WaitForStartToNext(bool ShouldWait)
+    public void WaitForStartToNext(int index, bool ShouldWait)
     {
-        actionPoints[0].during = ShouldWait ? -1 : 0;
+        print(index + "//" + actionPoints.Count);
+        if (ShouldWait)
+            actionPoints[index].BackUpTime(-1);
+        else
+            actionPoints[index].RecoverTime();
     }
 
     public void ResetIndex() => index = 0;
