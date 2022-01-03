@@ -38,21 +38,17 @@ public class APHManager : MonoBehaviour
     public ActionPointHandler GetAPHForNotice(Vector3 targetPosition, Vector3 positionFromRequester)
     {
         var ap = APPooler.GetNewOne<ActionPoint>();
-        ap.transform.position = targetPosition;
-        ap.transform.LookAt(targetPosition - positionFromRequester);
-        ap.state = ActionPoint.StateKind.non;
-        ap.during = 0f;
+        var aph = APHPooler.GetNewOne<ActionPointHandler>();
 
-        ap = APPooler.GetNewOne<ActionPoint>();
         ap.transform.position = targetPosition;
         ap.transform.LookAt(targetPosition - positionFromRequester);
         ap.state = ActionPoint.StateKind.lookAround;
-        ap.during = 1.5f;
+        ap.during = 2f;
+        ap.transform.SetParent(aph.transform);
 
-        var aph = APHPooler.GetNewOne<ActionPointHandler>();
         aph.ShouldLoop = false;
         aph.SetAPs();
-        ap.transform.SetParent(aph.transform);
+        aph.comingFromAPH = ReturnAPH;
 
         return aph;
     }

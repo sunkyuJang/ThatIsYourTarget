@@ -17,8 +17,8 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
     public enum AliveState { Alive, Stun, Dead }
     public AliveState NowAliveState { protected set; get; } = AliveState.Alive;
 
-    public enum AlertLevel { Normal, Notice, Attack, Avoid, Non }
-    AlertLevel BeforeAlertLevel { set; get; } = AlertLevel.Non;
+    public enum AlertLevel { Normal, Notice, Warn, Attack, Avoid, Non }
+    public AlertLevel BeforeAlertLevel { private set; get; } = AlertLevel.Non;
     Coroutine nowPlayingAPs;
     Coroutine DoStateProcess;
     public bool IsStandingOnPosition(Vector3 targetWorldPosition)
@@ -76,28 +76,37 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
             yield return new WaitForFixedUpdate();
         }
     }
+
     public void GetHit()
     {
         model.GetHit();
     }
 
-
     public void OnContecting(ObjDetector detector, Collider collider)
     {
+        //contecting Person
         var nowDist = Vector3.Distance(detector.transform.position, collider.transform.position);
-        ChangeAlertState(nowDist > 5f ? AlertLevel.Notice : AlertLevel.Attack, collider.transform.position);
+        ChangeAlertState(AlertLevel.Notice, collider);
     }
 
-    void ChangeAlertState(AlertLevel level, Vector3 targetPoisition)
+    void ChangeAlertState(AlertLevel level, Collider target)
     {
         if (BeforeAlertLevel != level)
         {
             BeforeAlertLevel = level;
 
-            if (BeforeAlertLevel == AlertLevel.Notice || BeforeAlertLevel == AlertLevel.Attack)
-            {
-                var timeData = TimeCounter.Instance.SetTimeCounting(5f, 1f, TimeOutForFinding);
+            if (DoStateProcess != null)
+                StopCoroutine(DoStateProcess);
 
+            if (BeforeAlertLevel == AlertLevel.Notice
+                || BeforeAlertLevel == AlertLevel.Warn
+                || BeforeAlertLevel == AlertLevel.Attack)
+            {
+                if (actionPointHandler.comingFromAPH != null)
+                    actionPointHandler.comingFromAPH(actionPointHandler);
+
+
+                StartCoroutine(DoNoticeState(target));
                 model.SetAlertLevel(AlertLevel.Notice);
             }
             else
@@ -108,18 +117,28 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
         }
     }
 
+    bool IsAPHPerentOfThisPerson()
+    {
+        return originalAPH.Equals(actionPointHandler);
+    }
+
     void TimeOutForFinding()
     {
-        ChangeAlertState(AlertLevel.Normal, Vector3.zero);
+        ChangeAlertState(AlertLevel.Normal, null);
     }
 
     IEnumerator DoNoticeState(Collider target)
     {
         var aph = APHManager.Instance.GetAPHForNotice(target.transform.position, model.transform.position);
         ChangeAPHandler(aph);
-        yield return new WaitUntil(() => aph.IsReachedToEnd);
+        print(true);
+        yield return new WaitUntil(() => model.animator.GetCurrentAnimatorStateInfo(0).IsName("Villager@Idle01"));
 
+        //var timeData = TimeCounter.Instance.SetTimeCounting(5f, 1f, TimeOutForFinding);
+        yield return new WaitUntil(() => !model.animator.GetCurrentAnimatorStateInfo(0).IsName("Villager@Idle01"));
+        print(false);
 
+        ChangeAlertState(AlertLevel.Normal, null);
         yield return null;
     }
 
@@ -130,7 +149,9 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
 
     public void ChangeAPHandler(ActionPointHandler APHandler)
     {
-        StopCoroutine(nowPlayingAPs);
+        if (nowPlayingAPs != null)
+            StopCoroutine(nowPlayingAPs);
+
         if (APHandler == null)
             actionPointHandler = originalAPH;
         else

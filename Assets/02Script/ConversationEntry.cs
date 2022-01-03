@@ -143,7 +143,11 @@ public class ConversationEntry : MonoBehaviour
                 for (int i = 0; i < targetPersonList.Count; i++)
                 {
                     var p = targetPersonList[i];
-                    if (!p.IsStandingOnPosition(p.actionPointHandler.GetLastActionPoint.transform.position))
+                    if (p.BeforeAlertLevel == Person.AlertLevel.Notice)
+                    {
+
+                    }
+                    else if (!p.IsStandingOnPosition(p.actionPointHandler.GetLastActionPoint.transform.position))
                     {
                         canPass = false;
                         break;

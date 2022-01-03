@@ -6,7 +6,7 @@ using UnityEngine.AI;
 public class PersonModel : MonoBehaviour
 {
     Person person;
-    Animator animator;
+    public Animator animator { private set; get; }
     Rigidbody Rigidbody { set; get; } = null;
     RagDollHandler ragDollHandler;
     public NavMeshAgent NavMeshAgent { set; get; }
@@ -181,6 +181,7 @@ public class PersonModel : MonoBehaviour
 
     public void SetLookAroundAnimation()
     {
+        print("isIN");
         animator.SetBool("LookAround", true);
         animator.SetInteger("WalkAroundLevel", 0);
     }

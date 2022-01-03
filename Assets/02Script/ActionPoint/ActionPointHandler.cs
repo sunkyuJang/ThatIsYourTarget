@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,6 +12,7 @@ public class ActionPointHandler : MonoBehaviour
     public bool ShouldLoop = true;
     public bool IsReachedToEnd = false;
     Coroutine processingMemorizeStateUntillIsReachedEnd;
+    public System.Action<ActionPointHandler> comingFromAPH = null;
     public void Awake()
     {
         SetAPs();
@@ -19,7 +21,6 @@ public class ActionPointHandler : MonoBehaviour
     public void SetAPs()
     {
         SetActionPoint();
-        //CheckLastAP();
     }
 
     void SetActionPoint()
@@ -29,6 +30,7 @@ public class ActionPointHandler : MonoBehaviour
             actionPoints.Add(transform.GetChild(i).GetComponent<ActionPoint>());
         }
         originalAPs = actionPoints;
+        ResetIndex();
     }
 
     void CheckLastAP()
@@ -81,7 +83,6 @@ public class ActionPointHandler : MonoBehaviour
     }
     public void WaitForStartToNext(int index, bool ShouldWait)
     {
-        print(index + "//" + actionPoints.Count);
         if (ShouldWait)
             actionPoints[index].BackUpTime(-1);
         else
