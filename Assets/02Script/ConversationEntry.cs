@@ -72,6 +72,7 @@ public class ConversationEntry : MonoBehaviour
             {
                 nowGroup.WaitForStartToNext(0, true);
                 target.ChangeAPHandler(nowGroup);
+                target.conversationEntry = this;
             }
         }
     }
@@ -145,7 +146,8 @@ public class ConversationEntry : MonoBehaviour
                     var p = targetPersonList[i];
                     if (p.BeforeAlertLevel == Person.AlertLevel.Notice)
                     {
-
+                        canPass = true;
+                        break;
                     }
                     else if (!p.IsStandingOnPosition(p.actionPointHandler.GetLastActionPoint.transform.position))
                     {

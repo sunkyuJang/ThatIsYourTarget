@@ -21,6 +21,8 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
     public AlertLevel BeforeAlertLevel { private set; get; } = AlertLevel.Non;
     Coroutine nowPlayingAPs;
     Coroutine DoStateProcess;
+
+    public ConversationEntry conversationEntry = null;
     public bool IsStandingOnPosition(Vector3 targetWorldPosition)
     {
         return Vector3.Distance(model.transform.position, targetWorldPosition) <= 0.25f;
