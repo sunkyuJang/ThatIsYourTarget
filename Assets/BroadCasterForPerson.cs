@@ -6,6 +6,7 @@ public class BroadCasterForPerson : MonoBehaviour
 {
     [HideInInspector]
     public static BroadCasterForPerson instance;
+    public ObjSearcher objSearcher;
 
     private void Awake()
     {
@@ -19,24 +20,34 @@ public class BroadCasterForPerson : MonoBehaviour
         }
     }
 
-    public void BroadCastWithNotice(Vector3 centerWorldPosition, float radius, float absoluteDist)
+    public void BroadCastWithNotice(Vector3 centerWorldPosition, float radius, float absoluteRadius)
     {
-        var touchedPersonGroup = GetPersonInSoundCast(centerWorldPosition, radius, absoluteDist);
+        if (absoluteRadius > radius)
+            Debug.LogError("absoluteRadius should be smaller than radius");
 
+        SetObjSearcher(centerWorldPosition, radius);
+        var touchedPersonGroup = GetPersonInSoundCast(absoluteRadius);
     }
 
-    List<List<RaycastHit>> GetPersonInSoundCast(Vector3 centerWorldPosition, float radius, float absoluteDist)
+    void SetObjSearcher(Vector3 centerPosition, float radius)
     {
-        var touchedPersons = Physics.SphereCastAll(centerWorldPosition, radius, Vector3.zero, 0f, 1 << LayerMask.NameToLayer("Person"));
+        objSearcher.transform.position = centerPosition;
+        objSearcher.castingRadius = radius;
+        objSearcher.targetTags.Add("PersonModel");
+    }
+    List<List<Transform>> GetPersonInSoundCast(float absoluteRadius)
+    {
+        var centerWorldPosition = objSearcher.transform.position;
+        var touchedPersons = objSearcher.GetMultipleTarget();//Physics.SphereCastAll(centerWorldPosition, radius, Vector3.zero, 0f, 1 << LayerMask.NameToLayer("Person"));
 
         var yUnit = 1f;
-        var groupList = new List<List<RaycastHit>>();
+        var groupList = new List<List<Transform>>();
 
-        for (int i = 0; i < touchedPersons.Length; i++)
+        for (int i = 0; i < touchedPersons.Count; i++)
         {
-            var p = touchedPersons[i];
-            var pPosition = p.transform.position;
-            if (Vector3.Distance(centerWorldPosition, pPosition) < absoluteDist)
+            var p = touchedPersons[i].transform;
+            var pPosition = p.position;
+            if (Vector3.Distance(centerWorldPosition, pPosition) < absoluteRadius)
             {
                 //Go To Alert.Attack All of in List
             }
@@ -45,7 +56,7 @@ public class BroadCasterForPerson : MonoBehaviour
                 var dir = pPosition - centerWorldPosition;
                 var other = Physics.RaycastAll(centerWorldPosition, dir, Vector3.Distance(centerWorldPosition, p.transform.position));
 
-                if (CanSkipObstacle(other, p, centerWorldPosition, absoluteDist))
+                if (CanSkipObstacle(other, p, centerWorldPosition, absoluteRadius))
                 {
                     var positionY = p.transform.position.y;
                     if (positionY > positionY + yUnit)
@@ -61,13 +72,13 @@ public class BroadCasterForPerson : MonoBehaviour
         return groupList;
     }
 
-    bool CanSkipObstacle(RaycastHit[] hits, RaycastHit p, Vector3 centerWorldPosition, float absoluteDist)
+    bool CanSkipObstacle(RaycastHit[] hits, Transform p, Vector3 centerWorldPosition, float absoluteDist)
     {
         var counter = 0;
         for (int j = 0; j < hits.Length; j++)
         {
             // skip it self && dist must be longer than absoluteDist 
-            if (hits[j].transform != p.transform && Vector3.Distance(hits[j].transform.position, centerWorldPosition) > absoluteDist)
+            if (hits[j].transform != p && Vector3.Distance(hits[j].transform.position, centerWorldPosition) > absoluteDist)
             {
                 counter++;
                 if (counter > 2)

@@ -4,11 +4,17 @@ using UnityEngine;
 
 public class ObjSearcher : MonoBehaviour
 {
-    public GameObject connectedObj;
     public List<string> targetTags = new List<string>();
     public bool shouldFindByName = false;
 
     public float castingRadius = 0.1f;
+    public Color castColor = Color.red;
+    List<ObjSearcherRecoardUnit> drawTimes = new List<ObjSearcherRecoardUnit>();
+    public List<Collider> GetMultipleTargetWithMarking(float markingTime)
+    {
+        drawTimes.Add(new ObjSearcherRecoardUnit(transform.position, castingRadius, markingTime));
+        return GetMultipleTarget();
+    }
     public List<Collider> GetMultipleTarget()
     {
         var hits = Physics.OverlapSphere(transform.position, castingRadius);
@@ -68,7 +74,38 @@ public class ObjSearcher : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, castingRadius);
+        Gizmos.color = castColor;
+        if (drawTimes.Count == 0)
+            Gizmos.DrawWireSphere(transform.position, castingRadius);
+        else
+        {
+            for (int i = 0; i < drawTimes.Count; i++)
+            {
+                var nowUnit = drawTimes[i];
+                if (nowUnit.time == 0)
+                {
+                    drawTimes.RemoveAt(i--);
+                    continue;
+                }
+                else
+                {
+                    Gizmos.DrawSphere(nowUnit.position, nowUnit.radius);
+                    nowUnit.time -= Time.deltaTime;
+                }
+            }
+        }
+    }
+
+    class ObjSearcherRecoardUnit
+    {
+        public Vector3 position;
+        public float radius;
+        public float time;
+        public ObjSearcherRecoardUnit(Vector3 position, float radius, float time)
+        {
+            this.position = position;
+            this.radius = radius;
+            this.time = time;
+        }
     }
 }
