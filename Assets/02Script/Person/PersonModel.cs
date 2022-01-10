@@ -5,7 +5,7 @@ using UnityEngine.AI;
 
 public class PersonModel : MonoBehaviour
 {
-    Person person;
+    public Person Person { set; get; }
     public Animator animator { private set; get; }
     Rigidbody Rigidbody { set; get; } = null;
     RagDollHandler ragDollHandler;

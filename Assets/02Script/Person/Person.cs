@@ -17,7 +17,7 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
     public enum AliveState { Alive, Stun, Dead }
     public AliveState NowAliveState { protected set; get; } = AliveState.Alive;
 
-    public enum AlertLevel { Normal, Notice, Warn, Attack, Avoid, Non }
+    public enum AlertLevel { Normal, Notice, Warn, Wait, Attack, Avoid, Non }
     public AlertLevel BeforeAlertLevel { private set; get; } = AlertLevel.Non;
     Coroutine nowPlayingAPs;
     Coroutine DoStateProcess;
@@ -30,6 +30,7 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
     private void Awake()
     {
         model = transform.Find("Model").GetComponent<PersonModel>();
+        model.Person = this;
 
         originalAPH = transform.Find("ActionPointHandler").GetComponent<ActionPointHandler>();
         actionPointHandler = originalAPH;
@@ -88,10 +89,10 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
     {
         //contecting Person
         var nowDist = Vector3.Distance(detector.transform.position, collider.transform.position);
-        ChangeAlertState(AlertLevel.Notice, collider);
+        ChangeAlertState(AlertLevel.Notice, collider.transform.position);
     }
 
-    void ChangeAlertState(AlertLevel level, Collider target)
+    public void ChangeAlertState(AlertLevel level, Vector3 targetPosition)
     {
         if (BeforeAlertLevel != level)
         {
@@ -108,7 +109,7 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
                     actionPointHandler.comingFromAPH(actionPointHandler);
 
 
-                StartCoroutine(DoNoticeState(target));
+                StartCoroutine(DoNoticeState(targetPosition));
                 model.SetAlertLevel(AlertLevel.Notice);
             }
             else
@@ -126,12 +127,12 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
 
     void TimeOutForFinding()
     {
-        ChangeAlertState(AlertLevel.Normal, null);
+        ChangeAlertState(AlertLevel.Normal, Vector3.zero);
     }
 
-    IEnumerator DoNoticeState(Collider target)
+    IEnumerator DoNoticeState(Vector3 targetPosition)
     {
-        var aph = APHManager.Instance.GetAPHForNotice(target.transform.position, model.transform.position);
+        var aph = APHManager.Instance.GetAPHForNotice(targetPosition, model.transform.position);
         ChangeAPHandler(aph);
         print(true);
         yield return new WaitUntil(() => model.animator.GetCurrentAnimatorStateInfo(0).IsName("Villager@Idle01"));
@@ -140,7 +141,7 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
         yield return new WaitUntil(() => !model.animator.GetCurrentAnimatorStateInfo(0).IsName("Villager@Idle01"));
         print(false);
 
-        ChangeAlertState(AlertLevel.Normal, null);
+        ChangeAlertState(AlertLevel.Normal, Vector3.zero);
         yield return null;
     }
 
