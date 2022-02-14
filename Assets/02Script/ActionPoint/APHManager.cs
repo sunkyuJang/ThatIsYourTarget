@@ -41,14 +41,14 @@ public class APHManager : MonoBehaviour
         var aph = APHPooler.GetNewOne<ActionPointHandler>();
 
         ap.transform.position = targetPosition;
-        ap.transform.LookAt(targetPosition - positionFromRequester);
+        ap.MakeLookAtTo(positionFromRequester, targetPosition);
         ap.state = ActionPoint.StateKind.lookAround;
         ap.during = 2f;
         ap.transform.SetParent(aph.transform);
 
         aph.ShouldLoop = false;
         aph.SetAPs();
-        aph.comingFromAPH = ReturnAPH;
+        aph.comingFromOther = ReturnAPH;
 
         return aph;
     }

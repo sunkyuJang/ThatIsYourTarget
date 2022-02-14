@@ -12,7 +12,7 @@ public class ActionPointHandler : MonoBehaviour
     public bool ShouldLoop = true;
     public bool IsReachedToEnd = false;
     Coroutine processingMemorizeStateUntillIsReachedEnd;
-    public System.Action<ActionPointHandler> comingFromAPH = null;
+    public System.Action<ActionPointHandler> comingFromOther = null;
     public void Awake()
     {
         SetAPs();
@@ -90,4 +90,10 @@ public class ActionPointHandler : MonoBehaviour
     }
 
     public void ResetIndex() => index = 0;
+
+    public void ChangeAPPositionAndLookAt(int index, Vector3 from, Vector3 to)
+    {
+        actionPoints[index].ChangePosition(to);
+        actionPoints[index].MakeLookAtTo(from, to);
+    }
 }

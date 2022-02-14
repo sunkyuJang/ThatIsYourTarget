@@ -13,7 +13,6 @@ public class ActionPoint : MonoBehaviour
     float originalDuring = 0;
     [Range(1, 4)]
     public int SittingNum = 0;
-
     public bool IsDoing { protected set; get; } = false;
     public void StartTimeCount()
     {
@@ -56,6 +55,8 @@ public class ActionPoint : MonoBehaviour
     {
         return (transform.parent.childCount - 1) == transform.GetSiblingIndex();
     }
+    public void ChangePosition(Vector3 position) => transform.position = position;
+    public void MakeLookAtTo(Vector3 from, Vector3 to) => transform.LookAt(Vector3.Normalize(from - to));
 }
 
 [CustomEditor(typeof(ActionPoint)), CanEditMultipleObjects]
