@@ -25,7 +25,7 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
     Coroutine DoStateProcess;
 
     [HideInInspector]
-    public ConversationEntry conversationEntry = null;
+    //public ConversationEntry conversationEntry = null;
     public bool IsStandingOnPosition(Vector3 targetWorldPosition)
     {
         return Vector3.Distance(model.transform.position, targetWorldPosition) <= 0.25f;
@@ -51,33 +51,33 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
             StopNowPlayingAPH();
         }
 
-        nowPlayingAPH = StartCoroutine(DoAction());
+        //nowPlayingAPH = StartCoroutine(DoAction());
     }
 
     IEnumerator DoAction()
     {
         while (true)
         {
-            var nextActionPoint = actionPointHandler.GetNextActionPoint();
+            var nextActionPoint = actionPointHandler.GetNextActionPoint() as PersonActionPoint;
 
             if (!IsStandingOnPosition(nextActionPoint.transform.position))
             {
                 yield return StartCoroutine(DoMove(nextActionPoint));
             }
 
-            if (nextActionPoint.state != ActionPoint.StateKind.non)
+            if (nextActionPoint.state != (int)PersonActionPoint.StateKind.non)
             {
                 model.MakeLookAt(nextActionPoint.transform.forward);
 
                 switch (nextActionPoint.state)
                 {
-                    case ActionPoint.StateKind.sitting: model.SetSittingAnimation(nextActionPoint.SittingNum); break;
-                    case ActionPoint.StateKind.lookAround: model.SetLookAroundAnimation(); break;
-                    case ActionPoint.StateKind.idle: model.SetIdleAnimation(); break;
+                    case (int)PersonActionPoint.StateKind.sitting: model.SetSittingAnimation(nextActionPoint.SittingNum); break;
+                    case (int)PersonActionPoint.StateKind.lookAround: model.SetLookAroundAnimation(); break;
+                    case (int)PersonActionPoint.StateKind.standing: model.SetIdleAnimation(); break;
                 }
 
-                nextActionPoint.StartTimeCount();
-                yield return new WaitUntil(() => !nextActionPoint.IsDoing);
+                //nextActionPoint.StartTimeCount();
+                //yield return new WaitUntil(() => !nextActionPoint.IsDoing);
             }
 
             yield return new WaitForFixedUpdate();
@@ -114,7 +114,6 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
 
     public void ChangeAlertState(AlertLevel level, Vector3 targetPosition)
     {
-        print(level + "//" + BeforeAlertLevel);
         if (BeforeAlertLevel == level)
         {
             //Action<Vector3> action;
@@ -165,8 +164,8 @@ public class Person : MonoBehaviour, IObjDetectorConnector_OnContecting
     {
         model.SetAlertLevel(AlertLevel.Notice);
 
-        var aph = APHManager.Instance.GetAPHForNotice(targetPosition, model.transform.position);
-        ChangeAPHandler(aph);
+        //var aph = APHManager.Instance.GetAPHForNotice(targetPosition, model.transform.position);
+        //ChangeAPHandler(aph);
     }
 
     void IntoNormalState()

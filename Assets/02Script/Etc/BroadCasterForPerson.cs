@@ -50,7 +50,7 @@ public class BroadCasterForPerson : MonoBehaviour
     {
         var mostClosetDist = 1000f;
         PersonModel mostCloseOne = null;
-        List<ConversationEntry> conversationEntries = new List<ConversationEntry>();
+        //List<ConversationEntry> conversationEntries = new List<ConversationEntry>();
         for (int i = 0; i < personList.Count; i++)
         {
             var nowTarget = personList[i];
@@ -82,7 +82,7 @@ public class BroadCasterForPerson : MonoBehaviour
         var yUnit = 1f;
         var groupList = new List<List<PersonModel>>();
 
-        List<ConversationEntry> conversationEntries = new List<ConversationEntry>();
+        //List<ConversationEntry> conversationEntries = new List<ConversationEntry>();
 
         for (int i = 0; i < touchedPersons.Count; i++)
         {

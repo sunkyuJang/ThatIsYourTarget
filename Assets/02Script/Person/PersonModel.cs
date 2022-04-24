@@ -173,7 +173,6 @@ public class PersonModel : MonoBehaviour
 
     public void SetSittingAnimation(int sittingLevel)
     {
-
         animator.SetInteger("SittingLevel", sittingLevel);
         animator.SetInteger("WalkAroundLevel", 0);
         MakeItFixed(true);
@@ -181,7 +180,6 @@ public class PersonModel : MonoBehaviour
 
     public void SetLookAroundAnimation()
     {
-        print("isIN");
         animator.SetBool("LookAround", true);
         animator.SetInteger("WalkAroundLevel", 0);
     }

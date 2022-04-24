@@ -35,22 +35,39 @@ public class APHManager : MonoBehaviour
         }
     }
 
-    public ActionPointHandler GetAPHForNotice(Vector3 targetPosition, Vector3 positionFromRequester)
+    public ActionPointHandler GetCopyAPH(ActionPointHandler originalAPH)
     {
-        var ap = APPooler.GetNewOne<ActionPoint>();
-        var aph = APHPooler.GetNewOne<ActionPointHandler>();
-
-        ap.transform.position = targetPosition;
-        ap.MakeLookAtTo(positionFromRequester, targetPosition);
-        ap.state = ActionPoint.StateKind.lookAround;
-        ap.during = 2f;
-        ap.transform.SetParent(aph.transform);
-
-        aph.ShouldLoop = false;
-        aph.SetAPs();
-        aph.comingFromOther = ReturnAPH;
+        var aph = GetCoiedAPH(originalAPH);
+        var copiedAPs = GetCopiedAP(aph, originalAPH.actionPoints);
+        aph.actionPoints = copiedAPs;
 
         return aph;
+    }
+
+    ActionPointHandler GetCoiedAPH(ActionPointHandler originalAPH)
+    {
+        var coiedAPH = APHPooler.GetNewOne<ActionPointHandler>();
+        ObjPooler.CopyComponentValue(originalAPH.transform, coiedAPH.transform);
+        ObjPooler.CopyComponentValue(originalAPH, coiedAPH);
+        return coiedAPH;
+    }
+
+    List<ActionPoint> GetCopiedAP(ActionPointHandler originalAPH, List<ActionPoint> originalAPs)
+    {
+        var copiedAPs = new List<ActionPoint>();
+        for (int i = 0; i < originalAPs.Count; i++)
+        {
+            var originalAP = originalAPs[i];
+
+            var ap = APPooler.GetNewOne<ActionPoint>();
+            ObjPooler.CopyComponentValue(originalAP.transform, ap.transform);
+            ObjPooler.CopyComponentValue(originalAP, ap);
+
+            ap.transform.SetParent(originalAPH.transform);
+
+            copiedAPs.Add(ap);
+        }
+        return copiedAPs;
     }
 
     public void ReturnAPH(ActionPointHandler handler)
@@ -58,4 +75,22 @@ public class APHManager : MonoBehaviour
         handler.actionPoints.ForEach(x => APPooler.ReturnTargetObj(x.gameObject));
         APHPooler.ReturnTargetObj(handler.gameObject);
     }
+
+    // public ActionPointHandler GetAPHForNotice(Vector3 targetPosition, Vector3 positionFromRequester)
+    // {
+    //     var ap = APPooler.GetNewOne<ActionPoint>();
+    //     var aph = APHPooler.GetNewOne<ActionPointHandler>();
+
+    //     ap.transform.position = targetPosition;
+    //     ap.MakeLookAtTo(positionFromRequester, targetPosition);
+    //     ap.state = ActionPoint.StateKind.lookAround;
+    //     ap.during = 2f;
+    //     ap.transform.SetParent(aph.transform);
+
+    //     aph.ShouldLoop = false;
+    //     aph.SetAPs();
+    //     aph.comingFromOther = ReturnAPH;
+
+    //     return aph;
+    // }
 }

@@ -5,7 +5,14 @@ using UnityEngine;
 public class ObjPooler : MonoBehaviour
 {
     public GameObject TargetObj;
-    Queue<GameObject> instantiatedObj = new Queue<GameObject>();
+    protected Queue<GameObject> instantiatedObj = new Queue<GameObject>();
+    public static void CopyComponentValue(Component from, Component to)
+    {
+        foreach (var field in to.GetType().GetFields())
+        {
+            field.SetValue(from, field.GetValue(to));
+        }
+    }
 
     public void MakeNewOne()
     {
