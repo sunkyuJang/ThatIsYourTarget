@@ -7,7 +7,7 @@ public class ActionPointHandler : MonoBehaviour
 {
     public List<ActionPoint> actionPoints { set; get; } = new List<ActionPoint>();
     public int GetActionCount { get { return transform.childCount; } }
-    public int index = 0;
+    public int index = -1;
     public bool ShouldLoop = true;
     public bool IsReachedToEnd = false;
     public System.Action<ActionPointHandler> comingFromOther = null;
@@ -19,12 +19,6 @@ public class ActionPointHandler : MonoBehaviour
     public void SetAPs()
     {
         SetActionPoint();
-    }
-
-    public ActionPointHandler GetCopy(ActionPointHandler originalAPH, List<ActionPoint> APs)
-    {
-        var APH = new ActionPointHandler();
-        return APH;
     }
 
     void SetActionPoint()
@@ -40,6 +34,7 @@ public class ActionPointHandler : MonoBehaviour
 
     public ActionPoint GetNextActionPoint()
     {
+        ++index;
         if (ShouldLoop)
             index %= GetActionCount;
         else
@@ -51,7 +46,7 @@ public class ActionPointHandler : MonoBehaviour
             }
         }
 
-        return GetActionPoint(index++);
+        return GetActionPoint(index);
     }
 
     public ActionPoint GetActionPoint(int index)

@@ -7,11 +7,12 @@ using UnityEditor;
 [System.Serializable]
 public class ActionPoint : MonoBehaviour
 {
-    public virtual bool HasNoAction { get { return true; } }
-
-    public int state = -1;
-
+    public virtual bool HasAction { get { return true; } }
+    [HideInInspector]
+    public int state = 0;
+    [HideInInspector]
     public float during = 0;
+    [HideInInspector]
     float originalDuring = 0;
     // public bool IsDoing
     // {

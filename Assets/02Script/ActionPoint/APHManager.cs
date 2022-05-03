@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,6 +6,7 @@ using UnityEngine;
 public class APHManager : MonoBehaviour
 {
     public static APHManager Instance { set; get; }
+    public bool IsReady { private set; get; } = false;
     public GameObject APHPrefab;
     public GameObject APPrefab;
     public ObjPooler APHPooler { set; get; }
@@ -33,12 +35,13 @@ public class APHManager : MonoBehaviour
         {
             APPooler.MakeNewOne();
         }
+        IsReady = true;
     }
 
     public ActionPointHandler GetCopyAPH(ActionPointHandler originalAPH)
     {
         var aph = GetCoiedAPH(originalAPH);
-        var copiedAPs = GetCopiedAP(aph, originalAPH.actionPoints);
+        var copiedAPs = GetCopiedAPs(aph, originalAPH.actionPoints);
         aph.actionPoints = copiedAPs;
 
         return aph;
@@ -48,22 +51,28 @@ public class APHManager : MonoBehaviour
     {
         var coiedAPH = APHPooler.GetNewOne<ActionPointHandler>();
         ObjPooler.CopyComponentValue(originalAPH.transform, coiedAPH.transform);
-        ObjPooler.CopyComponentValue(originalAPH, coiedAPH);
+        //ObjPooler.CopyComponentValue(originalAPH, coiedAPH);
         return coiedAPH;
     }
 
-    List<ActionPoint> GetCopiedAP(ActionPointHandler originalAPH, List<ActionPoint> originalAPs)
+    List<ActionPoint> GetCopiedAPs(ActionPointHandler copiedAPH, List<ActionPoint> originalAPs)
     {
         var copiedAPs = new List<ActionPoint>();
+
         for (int i = 0; i < originalAPs.Count; i++)
         {
             var originalAP = originalAPs[i];
+            var apObj = APPooler.GetNewOne();
+            apObj.transform.SetParent(copiedAPH.transform);
 
-            var ap = APPooler.GetNewOne<ActionPoint>();
-            ObjPooler.CopyComponentValue(originalAP.transform, ap.transform);
-            ObjPooler.CopyComponentValue(originalAP, ap);
+            ObjPooler.CopyComponentValue(originalAP.transform, apObj.transform);
 
-            ap.transform.SetParent(originalAPH.transform);
+            ActionPoint ap = null;
+            if (originalAP is PersonActionPoint)
+            {
+                ap = apObj.AddComponent<PersonActionPoint>();
+                ObjPooler.CopyComponentValue(originalAP as PersonActionPoint, ap as PersonActionPoint);
+            }
 
             copiedAPs.Add(ap);
         }

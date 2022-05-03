@@ -4,34 +4,39 @@ using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
-public class NaviController : MonoBehaviour
+[RequireComponent(typeof(NavMeshObstacle))]
+public class NavController : MonoBehaviour
 {
-    public ModelPhysicsController modelPhysicsController;
+    ModelPhysicsController modelPhysicsController;
     public NavMeshAgent navMeshAgent { private set; get; }
-    public NavMeshObstacle navMeshObstacle { private set; get; }
-    public float permissibleRangeToDestination = 0.1f;
-    public bool IsArrivedDestination { get { return Vector3.Distance(transform.position, navMeshAgent.nextPosition) < permissibleRangeToDestination; } }
+    NavMeshObstacle navMeshObstacle { set; get; }
+    public float permissibleRangeToDestination = 0.01f;
+    public bool IsArrivedDestination { get { return Vector3.Distance(transform.position, navMeshAgent.destination) < permissibleRangeToDestination; } }
     public Coroutine CheckingUntilArrive;
+    bool isPositionCorrect = false;
+    bool isRotationCorrect = false;
+    public bool IsPositionAndRotationGetCorrect { get { return isPositionCorrect && isRotationCorrect; } }
     void Awake()
     {
-        navMeshAgent = navMeshAgent.GetComponent<NavMeshAgent>();
-        navMeshObstacle = navMeshObstacle.GetComponent<NavMeshObstacle>();
+        modelPhysicsController = GetComponent<ModelPhysicsController>();
+        navMeshAgent = GetComponent<NavMeshAgent>();
+        navMeshObstacle = GetComponent<NavMeshObstacle>();
+        navMeshObstacle.enabled = false;
     }
 
     public void SetNextPosition(Vector3 WPosition)
     {
+        TurnOnNavi(true);
+        isPositionCorrect = false;
+        isRotationCorrect = false;
         navMeshAgent.SetDestination(WPosition);
         CheckingUntilArrive = StartCoroutine(DoCheckUntilArrive());
     }
 
     IEnumerator DoCheckUntilArrive()
     {
-        while (IsArrivedDestination)
-        {
-            yield return new WaitForFixedUpdate();
-        }
-
-        modelPhysicsController.ReadNextAction();
+        yield return new WaitUntil(() => IsArrivedDestination);
+        modelPhysicsController.ReadNowAction();
     }
 
     public void TurnOnNavi(bool shouldTurnOn)
@@ -52,6 +57,7 @@ public class NaviController : MonoBehaviour
     public void MakeCorrect(Vector3 WPosition, Vector3 forward)
     {
         navMeshAgent.isStopped = true;
+        TurnOnNavi(false);
         SetPositionCorrectly(WPosition);
         MakeLookAt(new Vector3(forward.x, 0f, forward.z));
     }
@@ -73,6 +79,7 @@ public class NaviController : MonoBehaviour
             var ratio = Mathf.InverseLerp(0, maxT, t);
             transform.position = Vector3.Lerp(beforePosition, worldPosition, ratio);
         }
+        isPositionCorrect = true;
     }
 
     public void MakeLookAt(Vector3 dir)
@@ -111,6 +118,7 @@ public class NaviController : MonoBehaviour
                 yield return new WaitForFixedUpdate();
             }
         }
+        isRotationCorrect = true;
         yield return null;
     }
 }

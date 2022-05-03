@@ -8,9 +8,21 @@ public class ObjPooler : MonoBehaviour
     protected Queue<GameObject> instantiatedObj = new Queue<GameObject>();
     public static void CopyComponentValue(Component from, Component to)
     {
-        foreach (var field in to.GetType().GetFields())
+        if (from is Transform)
         {
-            field.SetValue(from, field.GetValue(to));
+            var fTransform = from as Transform;
+            var tTransform = to as Transform;
+
+            tTransform.position = fTransform.position;
+            tTransform.rotation = fTransform.rotation;
+            tTransform.localScale = fTransform.localScale;
+        }
+        else
+        {
+            foreach (var field in from.GetType().GetFields())
+            {
+                field.SetValue(to, field.GetValue(from));
+            }
         }
     }
 

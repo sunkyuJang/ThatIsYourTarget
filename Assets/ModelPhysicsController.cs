@@ -3,19 +3,29 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-[RequireComponent(typeof(NaviController))]
-[RequireComponent(typeof(AniController))]
 public class ModelPhysicsController : MonoBehaviour, IObjDetectorConnector_OnDetected
 {
-    public Model model;
-    ActionPointHandler actionPointHandler;
-    public NaviController naviController { private set; get; }
+    Model model;
+    ActionPointHandler actionPointHandler { set; get; }
+    public NavController naviController { private set; get; }
     public AniController aniController { private set; get; }
+    RagDollHandler ragDollHandler { set; get; }
 
     private void Awake()
     {
-        naviController = GetComponent<NaviController>();
+        model = GetComponentInParent<Model>();
+        naviController = GetComponent<NavController>();
         aniController = GetComponent<AniController>();
+        ragDollHandler = GetComponent<RagDollHandler>();
+    }
+
+    public void SetAPH(ActionPointHandler handler)
+    {
+        if (actionPointHandler != null)
+            APHManager.Instance.ReturnAPH(actionPointHandler);
+
+        actionPointHandler = handler;
+        SetNextTargetPosition(handler.GetNowActionPoint().transform.position);
     }
 
     public void SetNextTargetPosition(Vector3 WPosition)
@@ -23,21 +33,27 @@ public class ModelPhysicsController : MonoBehaviour, IObjDetectorConnector_OnDet
         naviController.SetNextPosition(WPosition);
     }
 
-    public void ReadNextAction()
+    public void ReadNowAction()
     {
         var ap = actionPointHandler.GetNowActionPoint();
-        if (ap.HasNoAction)
+        if (ap.HasAction)
         {
-            SetNextTargetPosition(actionPointHandler.GetNextActionPoint().transform.position);
+            naviController.MakeCorrect(ap.transform.position, ap.transform.forward);
+            aniController.StartAni(ap);
         }
         else
         {
-            naviController.MakeCorrect(ap.transform.position, ap.transform.forward);
+            ReadNextAction();
         }
+    }
+
+    public void ReadNextAction()
+    {
+        SetNextTargetPosition(actionPointHandler.GetNextActionPoint().transform.position);
     }
 
     public void OnDetected(ObjDetector detector, Collider collider)
     {
-        throw new System.NotImplementedException();
+        model.Contected(collider);
     }
 }

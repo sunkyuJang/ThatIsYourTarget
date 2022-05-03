@@ -6,7 +6,7 @@ public class RagDollHandler : MonoBehaviour
 {
     Rigidbody[] rigidbodies;
     Collider[] colliders;
-    void Start()
+    void Awake()
     {
         rigidbodies = GetComponentsInChildren<Rigidbody>();
         colliders = GetComponentsInChildren<Collider>();

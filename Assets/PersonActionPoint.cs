@@ -5,52 +5,68 @@ using UnityEditor;
 
 public class PersonActionPoint : ActionPoint
 {
-    public enum StateKind { non = 0, standing, lookAround, sitting }
+    public enum StateKind { non = 0, Standing, LookAround, Sitting, Surprize, PrepareAttack, Fight, Avoid }
 
-    public override bool HasNoAction { get { return state == (int)StateKind.non; } }
+    public override bool HasAction { get { return state != (int)StateKind.non; } }
 
-    [Range(1, 4)]
-    public int SittingNum = 0;
+    public int sittingNum = 0;
+
+    public bool shouldReadyForBattle;
+    public int weaponLayer;
 }
 
-[CustomEditor(typeof(PersonActionPoint)), CanEditMultipleObjects]
-public class ActionPointEditor : Editor
+[CustomEditor(typeof(PersonActionPoint))]
+public class PersonActionPointEditor : Editor
 {
-    public PersonActionPoint.StateKind kind = PersonActionPoint.StateKind.non;
+    PersonActionPoint ap;
+    public PersonActionPoint.StateKind kind;
+    private void OnEnable()
+    {
+        ap = target as PersonActionPoint;
+    }
     public override void OnInspectorGUI()
     {
-        var ap = (PersonActionPoint)target;
-        kind = (PersonActionPoint.StateKind)EditorGUILayout.EnumPopup("State", kind);
+        kind = (PersonActionPoint.StateKind)EditorGUILayout.EnumPopup("State", (PersonActionPoint.StateKind)ap.state);
 
         switch (kind)
         {
-            case PersonActionPoint.StateKind.sitting:
+            case PersonActionPoint.StateKind.Sitting:
                 {
                     SetSittingInspector(ap);
                     break;
                 }
-            case PersonActionPoint.StateKind.standing:
+            case PersonActionPoint.StateKind.Standing:
                 {
                     SetWaitingInspector(ap);
                     break;
                 }
-            case PersonActionPoint.StateKind.lookAround:
+            case PersonActionPoint.StateKind.LookAround:
                 {
                     SetWaitingInspector(ap);
+                    break;
+                }
+            case PersonActionPoint.StateKind.PrepareAttack:
+                {
+                    SetPrepareAttack(ap);
                     break;
                 }
         }
 
-        if ((int)kind != ap.state)
+        EditorUtility.SetDirty(ap);
+    }
+    void SetPrepareAttack(PersonActionPoint ap)
+    {
+        ap.shouldReadyForBattle = EditorGUILayout.Toggle("shouldPrepare", ap);
+        if (ap.shouldReadyForBattle)
         {
-            ap.state = (int)kind;
+            ap.weaponLayer = (int)EditorGUILayout.Slider("WeaponLayer", ap.weaponLayer, 1, 3);
         }
     }
 
     void SetSittingInspector(PersonActionPoint ap)
     {
         ExpresseDuring(ap);
-        ap.SittingNum = (int)EditorGUILayout.Slider("SittingLevel", ap.SittingNum, 1, 4);
+        ap.sittingNum = (int)EditorGUILayout.Slider("SittingLevel", ap.sittingNum, 1, 4);
     }
 
     void SetWaitingInspector(ActionPoint ap)

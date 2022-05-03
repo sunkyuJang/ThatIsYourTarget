@@ -14,7 +14,7 @@ public class PersonHandler : MonoBehaviour
         for (int i = 0; i < transform.childCount; i++)
         {
             var person = transform.GetChild(i).GetComponent<Person>();
-            person.SetBelongTo(belongKinds[Random.Range(NormalPersonStartFrom, belongKinds.Count)]);
+            //person.SetBelongTo(belongKinds[Random.Range(NormalPersonStartFrom, belongKinds.Count)]);
             Persons.Add(person);
         }
 

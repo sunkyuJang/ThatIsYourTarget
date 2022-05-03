@@ -4,24 +4,38 @@ using UnityEngine;
 
 public class Model : MonoBehaviour
 {
-    int state = 0;
+    public int state { private set; get; } = 0;
     ModelPhysicsController modelPhysicsController;
-    public ActionPointHandler originalAPH;
+    Transform APHGroup;
+    ActionPointHandler originalAPH;
 
-    private void Awake()
+    protected virtual void Awake()
     {
-        modelPhysicsController = transform.Find("modelPhysicsController").GetComponent<ModelPhysicsController>();
+        modelPhysicsController = GetComponentInChildren<ModelPhysicsController>();
+        APHGroup = transform.Find("APHGroup");
+        originalAPH = APHGroup.Find("OriginalAPH").GetComponent<ActionPointHandler>();
     }
-    private void Start()
+    protected IEnumerator Start()
     {
-
+        yield return new WaitUntil(() => APHManager.Instance.IsReady);
+        SetOriginalAPH();
     }
-
-    public void ContectingObj(Collider target)
+    public void SetState(int newState)
     {
-        // if (target.tag.CompareTo("Player"))
-        // {
-
-        // }
+        if (newState != state)
+        {
+            state = newState;
+            ChangedState(state);
+        }
     }
+    void SetOriginalAPH() => SetAPH(APHManager.Instance.GetCopyAPH(originalAPH));
+    public void SetAPH(ActionPointHandler handler)
+    {
+        handler.transform.SetParent(APHGroup);
+        modelPhysicsController.SetAPH(handler);
+    }
+    public void StartToAPHRead() { modelPhysicsController.ReadNextAction(); }
+    public virtual void Contected(Collider collider) { }
+    public virtual void ChangedState(int i) { }
+    public virtual void GetHit() { }
 }
