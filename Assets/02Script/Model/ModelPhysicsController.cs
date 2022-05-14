@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class ModelPhysicsController : MonoBehaviour, IObjDetectorConnector_OnDetected
+public class ModelPhysicsController : MonoBehaviour, IObjDetectorConnector_OnContecting, IObjDetectorConnector_OnRemoved
 {
     Model model;
     ActionPointHandler actionPointHandler { set; get; }
@@ -52,8 +52,13 @@ public class ModelPhysicsController : MonoBehaviour, IObjDetectorConnector_OnDet
         SetNextTargetPosition(actionPointHandler.GetNextActionPoint().transform.position);
     }
 
-    public void OnDetected(ObjDetector detector, Collider collider)
+    public void OnContecting(ObjDetector detector, Collider collider)
     {
-        model.Contected(collider);
+        model.Contecting(collider);
+    }
+
+    public void OnRemoved(ObjDetector detector, Collider collider)
+    {
+        model.Removed(collider);
     }
 }

@@ -5,7 +5,7 @@ using UnityEngine;
 public class Model : MonoBehaviour
 {
     public int state { private set; get; } = 0;
-    ModelPhysicsController modelPhysicsController;
+    protected ModelPhysicsController modelPhysicsController;
     Transform APHGroup;
     ActionPointHandler originalAPH;
 
@@ -35,7 +35,8 @@ public class Model : MonoBehaviour
         modelPhysicsController.SetAPH(handler);
     }
     public void StartToAPHRead() { modelPhysicsController.ReadNextAction(); }
-    public virtual void Contected(Collider collider) { }
+    public virtual void Contecting(Collider collider) { }
+    public virtual void Removed(Collider collider) { }
     public virtual void ChangedState(int i) { }
     public virtual void GetHit() { }
 }

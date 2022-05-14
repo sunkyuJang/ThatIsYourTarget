@@ -9,35 +9,151 @@ using UnityEngine.AI;
 public class Person : Model
 {
     public enum StateKinds { Normal, Notice, Warn, Follow, Wait, Attack, Avoid, Dead, Non }
-    public Renderer modelRenderer;
-    public void SetBelongTo(Material material) => modelRenderer.material = material;
+    enum StateByDist { Notice = 3, Attack = 1 }
+    [SerializeField]
+    private Renderer modelRenderer;
+    public Material belongTo
+    {
+        set { modelRenderer.material = value; }
+        get { return modelRenderer.material; }
+    }
+    private List<TrackingPlayerState> trackingPlayerList { set; get; } = new List<TrackingPlayerState>();
     public override void ChangedState(int state)
     {
         switch ((StateKinds)state)
         {
             case StateKinds.Normal: break;
+            case StateKinds.Notice: StartTrackingToPlayers(); break;
         }
     }
+
+    private Coroutine procDoTrackingPlayers = null;
     public override void GetHit()
     {
 
     }
 
-    public override void Contected(Collider collider)
+    public override void Removed(Collider collider)
     {
         switch (collider.tag)
         {
-            case "Player": break;
+            case Player.playerTag:
+                var player = GetComponent<Player>();
+                RemoveFromTrackingPlayerState(player);
+                break;
         }
     }
 
-    void SetAlertByDist(Vector3 WPosition)
+    public override void Contecting(Collider collider)
     {
-        var kind = StateKinds.Non;
-        var NoticeDist = 5f;
-        var WarnDist = 3f;
+        switch (collider.tag)
+        {
+            case Player.playerTag:
+                var player = GetComponent<Player>();
+                AddToTrackingPlayerState(player);
 
-        //....
+                // if (!belongTo.Equals(player.belongTo))
+                // {
+                //     var stateByDist = GetStateByDist(player.transform.position);
+
+                //     ChangedState((int)stateByDist);
+                // }
+                break;
+        }
+    }
+
+    void AddToTrackingPlayerState(Player player)
+    {
+        TrackingPlayerState trackingPlayerState = null;
+        if (trackingPlayerList.Count == 0)
+        {
+            trackingPlayerState = new TrackingPlayerState(player);
+        }
+        else
+        {
+            var find = trackingPlayerList.Find(x => x.player == player);
+            if (find.player == null)
+            {
+                trackingPlayerState = new TrackingPlayerState(player);
+            }
+        }
+
+        if (trackingPlayerState != null)
+        {
+            trackingPlayerList.Add(trackingPlayerState);
+            //하는 중...
+            // 스테이트 체인지를 어디서?
+        }
+    }
+
+    void RemoveFromTrackingPlayerState(Player player)
+    {
+        //it will just reservate for remove.
+        try
+        {
+            var find = trackingPlayerList.Find(x => x.player == player);
+            find.shouldRemove = true;
+        }
+        catch
+        {
+            print("something's wrong in trackingPlayerList");
+        }
+    }
+
+    void StartTrackingToPlayers()
+    {
+        if (procDoTrackingPlayers == null)
+            procDoTrackingPlayers = StartCoroutine(DoTrackingPlayers());
+    }
+
+    IEnumerator DoTrackingPlayers()
+    {
+        while (trackingPlayerList.Count != 0)
+        {
+            var data = trackingPlayerList[0];
+            if (data.shouldRemove)
+            {
+                trackingPlayerList.Remove(data);
+            }
+            else
+            {
+                if (!data.isFollowing)
+                {
+                    yield return StartCoroutine(DoTrackingPlayer(data));
+                }
+            }
+
+            yield return new WaitForFixedUpdate();
+        }
+        yield return null;
+    }
+
+    IEnumerator DoTrackingPlayer(TrackingPlayerState data)
+    {
+        data.isFollowing = true;
+        while (!data.shouldRemove)
+        {
+
+        }
+        yield return null;
+    }
+
+    StateKinds GetStateByDist(Vector3 WPosition)
+    {
+        var dist = Vector3.Distance(modelPhysicsController.transform.position, WPosition);
+        return dist == (float)StateByDist.Attack ? StateKinds.Attack : StateKinds.Notice;
+    }
+
+    class TrackingPlayerState
+    {
+        public Player player = null;
+        public bool isFollowing = false;
+        public bool shouldRemove = false;
+
+        public TrackingPlayerState(Player player)
+        {
+            this.player = player;
+        }
     }
     // public PersonModel model { private set; get; }
 

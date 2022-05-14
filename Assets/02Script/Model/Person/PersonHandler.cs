@@ -29,7 +29,7 @@ public class PersonHandler : MonoBehaviour
             var index = Random.Range(0, Persons.Count);
             var nowPerson = Persons[index];
             Persons.RemoveAt(index);
-            nowPerson.SetBelongTo(TargetColor);
+            nowPerson.belongTo = TargetColor;
             nowPersonList.Add(nowPerson);
         }
         Persons.AddRange(nowPersonList);

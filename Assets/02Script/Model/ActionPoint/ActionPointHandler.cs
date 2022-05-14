@@ -59,13 +59,6 @@ public class ActionPointHandler : MonoBehaviour
     {
         get { return actionPoints[actionPoints.Count - 1]; }
     }
-    // public void WaitForStartToNext(int index, bool ShouldWait)
-    // {
-    //     if (ShouldWait)
-    //         actionPoints[index].BackUpTime(-1);
-    //     else
-    //         actionPoints[index].RecoverTime();
-    // }
 
     public void ResetIndex() => index = 0;
 
