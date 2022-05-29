@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using JMath;
 
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(NavMeshObstacle))]
@@ -77,7 +78,7 @@ public class NavController : MonoBehaviour
             yield return new WaitForFixedUpdate();
             t += Time.fixedDeltaTime;
             var ratio = Mathf.InverseLerp(0, maxT, t);
-            transform.position = Vector3.Lerp(beforePosition, worldPosition, ratio);
+            transform.position = Vector3.Lerp(beforePosition, Vector3Extentioner.GetOverrideVectorY(worldPosition, beforePosition), ratio);
         }
         isPositionCorrect = true;
     }
@@ -95,12 +96,24 @@ public class NavController : MonoBehaviour
         var isLeft = dot < 0;
         var rotateSpeed = 300f;
         var lastAngle = Vector3.Angle(transform.forward, dir);
+
+        if (lastAngle > 90f)
+        {
+            var ap = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP).GetNewOne<PersonActionPoint>();
+            ap.state = (int)PersonActionPoint.StateKind.TurnAround;
+            ap.shouldTurnLeft = isLeft;
+            ap.during = modelPhysicsController.aniController.GetLength(isLeft ? "TurnL" : "TurnR");
+            modelPhysicsController.aniController.StartAni(ap, true);
+        }
+
         while (true)
         {
             transform.Rotate(isLeft ? Vector3.down : Vector3.up, rotateSpeed * Time.fixedDeltaTime);
             var nowAngle = Vector3.Angle(transform.forward, dir);
             if (nowAngle > lastAngle) break;
             else lastAngle = nowAngle;
+
+            Debug.Log(lastAngle);
             yield return new WaitForFixedUpdate();
         }
 
@@ -118,6 +131,8 @@ public class NavController : MonoBehaviour
                 yield return new WaitForFixedUpdate();
             }
         }
+
+        //하는 중ㅡ 턴하는 동안 다음 에니메이션 방지 해야함
         isRotationCorrect = true;
         yield return null;
     }

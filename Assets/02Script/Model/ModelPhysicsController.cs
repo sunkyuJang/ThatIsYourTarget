@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class ModelPhysicsController : MonoBehaviour, IObjDetectorConnector_OnContecting, IObjDetectorConnector_OnRemoved
+public class ModelPhysicsController : MonoBehaviour, IObjDetectorConnector_OnDetected, IObjDetectorConnector_OnRemoved
 {
     Model model;
-    ActionPointHandler actionPointHandler { set; get; }
+    public ActionPointHandler actionPointHandler { private set; get; }
     public NavController naviController { private set; get; }
     public AniController aniController { private set; get; }
     RagDollHandler ragDollHandler { set; get; }
-
     private void Awake()
     {
         model = GetComponentInParent<Model>();
@@ -28,6 +27,13 @@ public class ModelPhysicsController : MonoBehaviour, IObjDetectorConnector_OnCon
         SetNextTargetPosition(handler.GetNowActionPoint().transform.position);
     }
 
+    public void ChageLastAPPosition(Transform target)
+    {
+        var lastAP = actionPointHandler.GetActionPoint(actionPointHandler.GetActionCount - 1);
+        lastAP.SetPositionForTracking(transform, target, false);
+        SetNextTargetPosition(lastAP.transform.position);
+    }
+
     public void SetNextTargetPosition(Vector3 WPosition)
     {
         naviController.SetNextPosition(WPosition);
@@ -35,30 +41,45 @@ public class ModelPhysicsController : MonoBehaviour, IObjDetectorConnector_OnCon
 
     public void ReadNowAction()
     {
+        StartCoroutine(DoReadNowAction());
+    }
+
+    IEnumerator DoReadNowAction()
+    {
         var ap = actionPointHandler.GetNowActionPoint();
+
         if (ap.HasAction)
         {
             naviController.MakeCorrect(ap.transform.position, ap.transform.forward);
+            yield return new WaitUntil(() => naviController.IsPositionAndRotationGetCorrect);
             aniController.StartAni(ap);
         }
         else
         {
             ReadNextAction();
         }
+        yield return null;
     }
 
     public void ReadNextAction()
     {
-        SetNextTargetPosition(actionPointHandler.GetNextActionPoint().transform.position);
-    }
-
-    public void OnContecting(ObjDetector detector, Collider collider)
-    {
-        model.Contecting(collider);
+        if (actionPointHandler.IsReachedToEnd)
+        {
+            model.SetOriginalAPH();
+        }
+        else
+        {
+            SetNextTargetPosition(actionPointHandler.GetNextActionPoint().transform.position);
+        }
     }
 
     public void OnRemoved(ObjDetector detector, Collider collider)
     {
         model.Removed(collider);
+    }
+
+    public void OnDetected(ObjDetector detector, Collider collider)
+    {
+        model.Contected(collider);
     }
 }

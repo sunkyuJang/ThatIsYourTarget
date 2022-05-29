@@ -14,8 +14,9 @@ public class Model : MonoBehaviour
         modelPhysicsController = GetComponentInChildren<ModelPhysicsController>();
         APHGroup = transform.Find("APHGroup");
         originalAPH = APHGroup.Find("OriginalAPH").GetComponent<ActionPointHandler>();
+        Debug.Log(gameObject.name + "//" + APHGroup.name);
     }
-    protected IEnumerator Start()
+    protected virtual IEnumerator Start()
     {
         yield return new WaitUntil(() => APHManager.Instance.IsReady);
         SetOriginalAPH();
@@ -28,13 +29,14 @@ public class Model : MonoBehaviour
             ChangedState(state);
         }
     }
-    void SetOriginalAPH() => SetAPH(APHManager.Instance.GetCopyAPH(originalAPH));
+    public void SetOriginalAPH() => SetAPH(APHManager.Instance.GetCopyAPH(originalAPH));
     public void SetAPH(ActionPointHandler handler)
     {
         handler.transform.SetParent(APHGroup);
         modelPhysicsController.SetAPH(handler);
     }
     public void StartToAPHRead() { modelPhysicsController.ReadNextAction(); }
+    public virtual void Contected(Collider collider) { }
     public virtual void Contecting(Collider collider) { }
     public virtual void Removed(Collider collider) { }
     public virtual void ChangedState(int i) { }

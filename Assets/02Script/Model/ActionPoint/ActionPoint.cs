@@ -1,8 +1,6 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
 
 [System.Serializable]
 public class ActionPoint : MonoBehaviour
@@ -14,27 +12,6 @@ public class ActionPoint : MonoBehaviour
     public float during = 0;
     [HideInInspector]
     float originalDuring = 0;
-    // public bool IsDoing
-    // {
-    //     get { return }
-    // public void StartTimeCount()
-    // {
-    //     if (!IsDoing)
-    //         StartCoroutine(DoTimeCount(null));
-    // }
-    // public void StartTimeCount(Action action)
-    // {
-    //     if (!IsDoing)
-    //         StartCoroutine(DoTimeCount(action));
-    // }
-
-    // public void BackUpTime(float insteadTime)
-    // {
-    //     originalDuring = during;
-    //     during = insteadTime;
-    // }
-
-    // public void RecoverTime() => during = originalDuring;
 
     IEnumerator DoTimeCount(Action action)
     {
@@ -58,6 +35,20 @@ public class ActionPoint : MonoBehaviour
         action?.Invoke();
     }
     public void ChangePosition(Vector3 position) => transform.position = position;
-    public void MakeLookAtTo(Vector3 from, Vector3 to) => transform.LookAt(Vector3.Normalize(from - to));
+    public void MakeLookAtTo(Vector3 to) => transform.LookAt(to - Vector3.up * to.y);
+    public void SetPositionForTracking(Transform from, Transform to, bool shouldChangeRotation, bool shouldChangePosition = false)
+    {
+        ChangePosition(from.position);
+        MakeLookAtTo(shouldChangeRotation ? to.position : from.forward);
+        if (shouldChangePosition)
+            ChangePosition(to.position);
+    }
+
+    public void SetAPWithDuring(Transform from, Transform to, PersonActionPoint.StateKind kind, float time, bool shouldChangeRotation = false, bool shouldChangePosition = false)
+    {
+        state = (int)kind;
+        during = time;
+        SetPositionForTracking(from, to, shouldChangeRotation, shouldChangePosition);
+    }
 }
 

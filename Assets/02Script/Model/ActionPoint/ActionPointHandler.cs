@@ -16,8 +16,12 @@ public class ActionPointHandler : MonoBehaviour
         SetAPs();
     }
 
-    public void SetAPs()
+    public void SetAPs(List<ActionPoint> list = null)
     {
+        if (list != null)
+        {
+            list.ForEach(x => x.transform.SetParent(transform));
+        }
         SetActionPoint();
     }
 
@@ -65,6 +69,6 @@ public class ActionPointHandler : MonoBehaviour
     public void ChangeAPPositionAndLookAt(int index, Vector3 from, Vector3 to)
     {
         actionPoints[index].ChangePosition(to);
-        actionPoints[index].MakeLookAtTo(from, to);
+        actionPoints[index].MakeLookAtTo(to);
     }
 }

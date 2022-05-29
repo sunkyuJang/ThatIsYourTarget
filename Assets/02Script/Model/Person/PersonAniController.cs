@@ -10,37 +10,41 @@ public class PersonAniController : AniController
     public enum AnimationsWithLevel { WalkAroundLevel = 0, SittingLevel, }
     public enum WalkLevel { Stop = 0, Walk, Run }
     public enum SittingLevel { Non = 0, High, Middle, Low }
-    public enum AnimationsWithBool { ShouldStand, ShouldTurn, LookAround }
+    public enum AnimationsWithBool { ShouldStand, ShouldTurn, LookAround, ShouldSurprize, ShouldTurnL, ShouldTurnR }
 
-    public override void StartAni(ActionPoint actionPoint)
+    public override void StartAni(ActionPoint actionPoint, bool shouldReturnAP = false)
     {
         var ap = actionPoint as PersonActionPoint;
         switch (ap.state)
         {
             case (int)PersonActionPoint.StateKind.Sitting: SetSittingAnimation((SittingLevel)ap.sittingNum); break;
             case (int)PersonActionPoint.StateKind.LookAround: SetLookAroundAnimation(); break;
-            case (int)PersonActionPoint.StateKind.Standing: StopMove(); break;//SetStandingAnimation(); break;
+            case (int)PersonActionPoint.StateKind.Standing: StopMove(); break;
             case (int)PersonActionPoint.StateKind.PrepareAttack: SetPrepareAttack(ap.shouldReadyForBattle, ap.weaponLayer); break;
+            case (int)PersonActionPoint.StateKind.Surprize: SetSurprizeAnimation(); break;
+            case (int)PersonActionPoint.StateKind.TurnAround: SetTurnAroundAnimation(ap.shouldTurnLeft); break;
             default:
-                //ap.StartTimeCount(MakeResetAni);
                 break;
         }
 
         if (IsPlayingAni)
             StopCoroutine(PlayingAni);
 
-        PlayingAni = StartCoroutine(DoAnimationTimeCount(ap.during));
+        PlayingAni = StartCoroutine(DoAnimationTimeCount(ap));
     }
 
-    IEnumerator DoAnimationTimeCount(float limitedTime)
+    IEnumerator DoAnimationTimeCount(ActionPoint actionPoint, bool shouldReturnAP = false)
     {
         var time = 0f;
-        while (time < limitedTime)
+        while (time < actionPoint.during)
         {
             time += Time.fixedDeltaTime;
             yield return new WaitForFixedUpdate();
         }
         PlayingAni = null;
+
+        if (shouldReturnAP)
+            APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP).ReturnTargetObj(actionPoint.gameObject);
 
         MakeResetAni();
     }
@@ -69,22 +73,24 @@ public class PersonAniController : AniController
         StopMove();
     }
 
-    // public void SetStandingAnimation()
-    // {
-    //     animator.SetBool(AnimationsWithBool.ShouldStand.ToString(), true);
-    //     StopMove();
-    // }
-
-    void StopMove()
+    public void SetSurprizeAnimation()
     {
-        animator.SetInteger(AnimationsWithLevel.WalkAroundLevel.ToString(), (int)WalkLevel.Stop);
-        animator.SetBool(AnimationsWithBool.ShouldStand.ToString(), true);
+        animator.SetBool(AnimationsWithBool.ShouldSurprize.ToString(), true);
+        StopMove(false);
     }
 
-    // void MakeMove(WalkLevel walkLevel)
-    // {
-    //     modelPhysicsController.naviController.TurnOnNavi(true);
-    // }
+    void StopMove(bool shoulPlayStand = true)
+    {
+        animator.SetInteger(AnimationsWithLevel.WalkAroundLevel.ToString(), (int)WalkLevel.Stop);
+        if (shoulPlayStand)
+            animator.SetBool(AnimationsWithBool.ShouldStand.ToString(), true);
+    }
+
+    public void SetTurnAroundAnimation(bool isLeft)
+    {
+        animator.SetBool(isLeft ? AnimationsWithBool.ShouldTurnL.ToString() : AnimationsWithBool.ShouldTurnR.ToString(), true);
+        StopMove(false);
+    }
 
     public void MakeResetAni()
     {
@@ -100,11 +106,12 @@ public class PersonAniController : AniController
         animator.SetInteger(AnimationsWithLevel.SittingLevel.ToString(), (int)SittingLevel.Non);
         animator.SetBool(AnimationsWithBool.LookAround.ToString(), false);
         animator.SetBool(AnimationsWithBool.ShouldStand.ToString(), false);
+        animator.SetBool(AnimationsWithBool.ShouldSurprize.ToString(), false);
 
-        if (wasStanding)
-            yield return new WaitForSeconds(1f);
-
+        yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 0.95f);
         SetWalkState(WalkLevel.Walk);
+        yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).IsName("WalkAround") ||
+                                            animator.GetCurrentAnimatorStateInfo(0).IsName("RunningAround"));
         modelPhysicsController.ReadNextAction();
     }
 

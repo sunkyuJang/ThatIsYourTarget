@@ -7,10 +7,11 @@ public class APHManager : MonoBehaviour
 {
     public static APHManager Instance { set; get; }
     public bool IsReady { private set; get; } = false;
-    public GameObject APHPrefab;
-    public GameObject APPrefab;
-    public ObjPooler APHPooler { set; get; }
-    public ObjPooler APPooler { set; get; }
+    [SerializeField]
+    public enum PoolerKinds { APH = 0, PersonAP }
+    public List<GameObject> poolerPrefab = new List<GameObject>();
+    List<ObjPooler> poolers = new List<ObjPooler>();
+    public ObjPooler GetObjPooler(PoolerKinds kinds) => poolers[(int)kinds];
     private void Awake()
     {
         if (Instance == null)
@@ -24,18 +25,19 @@ public class APHManager : MonoBehaviour
     }
     private void Start()
     {
-        APHPooler = ObjPoolerManager.Instance.GetPooler(APHPrefab);
+        poolers.Add(ObjPoolerManager.Instance.GetPooler(poolerPrefab[(int)PoolerKinds.APH]));
         for (int i = 0; i < 20; i++)
         {
-            APHPooler.MakeNewOne();
+            poolers[(int)PoolerKinds.APH].MakeNewOne();
         }
 
-        APPooler = ObjPoolerManager.Instance.GetPooler(APPrefab);
+        poolers.Add(ObjPoolerManager.Instance.GetPooler(poolerPrefab[(int)PoolerKinds.PersonAP]));
         for (int i = 0; i < 20; i++)
         {
-            APPooler.MakeNewOne();
+            poolers[(int)PoolerKinds.PersonAP].MakeNewOne();
         }
         IsReady = true;
+        Debug.Log(IsReady);
     }
 
     public ActionPointHandler GetCopyAPH(ActionPointHandler originalAPH)
@@ -49,7 +51,7 @@ public class APHManager : MonoBehaviour
 
     ActionPointHandler GetCoiedAPH(ActionPointHandler originalAPH)
     {
-        var coiedAPH = APHPooler.GetNewOne<ActionPointHandler>();
+        var coiedAPH = GetObjPooler(PoolerKinds.APH).GetNewOne<ActionPointHandler>();
         ObjPooler.CopyComponentValue(originalAPH.transform, coiedAPH.transform);
         //ObjPooler.CopyComponentValue(originalAPH, coiedAPH);
         return coiedAPH;
@@ -62,15 +64,13 @@ public class APHManager : MonoBehaviour
         for (int i = 0; i < originalAPs.Count; i++)
         {
             var originalAP = originalAPs[i];
-            var apObj = APPooler.GetNewOne();
-            apObj.transform.SetParent(copiedAPH.transform);
+            var ap = GetObjPooler(PoolerKinds.PersonAP).GetNewOne<ActionPoint>();
+            ap.transform.SetParent(copiedAPH.transform);
 
-            ObjPooler.CopyComponentValue(originalAP.transform, apObj.transform);
+            ObjPooler.CopyComponentValue(originalAP.transform, ap.transform);
 
-            ActionPoint ap = null;
             if (originalAP is PersonActionPoint)
             {
-                ap = apObj.AddComponent<PersonActionPoint>();
                 ObjPooler.CopyComponentValue(originalAP as PersonActionPoint, ap as PersonActionPoint);
             }
 
@@ -81,25 +81,7 @@ public class APHManager : MonoBehaviour
 
     public void ReturnAPH(ActionPointHandler handler)
     {
-        handler.actionPoints.ForEach(x => APPooler.ReturnTargetObj(x.gameObject));
-        APHPooler.ReturnTargetObj(handler.gameObject);
+        handler.actionPoints.ForEach(x => GetObjPooler(PoolerKinds.PersonAP).ReturnTargetObj(x.gameObject));
+        GetObjPooler(PoolerKinds.APH).ReturnTargetObj(handler.gameObject);
     }
-
-    // public ActionPointHandler GetAPHForNotice(Vector3 targetPosition, Vector3 positionFromRequester)
-    // {
-    //     var ap = APPooler.GetNewOne<ActionPoint>();
-    //     var aph = APHPooler.GetNewOne<ActionPointHandler>();
-
-    //     ap.transform.position = targetPosition;
-    //     ap.MakeLookAtTo(positionFromRequester, targetPosition);
-    //     ap.state = ActionPoint.StateKind.lookAround;
-    //     ap.during = 2f;
-    //     ap.transform.SetParent(aph.transform);
-
-    //     aph.ShouldLoop = false;
-    //     aph.SetAPs();
-    //     aph.comingFromOther = ReturnAPH;
-
-    //     return aph;
-    // }
 }

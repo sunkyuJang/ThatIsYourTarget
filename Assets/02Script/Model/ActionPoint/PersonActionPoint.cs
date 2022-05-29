@@ -5,13 +5,11 @@ using UnityEditor;
 
 public class PersonActionPoint : ActionPoint
 {
-    public enum StateKind { non = 0, Standing, LookAround, Sitting, Surprize, PrepareAttack, Fight, Avoid }
-
+    public enum StateKind { non = 0, Standing, LookAround, Sitting, Surprize, PrepareAttack, Fight, Avoid, TurnAround }
     public override bool HasAction { get { return state != (int)StateKind.non; } }
-
     public int sittingNum = 0;
-
     public bool shouldReadyForBattle;
+    public bool shouldTurnLeft;
     public int weaponLayer;
 }
 
@@ -31,27 +29,19 @@ public class PersonActionPointEditor : Editor
         switch (kind)
         {
             case PersonActionPoint.StateKind.Sitting:
-                {
-                    SetSittingInspector(ap);
-                    break;
-                }
+                SetSittingInspector(ap);
+                break;
             case PersonActionPoint.StateKind.Standing:
-                {
-                    SetWaitingInspector(ap);
-                    break;
-                }
-            case PersonActionPoint.StateKind.LookAround:
-                {
-                    SetWaitingInspector(ap);
-                    break;
-                }
+                SetWaitingInspector(ap);
+                break;
             case PersonActionPoint.StateKind.PrepareAttack:
-                {
-                    SetPrepareAttack(ap);
-                    break;
-                }
+                SetPrepareAttack(ap);
+                break;
+            default:
+                break;
         }
 
+        ap.state = (int)kind;
         EditorUtility.SetDirty(ap);
     }
     void SetPrepareAttack(PersonActionPoint ap)
@@ -69,17 +59,9 @@ public class PersonActionPointEditor : Editor
         ap.sittingNum = (int)EditorGUILayout.Slider("SittingLevel", ap.sittingNum, 1, 4);
     }
 
-    void SetWaitingInspector(ActionPoint ap)
-    {
-        ExpresseDuring(ap);
-    }
-    void SetLookAroundInspector(ActionPoint ap)
-    {
-        ExpresseDuring(ap);
-    }
-
-    void ExpresseDuring(ActionPoint ap)
-    {
-        ap.during = (float)EditorGUILayout.FloatField("during", ap.during);
-    }
+    void SetWaitingInspector(ActionPoint ap) => ExpresseDuring(ap);
+    void SetFixedWaitingInspector(ActionPoint ap, float fixedTime) => ExpresseFixedDuring(ap, fixedTime);
+    void SetPrepareAttack(ActionPoint ap) => ExpresseDuring(ap);
+    void ExpresseDuring(ActionPoint ap) => ap.during = (float)EditorGUILayout.FloatField("during", ap.during);
+    void ExpresseFixedDuring(ActionPoint ap, float fixedTime) => ap.during = (float)EditorGUILayout.FloatField("FixedDuring", fixedTime);
 }
