@@ -11,7 +11,7 @@ public class ActionPoint : MonoBehaviour
     [HideInInspector]
     public float during = 0;
     [HideInInspector]
-    float originalDuring = 0;
+    public float targetDegree = 0;
 
     IEnumerator DoTimeCount(Action action)
     {

@@ -34,10 +34,11 @@ namespace JMath
         }
         public static bool IsArrived(Transform center, Transform target, float marginOfError = 0f) => Vector3.Distance(center.position, target.position) <= marginOfError;
 
-        public static Vector3 GetOverrideVectorX(Vector3 original, Vector3 overrideVector) => OverrideVector(original, overrideVector, true, false, false);
-        public static Vector3 GetOverrideVectorY(Vector3 original, Vector3 overrideVector) => OverrideVector(original, overrideVector, false, true, false);
-        public static Vector3 GetOverrideVectorZ(Vector3 original, Vector3 overrideVector) => OverrideVector(original, overrideVector, false, false, true);
-        static Vector3 OverrideVector(Vector3 original, Vector3 overrideVector, bool isX, bool isY, bool isZ)
+
+        public static Vector3 GetOverrideX(Vector3 original, float x) => OverrideVector(original, new Vector3(x, 0, 0), true, false, false);
+        public static Vector3 GetOverrideY(Vector3 original, float y) => OverrideVector(original, new Vector3(0, y, 0), false, true, false);
+        public static Vector3 GetOverrideZ(Vector3 original, float z) => OverrideVector(original, new Vector3(0, 0, z), false, false, true);
+        public static Vector3 OverrideVector(Vector3 original, Vector3 overrideVector, bool isX, bool isY, bool isZ)
         {
             return new Vector3(isX ? overrideVector.x : original.x,
                                 isY ? overrideVector.y : original.y,

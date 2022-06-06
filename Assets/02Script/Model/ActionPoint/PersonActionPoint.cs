@@ -5,11 +5,11 @@ using UnityEditor;
 
 public class PersonActionPoint : ActionPoint
 {
-    public enum StateKind { non = 0, Standing, LookAround, Sitting, Surprize, PrepareAttack, Fight, Avoid, TurnAround }
+    public enum StateKind { non = 0, Standing, LookAround, Sitting, Surprize, PrepareAttack, Fight, Avoid, TurnAround, TurnHead }
+    public StateKind State { set { base.state = (int)value; } get { return (StateKind)state; } }
     public override bool HasAction { get { return state != (int)StateKind.non; } }
     public int sittingNum = 0;
     public bool shouldReadyForBattle;
-    public bool shouldTurnLeft;
     public int weaponLayer;
 }
 
@@ -41,7 +41,7 @@ public class PersonActionPointEditor : Editor
                 break;
         }
 
-        ap.state = (int)kind;
+        ap.State = kind;
         EditorUtility.SetDirty(ap);
     }
     void SetPrepareAttack(PersonActionPoint ap)

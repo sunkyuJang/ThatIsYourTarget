@@ -14,7 +14,6 @@ public class Model : MonoBehaviour
         modelPhysicsController = GetComponentInChildren<ModelPhysicsController>();
         APHGroup = transform.Find("APHGroup");
         originalAPH = APHGroup.Find("OriginalAPH").GetComponent<ActionPointHandler>();
-        Debug.Log(gameObject.name + "//" + APHGroup.name);
     }
     protected virtual IEnumerator Start()
     {

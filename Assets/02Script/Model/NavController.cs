@@ -14,9 +14,6 @@ public class NavController : MonoBehaviour
     public float permissibleRangeToDestination = 0.01f;
     public bool IsArrivedDestination { get { return Vector3.Distance(transform.position, navMeshAgent.destination) < permissibleRangeToDestination; } }
     public Coroutine CheckingUntilArrive;
-    bool isPositionCorrect = false;
-    bool isRotationCorrect = false;
-    public bool IsPositionAndRotationGetCorrect { get { return isPositionCorrect && isRotationCorrect; } }
     void Awake()
     {
         modelPhysicsController = GetComponent<ModelPhysicsController>();
@@ -25,18 +22,17 @@ public class NavController : MonoBehaviour
         navMeshObstacle.enabled = false;
     }
 
-    public void SetNextPosition(Vector3 WPosition)
+    public void SetNextPosition(ActionPoint ap)
     {
         TurnOnNavi(true);
-        isPositionCorrect = false;
-        isRotationCorrect = false;
-        navMeshAgent.SetDestination(WPosition);
-        CheckingUntilArrive = StartCoroutine(DoCheckUntilArrive());
+        navMeshAgent.SetDestination(ap.transform.position);
+        CheckingUntilArrive = StartCoroutine(DoCheckUntilArrive(ap));
     }
 
-    IEnumerator DoCheckUntilArrive()
+    IEnumerator DoCheckUntilArrive(ActionPoint ap)
     {
         yield return new WaitUntil(() => IsArrivedDestination);
+        TurnOnNavi(false);
         modelPhysicsController.ReadNowAction();
     }
 
@@ -55,85 +51,80 @@ public class NavController : MonoBehaviour
         }
     }
 
-    public void MakeCorrect(Vector3 WPosition, Vector3 forward)
-    {
-        navMeshAgent.isStopped = true;
-        TurnOnNavi(false);
-        SetPositionCorrectly(WPosition);
-        MakeLookAt(new Vector3(forward.x, 0f, forward.z));
-    }
+    // public void MakeCorrect(ActionPoint ap)
+    // {
+    //     navMeshAgent.isStopped = true;
+    //     TurnOnNavi(false);
+    //     SetPositionCorrectly(ap.transform.position);
+    //     var forward = modelPhysicsController.transform.forward;
+    //     MakeLookAt(new Vector3(forward.x, 0f, forward.z));
+    // }
 
-    public void SetPositionCorrectly(Vector3 worldPosition)
-    {
-        StartCoroutine(DoSetPositionCorrectly(worldPosition));
-    }
+    // public void SetPositionCorrectly(Vector3 worldPosition)
+    // {
+    //     StartCoroutine(DoSetPositionCorrectly(worldPosition));
+    // }
 
-    IEnumerator DoSetPositionCorrectly(Vector3 worldPosition)
-    {
-        var t = 0f;
-        var maxT = 0.5f;
-        var beforePosition = transform.position;
-        while (t < maxT)
-        {
-            yield return new WaitForFixedUpdate();
-            t += Time.fixedDeltaTime;
-            var ratio = Mathf.InverseLerp(0, maxT, t);
-            transform.position = Vector3.Lerp(beforePosition, Vector3Extentioner.GetOverrideVectorY(worldPosition, beforePosition), ratio);
-        }
-        isPositionCorrect = true;
-    }
+    // IEnumerator DoSetPositionCorrectly(Vector3 worldPosition)
+    // {
+    //     var t = 0f;
+    //     var maxT = 0.5f;
+    //     var beforePosition = transform.position;
+    //     while (t < maxT)
+    //     {
+    //         yield return new WaitForFixedUpdate();
+    //         t += Time.fixedDeltaTime;
+    //         var ratio = Mathf.InverseLerp(0, maxT, t);
+    //         transform.position = Vector3.Lerp(beforePosition, Vector3Extentioner.GetOverrideVectorY(worldPosition, beforePosition), ratio);
+    //     }
+    // }
 
-    public void MakeLookAt(Vector3 dir)
-    {
-        StartCoroutine(DoLookAtWithSpeed(dir));
-    }
-    IEnumerator DoLookAtWithSpeed(Vector3 dir)
-    {
-        //Roughly
-        var startForward = transform.forward;
-        var cross = Vector3.Cross(Vector3.up, startForward);
-        var dot = Vector3.Dot(cross, dir);
-        var isLeft = dot < 0;
-        var rotateSpeed = 300f;
-        var lastAngle = Vector3.Angle(transform.forward, dir);
+    // public void MakeLookAt(Vector3 dir)
+    // {
+    //     StartCoroutine(DoLookAt(dir));
+    // }
+    // IEnumerator DoLookAt(Vector3 dir)
+    // {
+    //     var startForward = transform.forward;
+    //     var cross = Vector3.Cross(Vector3.up, startForward);
+    //     var dot = Vector3.Dot(cross, dir);
+    //     var isLeft = dot < 0;
+    //     var rotateSpeed = 300f;
+    //     var lastAngle = Vector3.Angle(transform.forward, dir);
+    //     var limitDegreeOfHead = 70f;
 
-        if (lastAngle > 90f)
-        {
-            var ap = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP).GetNewOne<PersonActionPoint>();
-            ap.state = (int)PersonActionPoint.StateKind.TurnAround;
-            ap.shouldTurnLeft = isLeft;
-            ap.during = modelPhysicsController.aniController.GetLength(isLeft ? "TurnL" : "TurnR");
-            modelPhysicsController.aniController.StartAni(ap, true);
-        }
+    //     if (lastAngle < limitDegreeOfHead)
+    //     {
+    //         modelPhysicsController.aniController.MakeTurn(isLeft);
+    //     }
 
-        while (true)
-        {
-            transform.Rotate(isLeft ? Vector3.down : Vector3.up, rotateSpeed * Time.fixedDeltaTime);
-            var nowAngle = Vector3.Angle(transform.forward, dir);
-            if (nowAngle > lastAngle) break;
-            else lastAngle = nowAngle;
+    //     //Roughly
+    //     while (true)
+    //     {
+    //         transform.Rotate(isLeft ? Vector3.down : Vector3.up, rotateSpeed * Time.fixedDeltaTime);
+    //         var nowAngle = Vector3.Angle(transform.forward, dir);
+    //         if (nowAngle > lastAngle) break;
+    //         else lastAngle = nowAngle;
+    //         yield return new WaitForFixedUpdate();
+    //     }
 
-            Debug.Log(lastAngle);
-            yield return new WaitForFixedUpdate();
-        }
+    //     //Correctly
+    //     if (Vector3.Angle(transform.forward, dir) * Mathf.Rad2Deg > 3f)
+    //     {
+    //         var t = 0f;
+    //         var maxT = 1f;
+    //         startForward = transform.forward;
+    //         while (t < maxT)
+    //         {
+    //             var ratio = Mathf.InverseLerp(0, maxT, t);
+    //             transform.forward = Vector3.Lerp(startForward, dir, ratio);
+    //             t += Time.fixedDeltaTime;
+    //             yield return new WaitForFixedUpdate();
+    //         }
+    //     }
 
-        //Correctly
-        if (Vector3.Angle(transform.forward, dir) * Mathf.Rad2Deg > 3f)
-        {
-            var t = 0f;
-            var maxT = 1f;
-            startForward = transform.forward;
-            while (t < maxT)
-            {
-                var ratio = Mathf.InverseLerp(0, maxT, t);
-                transform.forward = Vector3.Lerp(startForward, dir, ratio);
-                t += Time.fixedDeltaTime;
-                yield return new WaitForFixedUpdate();
-            }
-        }
+    //     modelPhysicsController.ReadNowAction();
+    //     yield return null;
+    // }
 
-        //하는 중ㅡ 턴하는 동안 다음 에니메이션 방지 해야함
-        isRotationCorrect = true;
-        yield return null;
-    }
 }

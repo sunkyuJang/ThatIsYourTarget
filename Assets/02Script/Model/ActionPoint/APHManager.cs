@@ -37,7 +37,6 @@ public class APHManager : MonoBehaviour
             poolers[(int)PoolerKinds.PersonAP].MakeNewOne();
         }
         IsReady = true;
-        Debug.Log(IsReady);
     }
 
     public ActionPointHandler GetCopyAPH(ActionPointHandler originalAPH)

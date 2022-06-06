@@ -24,19 +24,19 @@ public class ModelPhysicsController : MonoBehaviour, IObjDetectorConnector_OnDet
             APHManager.Instance.ReturnAPH(actionPointHandler);
 
         actionPointHandler = handler;
-        SetNextTargetPosition(handler.GetNowActionPoint().transform.position);
+        SetNextTargetPosition(handler.GetNowActionPoint());
     }
 
     public void ChageLastAPPosition(Transform target)
     {
         var lastAP = actionPointHandler.GetActionPoint(actionPointHandler.GetActionCount - 1);
         lastAP.SetPositionForTracking(transform, target, false);
-        SetNextTargetPosition(lastAP.transform.position);
+        SetNextTargetPosition(lastAP);
     }
 
-    public void SetNextTargetPosition(Vector3 WPosition)
+    public void SetNextTargetPosition(ActionPoint ap)
     {
-        naviController.SetNextPosition(WPosition);
+        naviController.SetNextPosition(ap);
     }
 
     public void ReadNowAction()
@@ -50,9 +50,7 @@ public class ModelPhysicsController : MonoBehaviour, IObjDetectorConnector_OnDet
 
         if (ap.HasAction)
         {
-            naviController.MakeCorrect(ap.transform.position, ap.transform.forward);
-            yield return new WaitUntil(() => naviController.IsPositionAndRotationGetCorrect);
-            aniController.StartAni(ap);
+            aniController.MakeCorrect(ap);
         }
         else
         {
@@ -69,7 +67,7 @@ public class ModelPhysicsController : MonoBehaviour, IObjDetectorConnector_OnDet
         }
         else
         {
-            SetNextTargetPosition(actionPointHandler.GetNextActionPoint().transform.position);
+            SetNextTargetPosition(actionPointHandler.GetNextActionPoint());
         }
     }
 
