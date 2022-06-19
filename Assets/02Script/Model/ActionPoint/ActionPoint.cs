@@ -1,10 +1,12 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEditor.Animations;
 
 [System.Serializable]
 public class ActionPoint : MonoBehaviour
 {
+    public AnimatorController animatorController;
     public virtual bool HasAction { get { return true; } }
     [HideInInspector]
     public int state = 0;
@@ -12,7 +14,50 @@ public class ActionPoint : MonoBehaviour
     public float during = 0;
     [HideInInspector]
     public float targetDegree = 0;
+    public ChildAnimatorState GetState(string stateName)
+    {
+        var aniState = animatorController.layers;
+        foreach (AnimatorControllerLayer layer in aniState)
+        {
+            foreach (ChildAnimatorState state in layer.stateMachine.states)
+            {
+                if (state.state.name == stateName)
+                    return state;
+            }
 
+            foreach (ChildAnimatorStateMachine machine in layer.stateMachine.stateMachines)
+            {
+                foreach (ChildAnimatorState state in machine.stateMachine.states)
+                {
+                    if (state.state.name == stateName)
+                    {
+                        return state;
+                    }
+                }
+            }
+        }
+
+        return new ChildAnimatorState();
+    }
+    public float GetLength(string stateName)
+    {
+        var state = GetState(stateName);
+        if (state.state != null)
+        {
+            var speed = state.state.speed;
+            var motionName = state.state.motion.name;
+            var clips = animatorController.animationClips;
+            foreach (AnimationClip clip in clips)
+            {
+                if (clip.name == motionName)
+                {
+                    return clip.length / speed;
+                }
+            }
+        }
+
+        return 0;
+    }
     IEnumerator DoTimeCount(Action action)
     {
         var t = 0f;
@@ -44,11 +89,16 @@ public class ActionPoint : MonoBehaviour
             ChangePosition(to.position);
     }
 
-    public void SetAPWithDuring(Transform from, Transform to, PersonActionPoint.StateKind kind, float time, bool shouldChangeRotation = false, bool shouldChangePosition = false)
+    public void SetAPWithDuring(Transform from, Transform to, int state, float time, bool shouldChangeRotation = false, bool shouldChangePosition = false)
     {
-        state = (int)kind;
+        this.state = state;
         during = time;
         SetPositionForTracking(from, to, shouldChangeRotation, shouldChangePosition);
+    }
+
+    public void SetAPWithFixedDuring(Transform from, Transform to, int state, string kind, bool shouldChangeRotation = false, bool shouldChangePosition = false)
+    {
+        SetAPWithDuring(from, to, state, GetLength(kind), shouldChangePosition, shouldChangeRotation);
     }
 }
 

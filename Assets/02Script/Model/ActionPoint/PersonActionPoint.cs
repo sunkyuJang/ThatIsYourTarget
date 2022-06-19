@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.Animations;
 
 public class PersonActionPoint : ActionPoint
 {
@@ -11,6 +12,7 @@ public class PersonActionPoint : ActionPoint
     public int sittingNum = 0;
     public bool shouldReadyForBattle;
     public int weaponLayer;
+    public float GetLength() => GetLength(((PersonActionPoint.StateKind)state).ToString());
 }
 
 [CustomEditor(typeof(PersonActionPoint))]
@@ -24,6 +26,8 @@ public class PersonActionPointEditor : Editor
     }
     public override void OnInspectorGUI()
     {
+        var animatorController = EditorGUILayout.ObjectField("Animator Contoller", ap.animatorController, typeof(AnimatorController), false) as AnimatorController;
+
         kind = (PersonActionPoint.StateKind)EditorGUILayout.EnumPopup("State", (PersonActionPoint.StateKind)ap.state);
 
         switch (kind)
@@ -37,11 +41,15 @@ public class PersonActionPointEditor : Editor
             case PersonActionPoint.StateKind.PrepareAttack:
                 SetPrepareAttack(ap);
                 break;
+            case PersonActionPoint.StateKind.LookAround:
+                SetLookAround(ap);
+                break;
             default:
                 break;
         }
 
         ap.State = kind;
+        ap.animatorController = animatorController;
         EditorUtility.SetDirty(ap);
     }
     void SetPrepareAttack(PersonActionPoint ap)
@@ -59,9 +67,12 @@ public class PersonActionPointEditor : Editor
         ap.sittingNum = (int)EditorGUILayout.Slider("SittingLevel", ap.sittingNum, 1, 4);
     }
 
+    void SetLookAround(PersonActionPoint ap)
+    {
+        ExpresseFixedDuring(ap, ap.GetLength());
+    }
     void SetWaitingInspector(ActionPoint ap) => ExpresseDuring(ap);
-    void SetFixedWaitingInspector(ActionPoint ap, float fixedTime) => ExpresseFixedDuring(ap, fixedTime);
     void SetPrepareAttack(ActionPoint ap) => ExpresseDuring(ap);
     void ExpresseDuring(ActionPoint ap) => ap.during = (float)EditorGUILayout.FloatField("during", ap.during);
-    void ExpresseFixedDuring(ActionPoint ap, float fixedTime) => ap.during = (float)EditorGUILayout.FloatField("FixedDuring", fixedTime);
+    void ExpresseFixedDuring(ActionPoint ap, float fixedTime) => ap.during = (float)EditorGUILayout.DelayedFloatField("FixedDuring", fixedTime);
 }

@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-using UnityEditor.Animations;
 using JMath;
 
 public class AniController : MonoBehaviour
@@ -14,50 +13,7 @@ public class AniController : MonoBehaviour
     protected bool isRotationCorrect { set; get; } = false;
     protected Transform headFollowTarget { set; get; } = null;
     float lookAtWeight = 0f;
-    public ChildAnimatorState GetState(string stateName)
-    {
-        var aniState = (animator.runtimeAnimatorController as AnimatorController).layers;
-        foreach (AnimatorControllerLayer layer in aniState)
-        {
-            foreach (ChildAnimatorState state in layer.stateMachine.states)
-            {
-                if (state.state.name == stateName)
-                    return state;
-            }
-
-            foreach (ChildAnimatorStateMachine machine in layer.stateMachine.stateMachines)
-            {
-                foreach (ChildAnimatorState state in machine.stateMachine.states)
-                {
-                    if (state.state.name == stateName)
-                    {
-                        return state;
-                    }
-                }
-            }
-        }
-
-        return new ChildAnimatorState();
-    }
-    public float GetLength(string stateName)
-    {
-        var state = GetState(stateName);
-        if (state.state != null)
-        {
-            var speed = state.state.speed;
-            var motionName = state.state.motion.name;
-            var clips = animator.runtimeAnimatorController.animationClips;
-            foreach (AnimationClip clip in clips)
-            {
-                if (clip.name == motionName)
-                {
-                    return clip.length / speed;
-                }
-            }
-        }
-
-        return 0;
-    }
+    protected float animationPlayLimit = 0.85f;
 
     public bool IsPlayingAni(int layer, string stateName)
     {

@@ -39,10 +39,9 @@ public class PersonAniController : AniController
     IEnumerator DoAnimationTimeCount(ActionPoint actionPoint, bool shouldReturnAP = false)
     {
         if (actionPoint.during < -1) yield return null;
-        var time = 0f;
-        while (time < actionPoint.during)
+        var maxTime = Mathf.Lerp(0, actionPoint.during, animationPlayLimit);
+        for (float time = 0f; time < maxTime; time += Time.fixedDeltaTime)
         {
-            time += Time.fixedDeltaTime;
             yield return new WaitForFixedUpdate();
         }
         PlayingAni = null;
@@ -118,14 +117,18 @@ public class PersonAniController : AniController
         animator.SetBool(AnimationsWithBool.ShouldSurprize.ToString(), false);
         animator.SetFloat(AnimationsWithFloat.TurnDegree.ToString(), 361f);
 
-        yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 0.95f);
+        yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).normalizedTime < animationPlayLimit);
         SetWalkState(WalkLevel.Walk);
-        yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).IsName("WalkAround") ||
-                                            animator.GetCurrentAnimatorStateInfo(0).IsName("RunningAround"));
+        yield return new WaitUntil(() => IsWalkState());
 
         if (shouldReadNextAction)
             modelPhysicsController.ReadNextAction();
     }
+
+    bool IsWalkState() =>
+        animator.GetCurrentAnimatorStateInfo(0).IsName("WalkAround") ||
+        animator.GetCurrentAnimatorStateInfo(0).IsName("RunningAround");
+
 
     public void SetWalkState(WalkLevel walkLevel)
     {
@@ -137,7 +140,7 @@ public class PersonAniController : AniController
         SetCorrectly(ap);
 
         yield return new WaitUntil(() => isPositionCorrect && isRotationCorrect);
-
+        yield return new WaitUntil(() => IsWalkState());
         StartAni(ap);
     }
 
@@ -148,13 +151,12 @@ public class PersonAniController : AniController
         var cross = Vector3.Cross(Vector3.up, startForward);
         var dot = Vector3.Dot(cross, dir);
         var isLeft = dot < 0;
-        var rotateSpeed = 300f;
         var lastAngle = Vector3.Angle(transform.forward, dir);
 
         // make correction for animation float
         {
             var lastAngleABS = Mathf.Abs(lastAngle);
-            if (lastAngleABS == 0f || lastAngleABS == 100 || lastAngleABS == 360)
+            if (lastAngleABS == 0f || lastAngleABS == 135 || lastAngleABS == 360)
                 lastAngle += lastAngle >= 0 ? 1 : -1;
         }
 
@@ -165,40 +167,15 @@ public class PersonAniController : AniController
         {
             var ap = MakeTurn(lastAngle);
 
-            //Roughly
-            // while (true)
-            // {
-            //     transform.Rotate(isLeft ? Vector3.down : Vector3.up, rotateSpeed * Time.fixedDeltaTime);
-            //     var nowAngle = Vector3.Angle(transform.forward, dir);
-            //     if (nowAngle > lastAngle) break;
-            //     else lastAngle = nowAngle;
-            //     yield return new WaitForFixedUpdate();
-            // }
-
-            //Correctly
-            // if (Vector3.Angle(transform.forward, dir) * Mathf.Rad2Deg > 3f)
-            // {
-            //     var t = 0f;
-            //     var maxT = 1f;
-            //     startForward = transform.forward;
-            //     while (t < maxT)
-            //     {
-            //         var ratio = Mathf.InverseLerp(0, maxT, t);
-            //         transform.forward = Vector3.Lerp(startForward, dir, ratio);
-            //         t += Time.fixedDeltaTime;
-            //         yield return new WaitForFixedUpdate();
-            //     }
-            // }
-
+            var rotateTime = Mathf.Lerp(0, ap.during, 0.45f);
             var totalAngle = Vector3.Angle(transform.forward, dir);
-            var eachFrameAngle = totalAngle / (ap.during / Time.fixedDeltaTime);
+            var eachFrameAngle = totalAngle / (rotateTime / Time.fixedDeltaTime);
             for (float t = 0; t < ap.during; t += Time.fixedDeltaTime)
             {
-                transform.Rotate(isLeft ? Vector3.down : Vector3.up, eachFrameAngle);
+                if (t < rotateTime)
+                    transform.Rotate(isLeft ? Vector3.down : Vector3.up, eachFrameAngle);
                 yield return new WaitForFixedUpdate();
             }
-
-            //yield return new WaitUntil(() => IsPlayingAni(0, GetStateNameByDegree(lastAngle)));
         }
 
         isRotationCorrect = true;
@@ -209,7 +186,7 @@ public class PersonAniController : AniController
         var ap = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP).GetNewOne<PersonActionPoint>();
         ap.State = PersonActionPoint.StateKind.TurnAround;
         ap.targetDegree = degree;
-        ap.during = GetLength(GetStateNameByDegree(ap.targetDegree));
+        ap.during = ap.GetLength(GetStateNameByDegree(ap.targetDegree));
         StartAni(ap, true);
         return ap;
     }
@@ -218,11 +195,11 @@ public class PersonAniController : AniController
     {
         if (degree >= 0)
         {
-            return degree > 100f ? "LongTurnR" : "TurnR";
+            return degree > 135f ? "LongTurnR" : "TurnR";
         }
         else
         {
-            return degree < -100 ? "TurnL" : "LongTurnL";
+            return degree < -135f ? "TurnL" : "LongTurnL";
         }
     }
 

@@ -194,16 +194,15 @@ public partial class Person : Model
         aph.SetAPs(APs);
         aph.ShouldLoop = false;
 
-        SetAPWithDuring(APs[0], playerState.player.transform, PersonActionPoint.StateKind.Surprize);
-        SetAPWithDuring(APs[1], playerState.player.transform, PersonActionPoint.StateKind.LookAround, true, true);
+        SetAPWithFixedDuring(APs[0], playerState.player.transform, PersonActionPoint.StateKind.Surprize);
+        SetAPWithFixedDuring(APs[1], playerState.player.transform, PersonActionPoint.StateKind.LookAround, true, true);
 
         return aph;
     }
 
-    void SetAPWithDuring(ActionPoint ap, Transform target, PersonActionPoint.StateKind kind, bool shouldChangeRotation = false, bool shouldChangePosition = false)
+    void SetAPWithFixedDuring(ActionPoint ap, Transform target, PersonActionPoint.StateKind kind, bool shouldChangeRotation = false, bool shouldChangePosition = false)
     {
-        var length = aniController.GetLength(kind.ToString());
-        ap.SetAPWithDuring(modelPhysicsController.transform, target, kind, length, shouldChangeRotation, shouldChangePosition);
+        ap.SetAPWithFixedDuring(modelPhysicsController.transform, target, (int)kind, kind.ToString(), shouldChangeRotation, shouldChangePosition);
     }
     class CheckingPlayerState
     {

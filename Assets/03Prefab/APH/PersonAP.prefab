@@ -128,8 +128,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a3b8e433f0b87a14cb9641c1505f82e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  animatorController: {fileID: 9100000, guid: e7f0104a350a4d440abde9133090a485, type: 2}
   state: 0
   during: 0
+  targetDegree: 0
   sittingNum: 0
   shouldReadyForBattle: 0
   weaponLayer: 0
