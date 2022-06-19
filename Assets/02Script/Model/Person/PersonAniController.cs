@@ -30,24 +30,29 @@ public class PersonAniController : AniController
                 break;
         }
 
+        StartAniTimeCount(ap.during, shouldReturnAP);
+
+        if (shouldReturnAP)
+            APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP).ReturnTargetObj(ap.gameObject);
+    }
+
+    void StartAniTimeCount(float during, bool shouldReturnAP)
+    {
         if (IsPlayingAni)
             StopCoroutine(PlayingAni);
 
-        PlayingAni = StartCoroutine(DoAnimationTimeCount(ap, shouldReturnAP));
+        PlayingAni = StartCoroutine(DoAnimationTimeCount(during, shouldReturnAP));
     }
 
-    IEnumerator DoAnimationTimeCount(ActionPoint actionPoint, bool shouldReturnAP = false)
+    IEnumerator DoAnimationTimeCount(float during, bool shouldReturnAP = false)
     {
-        if (actionPoint.during < -1) yield return null;
-        var maxTime = Mathf.Lerp(0, actionPoint.during, animationPlayLimit);
+        if (during < -1) yield return null;
+        var maxTime = Mathf.Lerp(0, during, animationPlayLimit);
         for (float time = 0f; time < maxTime; time += Time.fixedDeltaTime)
         {
             yield return new WaitForFixedUpdate();
         }
         PlayingAni = null;
-
-        if (shouldReturnAP)
-            APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP).ReturnTargetObj(actionPoint.gameObject);
 
         MakeResetAni(!shouldReturnAP);
     }
