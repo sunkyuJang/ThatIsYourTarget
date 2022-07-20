@@ -37,7 +37,6 @@ public class NavController : MonoBehaviour
 
     IEnumerator DoCheckUntilArrive(ActionPoint ap)
     {
-        if ((PersonActionPoint.StateKind)ap.state == PersonActionPoint.StateKind.Run) Debug.Log("isin");
         yield return new WaitUntil(() => IsArrivedDestination);
         TurnOnNavi(false);
         modelPhysicsController.ReadNowAction();

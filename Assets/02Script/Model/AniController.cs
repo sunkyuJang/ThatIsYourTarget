@@ -125,7 +125,7 @@ public class AniController : MonoBehaviour
     protected virtual IEnumerator DoPositionCorrectly(Vector3 worldPosition)
     {
         var t = 0f;
-        var maxT = 0.5f;
+        var maxT = 0.05f;
         var beforePosition = transform.position;
         isPositionCorrect = false;
         while (t < maxT)
@@ -197,9 +197,6 @@ public class AniController : MonoBehaviour
     public virtual void StartAni(ActionPoint actionPoint, bool shouldReturnAP = false) { }
     protected void StartAniTimeCount(float during, bool shouldReturnAP)
     {
-        if (IsPlayingAni)
-            StopCoroutine(PlayingAni);
-
         PlayingAni = StartCoroutine(DoAnimationTimeCount(during, shouldReturnAP));
     }
     protected IEnumerator DoAnimationTimeCount(float during, bool shouldReturnAP = false)
