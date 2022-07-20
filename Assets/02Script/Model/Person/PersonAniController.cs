@@ -6,8 +6,6 @@ using UnityEngine;
 public class PersonAniController : AniController
 {
     public GameObject personNeck;
-    Coroutine PlayingAni { set; get; }
-    new public bool IsPlayingAni { get { return PlayingAni != null; } }
     public enum AnimationsWithLevel { WalkAroundLevel = 0, SittingLevel, }
     public enum AnimationsWithFloat { TurnDegree }
     public enum WalkLevel { Stop = 0, Walk, Run }
@@ -29,33 +27,12 @@ public class PersonAniController : AniController
             default:
                 break;
         }
-
         StartAniTimeCount(ap.during, shouldReturnAP);
 
         if (shouldReturnAP)
             APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP).ReturnTargetObj(ap.gameObject);
     }
 
-    void StartAniTimeCount(float during, bool shouldReturnAP)
-    {
-        if (IsPlayingAni)
-            StopCoroutine(PlayingAni);
-
-        PlayingAni = StartCoroutine(DoAnimationTimeCount(during, shouldReturnAP));
-    }
-
-    IEnumerator DoAnimationTimeCount(float during, bool shouldReturnAP = false)
-    {
-        if (during < -1) yield return null;
-        var maxTime = Mathf.Lerp(0, during, animationPlayLimit);
-        for (float time = 0f; time < maxTime; time += Time.fixedDeltaTime)
-        {
-            yield return new WaitForFixedUpdate();
-        }
-        PlayingAni = null;
-
-        MakeResetAni(!shouldReturnAP);
-    }
 
     public void SetPrepareAttack(bool shouldPrepare, int weaponLayer)
     {
@@ -105,12 +82,7 @@ public class PersonAniController : AniController
         StopMove(false);
     }
 
-    public void MakeResetAni(bool shouldReadNextAction = true)
-    {
-        StartCoroutine(DoResetAni(shouldReadNextAction));
-    }
-
-    IEnumerator DoResetAni(bool shouldReadNextAction)
+    protected override IEnumerator DoResetAni(bool shouldReadNextAction)
     {
         var wasStanding = animator.GetInteger(AnimationsWithLevel.SittingLevel.ToString()) != 0;
 
@@ -125,9 +97,9 @@ public class PersonAniController : AniController
         yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).normalizedTime < animationPlayLimit);
         SetWalkState(WalkLevel.Walk);
         yield return new WaitUntil(() => IsWalkState());
+        yield return StartCoroutine(base.DoResetAni(shouldReadNextAction));
 
-        if (shouldReadNextAction)
-            modelPhysicsController.ReadNextAction();
+        ProcResetAni = null;
     }
 
     bool IsWalkState() =>
@@ -143,7 +115,6 @@ public class PersonAniController : AniController
     protected override IEnumerator DoMakeCorrect(ActionPoint ap)
     {
         SetCorrectly(ap);
-
         yield return new WaitUntil(() => isPositionCorrect && isRotationCorrect);
         yield return new WaitUntil(() => IsWalkState());
         StartAni(ap);

@@ -14,12 +14,23 @@ public class AniController : MonoBehaviour
     protected Transform headFollowTarget { set; get; } = null;
     float lookAtWeight = 0f;
     protected float animationPlayLimit = 0.85f;
-
-    public bool IsPlayingAni(int layer, string stateName)
+    protected ActionPoint reservatiedAP { set; get; }
+    Coroutine PlayingAni { set; get; }
+    public bool IsPlayingAni { get { return PlayingAni != null; } }
+    protected Coroutine ProcResetAni { set; get; }
+    bool ShouldReserveAP
     {
-        var stateInfo = animator.GetCurrentAnimatorStateInfo(layer);
-        return stateInfo.IsName(stateName);
+        get
+        {
+            return ProcResetAni != null;
+        }
     }
+
+    // public bool IsPlayingAni(int layer, string stateName)
+    // {
+    //     var stateInfo = animator.GetCurrentAnimatorStateInfo(layer);
+    //     return stateInfo.IsName(stateName);
+    // }
     protected void Awake()
     {
         ragDollHandler = GetComponent<RagDollHandler>();
@@ -80,7 +91,14 @@ public class AniController : MonoBehaviour
     }
     public void MakeCorrect(ActionPoint ap)
     {
-        StartCoroutine(DoMakeCorrect(ap));
+        if (PlayingAni == null)
+        {
+            StartCoroutine(DoMakeCorrect(ap));
+        }
+        else
+        {
+            reservatiedAP = ap;
+        }
     }
 
     protected virtual IEnumerator DoMakeCorrect(ActionPoint ap)
@@ -177,4 +195,42 @@ public class AniController : MonoBehaviour
 
     public virtual void MakeTurn(float degree) { }
     public virtual void StartAni(ActionPoint actionPoint, bool shouldReturnAP = false) { }
+    protected void StartAniTimeCount(float during, bool shouldReturnAP)
+    {
+        if (IsPlayingAni)
+            StopCoroutine(PlayingAni);
+
+        PlayingAni = StartCoroutine(DoAnimationTimeCount(during, shouldReturnAP));
+    }
+    protected IEnumerator DoAnimationTimeCount(float during, bool shouldReturnAP = false)
+    {
+        if (during < -1) yield return null;
+        var maxTime = Mathf.Lerp(0, during, animationPlayLimit);
+        for (float time = 0f; time < maxTime && reservatiedAP == null; time += Time.fixedDeltaTime)
+        {
+            yield return new WaitForFixedUpdate();
+        }
+        PlayingAni = null;
+
+        MakeResetAni(!shouldReturnAP);
+    }
+    public void MakeResetAni(bool shouldReadNextAction = true)
+    {
+        ProcResetAni = StartCoroutine(DoResetAni(shouldReadNextAction));
+    }
+    protected virtual IEnumerator DoResetAni(bool shouldReadNextAction)
+    {
+        if (reservatiedAP == null)
+        {
+            if (shouldReadNextAction)
+                modelPhysicsController.ReadNextAction();
+        }
+        else
+        {
+            var ap = reservatiedAP;
+            reservatiedAP = null;
+            MakeCorrect(ap);
+        }
+        yield return null;
+    }
 }

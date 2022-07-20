@@ -7,9 +7,12 @@ public class ModelPhysicsController : MonoBehaviour, IObjDetectorConnector_OnDet
 {
     Model model;
     public ActionPointHandler actionPointHandler { private set; get; }
+    bool hasAPHChanged = false;
+    bool HasAPHChanged { set { hasAPHChanged = actionPointHandler != value; } get { return hasAPHChanged; } }
     public NavController naviController { private set; get; }
     public AniController aniController { private set; get; }
     RagDollHandler ragDollHandler { set; get; }
+    bool isInterrupt = false;
     private void Awake()
     {
         model = GetComponentInParent<Model>();
@@ -20,6 +23,8 @@ public class ModelPhysicsController : MonoBehaviour, IObjDetectorConnector_OnDet
 
     public void SetAPH(ActionPointHandler handler)
     {
+        HasAPHChanged = handler;
+
         if (actionPointHandler != null)
             APHManager.Instance.ReturnAPH(actionPointHandler);
 

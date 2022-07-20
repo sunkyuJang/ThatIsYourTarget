@@ -6,7 +6,7 @@ using UnityEditor.Animations;
 
 public class PersonActionPoint : ActionPoint
 {
-    public enum StateKind { non = 0, Standing, LookAround, Sitting, Surprize, PrepareAttack, Fight, Avoid, TurnAround, TurnHead }
+    public enum StateKind { non = 0, Walk, Run, Standing, LookAround, Sitting, Surprize, PrepareAttack, Fight, Avoid, TurnAround, TurnHead }
     public StateKind State { set { base.state = (int)value; } get { return (StateKind)state; } }
     public override bool HasAction { get { return state != (int)StateKind.non; } }
     public int sittingNum = 0;

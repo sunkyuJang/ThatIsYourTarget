@@ -34,18 +34,9 @@ public partial class Person : Model
     void AddToTrackingPlayerState(Player player)
     {
         CheckingPlayerState checkingPlayerState = null;
-        if (checkingPlayerStates.Count == 0)
-        {
+        var find = checkingPlayerStates.Find(x => x.player == player);
+        if (find == null)
             checkingPlayerState = new CheckingPlayerState(player);
-        }
-        else
-        {
-            var find = checkingPlayerStates.Find(x => x.player == player);
-            if (find.player == null)
-            {
-                checkingPlayerState = new CheckingPlayerState(player);
-            }
-        }
 
         if (checkingPlayerState != null)
         {
@@ -62,7 +53,6 @@ public partial class Person : Model
             var find = checkingPlayerStates.Find(x => x.player == player);
             if (find != null)
             {
-                Debug.Log("getIn");
                 find.shouldRemove = true;
             }
         }
@@ -200,9 +190,9 @@ public partial class Person : Model
         return aph;
     }
 
-    void SetAPWithFixedDuring(ActionPoint ap, Transform target, PersonActionPoint.StateKind kind, bool shouldChangeRotation = false, bool shouldChangePosition = false)
+    void SetAPWithFixedDuring(ActionPoint ap, Transform target, PersonActionPoint.StateKind kind, bool shouldChangePosition = false, bool shouldChangeRotation = false)
     {
-        ap.SetAPWithFixedDuring(modelPhysicsController.transform, target, (int)kind, kind.ToString(), shouldChangeRotation, shouldChangePosition);
+        ap.SetAPWithFixedDuring(modelPhysicsController.transform, target, (int)kind, kind.ToString(), shouldChangePosition, shouldChangeRotation);
     }
     class CheckingPlayerState
     {
