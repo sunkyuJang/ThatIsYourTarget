@@ -70,34 +70,7 @@ public partial class Person : Model
         CheckingPlayerState lastMostCloseState = null;
         while (checkingPlayerStates.Count != 0)
         {
-            for (int i = 0; i < checkingPlayerStates.Count; i++)
-            {
-                var data = checkingPlayerStates[i];
-                if (data.CanRemove)
-                {
-                    checkingPlayerStates.RemoveAt(i--);
-                }
-                else
-                {
-                    if (!data.isFollowing &&
-                        ShouldRecongnize(data.player))
-                    {
-                        if (mostCloseState == null)
-                        {
-                            mostCloseState = data;
-                        }
-                        else
-                        {
-                            Transform[] list = new Transform[] { mostCloseState.player.transform, data.player.transform };
-                            var closedTransform = Vector3Extentioner.GetMostClosedOne(modelPhysicsController.transform, list);
-                            var shouldCloseOneChage = data.player.transform == closedTransform;
-                            mostCloseState = shouldCloseOneChage ? data : mostCloseState;
-                        }
-
-                        var state = GetStateByDist(data.player.transform.position);
-                    }
-                }
-            }
+            mostCloseState = GetMostClosedOne(mostCloseState);
 
             if (mostCloseState != lastMostCloseState)
             {
@@ -109,6 +82,38 @@ public partial class Person : Model
 
         procDoCheckingPlayers = null;
         yield return null;
+    }
+
+    CheckingPlayerState GetMostClosedOne(CheckingPlayerState mostCloseState = null)
+    {
+        for (int i = 0; i < checkingPlayerStates.Count; i++)
+        {
+            var data = checkingPlayerStates[i];
+            if (data.CanRemove)
+            {
+                checkingPlayerStates.RemoveAt(i--);
+            }
+            else
+            {
+                if (!data.isFollowing &&
+                    ShouldRecongnize(data.player))
+                {
+                    if (mostCloseState == null)
+                    {
+                        mostCloseState = data;
+                    }
+                    else
+                    {
+                        Transform[] list = new Transform[] { mostCloseState.player.transform, data.player.transform };
+                        var closedTransform = Vector3Extentioner.GetMostClosedOne(modelPhysicsController.transform, list);
+                        var shouldCloseOneChage = data.player.transform == closedTransform;
+                        mostCloseState = shouldCloseOneChage ? data : mostCloseState;
+                    }
+                }
+            }
+        }
+
+        return mostCloseState;
     }
 
     void StartClosePlayerTracking(CheckingPlayerState data)
@@ -127,37 +132,40 @@ public partial class Person : Model
         var lastAPH = modelPhysicsController.actionPointHandler;
         while (lastAPH == modelPhysicsController.actionPointHandler)
         {
-            yield return new WaitForFixedUpdate();
-
             if (!data.shouldRemove)
             {
-                var isPositionChanged = lastPlayerPosition != data.player.transform.position;
+                var shouldResetTrackingPosition = lastPlayerPosition != data.player.transform.position;
                 var nowState = GetStateByDist(data.player.transform.position);
                 if (nowState != beforeState)
                 {
                     beforeState = nowState;
-                    ActionPointHandler aph = GetEachStateOfAPH(nowState, data);
+                    ActionPointHandler aph = GetEachStateOfAPH(nowState, data.player.transform);
                     SetAPH(aph);
+                    lastAPH = modelPhysicsController.actionPointHandler;
+                    SetState((int)beforeState);
                 }
 
-                if (isPositionChanged)
+                if (shouldResetTrackingPosition)
                 {
                     modelPhysicsController.ChageLastAPPosition(data.player.transform);
                 }
             }
+
+            yield return new WaitForFixedUpdate();
         }
 
         SetState((int)StateKinds.Normal);
+        data.isFollowing = false;
         procDoTrackingClosePlayer = null;
     }
 
-    ActionPointHandler GetEachStateOfAPH(StateKinds kinds, CheckingPlayerState data)
+    ActionPointHandler GetEachStateOfAPH(StateKinds kinds, Transform playerTranform)
     {
         ActionPointHandler aph = null;
         switch (kinds)
         {
             case StateKinds.Notice:
-                aph = GetNoticeAPH(data);
+                aph = GetNoticeAPH(playerTranform);
                 break;
         }
 
@@ -170,7 +178,7 @@ public partial class Person : Model
         return dist == (float)StateByDist.Attack ? StateKinds.Attack : StateKinds.Notice;
     }
 
-    ActionPointHandler GetNoticeAPH(CheckingPlayerState playerState)
+    ActionPointHandler GetNoticeAPH(Transform playerTranform)
     {
         var requireAPCount = 2;
         var apPooler = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP);
@@ -184,8 +192,8 @@ public partial class Person : Model
         aph.SetAPs(APs);
         aph.ShouldLoop = false;
 
-        SetAPWithFixedDuring(APs[0], playerState.player.transform, PersonActionPoint.StateKind.Surprize);
-        SetAPWithFixedDuring(APs[1], playerState.player.transform, PersonActionPoint.StateKind.LookAround, true, true);
+        SetAPWithFixedDuring(APs[0], playerTranform, PersonActionPoint.StateKind.Surprize);
+        SetAPWithFixedDuring(APs[1], playerTranform, PersonActionPoint.StateKind.LookAround, true, true);
 
         return aph;
     }

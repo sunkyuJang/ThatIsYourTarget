@@ -31,6 +31,7 @@ public class Model : MonoBehaviour
     public void SetOriginalAPH() => SetAPH(APHManager.Instance.GetCopyAPH(originalAPH));
     public void SetAPH(ActionPointHandler handler)
     {
+        if (handler == originalAPH) originalAPH.index = handler.index;
         handler.transform.SetParent(APHGroup);
         modelPhysicsController.SetAPH(handler);
     }

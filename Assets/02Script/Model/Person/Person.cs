@@ -31,6 +31,7 @@ public partial class Person : Model
         switch ((StateKinds)state)
         {
             case StateKinds.Normal: SetOriginalAPH(); break;
+            default: break;
         }
     }
 
