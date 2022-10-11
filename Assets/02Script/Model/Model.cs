@@ -5,15 +5,16 @@ using UnityEngine;
 public class Model : MonoBehaviour
 {
     public int state { private set; get; } = 0;
-    protected ModelPhysicsController modelPhysicsController;
+    protected ModelHandler modelHandler;
     Transform APHGroup;
     ActionPointHandler originalAPH;
 
     protected virtual void Awake()
     {
-        modelPhysicsController = GetComponentInChildren<ModelPhysicsController>();
+        modelHandler = GetComponentInChildren<ModelHandler>();
         APHGroup = transform.Find("APHGroup");
         originalAPH = APHGroup.Find("OriginalAPH").GetComponent<ActionPointHandler>();
+        originalAPH.originalOwener = gameObject;
     }
     protected virtual IEnumerator Start()
     {
@@ -25,17 +26,34 @@ public class Model : MonoBehaviour
         if (newState != state)
         {
             state = newState;
+            print(state + "in");
             ChangedState(state);
         }
+        print(state + "out");
     }
-    public void SetOriginalAPH() => SetAPH(APHManager.Instance.GetCopyAPH(originalAPH));
+    public void SetOriginalAPH()
+    {
+        SetAPH(originalAPH);
+    }
+
+    private void Update()
+    {
+        if (true)
+        {
+            var sd = 10;
+        }
+    }
+
+    public void ReturnAPH(ActionPointHandler APH)
+    {
+        if (APH != originalAPH)
+            APHManager.Instance.ReturnAPH(APH);
+    }
     public void SetAPH(ActionPointHandler handler)
     {
-        if (handler == originalAPH) originalAPH.index = handler.index;
-        handler.transform.SetParent(APHGroup);
-        modelPhysicsController.SetAPH(handler);
+        modelHandler.SetAPH(handler);
     }
-    public void StartToAPHRead() { modelPhysicsController.ReadNextAction(); }
+    public void StartToAPHRead() { modelHandler.ReadNextAction(); }
     public virtual void Contected(Collider collider) { }
     public virtual void Contecting(Collider collider) { }
     public virtual void Removed(Collider collider) { }

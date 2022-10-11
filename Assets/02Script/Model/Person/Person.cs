@@ -14,7 +14,7 @@ public partial class Person : Model
     protected override IEnumerator Start()
     {
         yield return StartCoroutine(base.Start());
-        aniController = modelPhysicsController.aniController as PersonAniController;
+        aniController = modelHandler.aniController as PersonAniController;
 
         yield return null;
     }

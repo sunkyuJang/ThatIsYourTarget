@@ -1,0 +1,9 @@
+//Using
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class /*Name NewBehaviourScript/ : MonoBehaviour
+{
+    //Field	
+}

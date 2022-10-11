@@ -105,7 +105,7 @@ public partial class Person : Model
                     else
                     {
                         Transform[] list = new Transform[] { mostCloseState.player.transform, data.player.transform };
-                        var closedTransform = Vector3Extentioner.GetMostClosedOne(modelPhysicsController.transform, list);
+                        var closedTransform = Vector3Extentioner.GetMostClosedOne(modelHandler.transform, list);
                         var shouldCloseOneChage = data.player.transform == closedTransform;
                         mostCloseState = shouldCloseOneChage ? data : mostCloseState;
                     }
@@ -129,26 +129,24 @@ public partial class Person : Model
 
         var beforeState = (StateKinds)state;
         var lastPlayerPosition = data.player.transform.position;
-        var lastAPH = modelPhysicsController.actionPointHandler;
-        while (lastAPH == modelPhysicsController.actionPointHandler)
+        var lastAPH = modelHandler.actionPointHandler;
+        while (!data.shouldRemove)
         {
-            if (!data.shouldRemove)
+            var shouldResetTrackingPosition = lastPlayerPosition != data.player.transform.position;
+            var nowState = GetStateByDist(data.player.transform.position);
+            if (nowState != beforeState)
             {
-                var shouldResetTrackingPosition = lastPlayerPosition != data.player.transform.position;
-                var nowState = GetStateByDist(data.player.transform.position);
-                if (nowState != beforeState)
-                {
-                    beforeState = nowState;
-                    ActionPointHandler aph = GetEachStateOfAPH(nowState, data.player.transform);
-                    SetAPH(aph);
-                    lastAPH = modelPhysicsController.actionPointHandler;
-                    SetState((int)beforeState);
-                }
+                beforeState = nowState;
+                ActionPointHandler aph = GetEachStateOfAPH(nowState, data.player.transform);
+                SetAPH(aph);
+                lastAPH = modelHandler.actionPointHandler;
+                SetState((int)beforeState);
+            }
 
-                if (shouldResetTrackingPosition)
-                {
-                    modelPhysicsController.ChageLastAPPosition(data.player.transform);
-                }
+            if (shouldResetTrackingPosition)
+            {
+                modelHandler.ChageLastAPPosition(data.player.transform);
+                lastPlayerPosition = data.player.transform.position;
             }
 
             yield return new WaitForFixedUpdate();
@@ -174,8 +172,8 @@ public partial class Person : Model
 
     StateKinds GetStateByDist(Vector3 WPosition)
     {
-        var dist = Vector3.Distance(modelPhysicsController.transform.position, WPosition);
-        return dist == (float)StateByDist.Attack ? StateKinds.Attack : StateKinds.Notice;
+        var dist = Vector3.Distance(modelHandler.transform.position, WPosition);
+        return StateKinds.Notice; //dist == (float)StateByDist.Attack ? StateKinds.Attack : StateKinds.Notice;
     }
 
     ActionPointHandler GetNoticeAPH(Transform playerTranform)
@@ -192,15 +190,15 @@ public partial class Person : Model
         aph.SetAPs(APs);
         aph.ShouldLoop = false;
 
-        SetAPWithFixedDuring(APs[0], playerTranform, PersonActionPoint.StateKind.Surprize);
-        SetAPWithFixedDuring(APs[1], playerTranform, PersonActionPoint.StateKind.LookAround, true, true);
+        SetAPWithFixedDuring(APs[0], playerTranform, PersonAniController.StateKind.Surprize);
+        SetAPWithFixedDuring(APs[1], playerTranform, PersonAniController.StateKind.LookAround, true, true);
 
         return aph;
     }
 
-    void SetAPWithFixedDuring(ActionPoint ap, Transform target, PersonActionPoint.StateKind kind, bool shouldChangePosition = false, bool shouldChangeRotation = false)
+    void SetAPWithFixedDuring(ActionPoint ap, Transform target, PersonAniController.StateKind kind, bool shouldChangePosition = false, bool shouldChangeRotation = false)
     {
-        ap.SetAPWithFixedDuring(modelPhysicsController.transform, target, (int)kind, kind.ToString(), shouldChangePosition, shouldChangeRotation);
+        ap.SetAPWithFixedDuring(modelHandler.transform, target, (int)kind, kind.ToString(), shouldChangePosition, shouldChangeRotation);
     }
     class CheckingPlayerState
     {

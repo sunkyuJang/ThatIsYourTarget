@@ -8,7 +8,7 @@ using JMath;
 [RequireComponent(typeof(NavMeshObstacle))]
 public class NavController : MonoBehaviour
 {
-    ModelPhysicsController modelPhysicsController;
+    ModelHandler modelPhysicsController;
     public NavMeshAgent navMeshAgent { private set; get; }
     NavMeshObstacle navMeshObstacle { set; get; }
     public float permissibleRangeToDestination = 0.01f;
@@ -16,12 +16,11 @@ public class NavController : MonoBehaviour
     public Coroutine CheckingUntilArrive;
     void Awake()
     {
-        modelPhysicsController = GetComponent<ModelPhysicsController>();
+        modelPhysicsController = GetComponent<ModelHandler>();
         navMeshAgent = GetComponent<NavMeshAgent>();
         navMeshObstacle = GetComponent<NavMeshObstacle>();
         navMeshObstacle.enabled = false;
     }
-    public void StopAllProcess() { StopAllCoroutines(); }
     public void SetNextPosition(ActionPoint ap)
     {
         TurnOnNavi(true);
@@ -37,7 +36,19 @@ public class NavController : MonoBehaviour
 
     IEnumerator DoCheckUntilArrive(ActionPoint ap)
     {
-        yield return new WaitUntil(() => IsArrivedDestination);
+        TurnOnNavi(true);
+        var lastPosition = ap.transform.position;
+
+        while (!IsArrivedDestination)
+        {
+            if (lastPosition != ap.transform.position)
+            {
+                navMeshAgent.SetDestination(ap.transform.position);
+                lastPosition = ap.transform.position;
+            }
+            yield return new WaitForFixedUpdate();
+        }
+
         TurnOnNavi(false);
         modelPhysicsController.ReadNowAction();
     }

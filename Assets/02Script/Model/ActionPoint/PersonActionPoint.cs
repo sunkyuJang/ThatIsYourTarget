@@ -6,20 +6,19 @@ using UnityEditor.Animations;
 
 public class PersonActionPoint : ActionPoint
 {
-    public enum StateKind { non = 0, Walk, Run, Standing, LookAround, Sitting, Surprize, PrepareAttack, Fight, Avoid, TurnAround, TurnHead }
-    public StateKind State { set { base.state = (int)value; } get { return (StateKind)state; } }
-    public override bool HasAction { get { return state != (int)StateKind.non; } }
+    public PersonAniController.StateKind State { set { base.state = (int)value; } get { return (PersonAniController.StateKind)state; } }
+    public override bool HasAction { get { return state != (int)PersonAniController.StateKind.non; } }
     public int sittingNum = 0;
     public bool shouldReadyForBattle;
     public int weaponLayer;
-    public float GetLength() => GetLength(((PersonActionPoint.StateKind)state).ToString());
+    public float GetLength() => GetLength(((PersonAniController.StateKind)state).ToString());
 }
 
 [CustomEditor(typeof(PersonActionPoint))]
 public class PersonActionPointEditor : Editor
 {
     PersonActionPoint ap;
-    public PersonActionPoint.StateKind kind;
+    public PersonAniController.StateKind kind;
     private void OnEnable()
     {
         ap = target as PersonActionPoint;
@@ -28,20 +27,20 @@ public class PersonActionPointEditor : Editor
     {
         var animatorController = EditorGUILayout.ObjectField("Animator Contoller", ap.animatorController, typeof(AnimatorController), false) as AnimatorController;
 
-        kind = (PersonActionPoint.StateKind)EditorGUILayout.EnumPopup("State", (PersonActionPoint.StateKind)ap.state);
+        kind = (PersonAniController.StateKind)EditorGUILayout.EnumPopup("State", (PersonAniController.StateKind)ap.state);
 
         switch (kind)
         {
-            case PersonActionPoint.StateKind.Sitting:
+            case PersonAniController.StateKind.Sitting:
                 SetSittingInspector(ap);
                 break;
-            case PersonActionPoint.StateKind.Standing:
+            case PersonAniController.StateKind.Standing:
                 SetWaitingInspector(ap);
                 break;
-            case PersonActionPoint.StateKind.PrepareAttack:
+            case PersonAniController.StateKind.PrepareAttack:
                 SetPrepareAttack(ap);
                 break;
-            case PersonActionPoint.StateKind.LookAround:
+            case PersonAniController.StateKind.LookAround:
                 SetLookAround(ap);
                 break;
             default:

@@ -7,7 +7,7 @@ using JMath;
 public class AniController : MonoBehaviour
 {
     protected RagDollHandler ragDollHandler { set; get; }
-    protected ModelPhysicsController modelPhysicsController;
+    protected ModelHandler modelPhysicsController;
     protected Animator animator;
     protected bool isPositionCorrect { set; get; } = false;
     protected bool isRotationCorrect { set; get; } = false;
@@ -34,7 +34,7 @@ public class AniController : MonoBehaviour
     protected void Awake()
     {
         ragDollHandler = GetComponent<RagDollHandler>();
-        modelPhysicsController = GetComponent<ModelPhysicsController>();
+        modelPhysicsController = GetComponent<ModelHandler>();
         animator = GetComponent<Animator>();
     }
 
@@ -42,6 +42,14 @@ public class AniController : MonoBehaviour
     {
         StartCoroutine(DoWalking());
         StartCoroutine(DoHeadFollow());
+    }
+
+    private void Update()
+    {
+        if (true)
+        {
+            var sd = 10;
+        }
     }
 
     IEnumerator DoWalking()
@@ -89,15 +97,16 @@ public class AniController : MonoBehaviour
 
         }
     }
-    public void MakeCorrect(ActionPoint ap)
+    public void DoAction(ActionPoint ap)
     {
-        if (PlayingAni == null)
+        if (!IsPlayingAni)
         {
             StartCoroutine(DoMakeCorrect(ap));
         }
         else
         {
             reservatiedAP = ap;
+            print("reservatiedAP");
         }
     }
 
@@ -195,21 +204,23 @@ public class AniController : MonoBehaviour
 
     public virtual void MakeTurn(float degree) { }
     public virtual void StartAni(ActionPoint actionPoint, bool shouldReturnAP = false) { }
-    protected void StartAniTimeCount(float during, bool shouldReturnAP)
+    protected void StartAniTimeCount(ActionPoint ap, bool shouldReturnAP)
     {
-        PlayingAni = StartCoroutine(DoAnimationTimeCount(during, shouldReturnAP));
+        PlayingAni = StartCoroutine(DoAnimationTimeCount(ap, shouldReturnAP));
     }
-    protected IEnumerator DoAnimationTimeCount(float during, bool shouldReturnAP = false)
+    protected IEnumerator DoAnimationTimeCount(ActionPoint ap, bool shouldReturnAP = false)
     {
-        if (during < -1) yield return null;
-        var maxTime = Mathf.Lerp(0, during, animationPlayLimit);
+        if (ap.during < -1) yield return null;
+        var maxTime = Mathf.Lerp(0, ap.during, animationPlayLimit);
         for (float time = 0f; time < maxTime && reservatiedAP == null; time += Time.fixedDeltaTime)
         {
             yield return new WaitForFixedUpdate();
         }
-        PlayingAni = null;
 
         MakeResetAni(!shouldReturnAP);
+
+        if (shouldReturnAP)
+            APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP).ReturnTargetObj(ap.gameObject);
     }
     public void MakeResetAni(bool shouldReadNextAction = true)
     {
@@ -217,6 +228,8 @@ public class AniController : MonoBehaviour
     }
     protected virtual IEnumerator DoResetAni(bool shouldReadNextAction)
     {
+        PlayingAni = null;
+        print("entered end animation");
         if (reservatiedAP == null)
         {
             if (shouldReadNextAction)
@@ -226,8 +239,11 @@ public class AniController : MonoBehaviour
         {
             var ap = reservatiedAP;
             reservatiedAP = null;
-            MakeCorrect(ap);
+            DoAction(ap);
         }
+
+        print("exit end animation");
+        print(reservatiedAP == null);
         yield return null;
     }
 }

@@ -6,31 +6,29 @@ using UnityEngine;
 public class PersonAniController : AniController
 {
     public GameObject personNeck;
-    public enum AnimationsWithLevel { WalkAroundLevel = 0, SittingLevel, }
-    public enum AnimationsWithFloat { TurnDegree }
+    public enum StateKind { non = 0, Walk, Run, Standing, LookAround, Sitting, Surprize, PrepareAttack, Fight, Avoid, TurnAround, TurnHead }
+    public enum AnimationsWithLevel { WalkAroundLevel = (int)StateKind.Walk, SittingLevel = (int)StateKind.Sitting }
     public enum WalkLevel { Stop = 0, Walk, Run }
     public enum SittingLevel { Non = 0, High, Middle, Low }
-    public enum AnimationsWithBool { ShouldStand, LookAround, ShouldSurprize }
+    public enum AnimationsWithFloat { TurnDegree = (int)StateKind.TurnAround }
+    public enum AnimationsWithBool { ShouldStand = (int)StateKind.Standing, LookAround = (int)StateKind.LookAround, ShouldSurprize = (int)StateKind.Surprize }
 
     public override void StartAni(ActionPoint actionPoint, bool shouldReturnAP = false)
     {
         var ap = actionPoint as PersonActionPoint;
         switch (ap.State)
         {
-            case PersonActionPoint.StateKind.Sitting: SetSittingAnimation((SittingLevel)ap.sittingNum); break;
-            case PersonActionPoint.StateKind.LookAround: SetLookAroundAnimation(); break;
-            case PersonActionPoint.StateKind.Standing: StopMove(); break;
-            case PersonActionPoint.StateKind.PrepareAttack: SetPrepareAttack(ap.shouldReadyForBattle, ap.weaponLayer); break;
-            case PersonActionPoint.StateKind.Surprize: SetSurprizeAnimation(); break;
-            case PersonActionPoint.StateKind.TurnAround: SetTurnAroundAnimation(ap); break;
-            case PersonActionPoint.StateKind.TurnHead: SetTurnHead(ap); break;
+            case StateKind.Sitting: SetSittingAnimation((SittingLevel)ap.sittingNum); break;
+            case StateKind.LookAround: SetLookAroundAnimation(); break;
+            case StateKind.Standing: StopMove(); break;
+            case StateKind.PrepareAttack: SetPrepareAttack(ap.shouldReadyForBattle, ap.weaponLayer); break;
+            case StateKind.Surprize: SetSurprizeAnimation(); break;
+            case StateKind.TurnAround: SetTurnAroundAnimation(ap); break;
+            case StateKind.TurnHead: SetTurnHead(ap); break;
             default:
                 break;
         }
-        StartAniTimeCount(ap.during, shouldReturnAP);
-
-        if (shouldReturnAP)
-            APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP).ReturnTargetObj(ap.gameObject);
+        StartAniTimeCount(ap, shouldReturnAP);
     }
 
 
@@ -94,7 +92,6 @@ public class PersonAniController : AniController
         animator.SetBool(AnimationsWithBool.ShouldSurprize.ToString(), false);
         animator.SetFloat(AnimationsWithFloat.TurnDegree.ToString(), 361f);
 
-        yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).normalizedTime < animationPlayLimit);
         SetWalkState(WalkLevel.Walk);
         yield return new WaitUntil(() => IsWalkState());
         yield return StartCoroutine(base.DoResetAni(shouldReadNextAction));
@@ -117,6 +114,8 @@ public class PersonAniController : AniController
         SetCorrectly(ap);
         yield return new WaitUntil(() => isPositionCorrect && isRotationCorrect);
         yield return new WaitUntil(() => IsWalkState());
+
+
         StartAni(ap);
     }
 
@@ -160,7 +159,7 @@ public class PersonAniController : AniController
     new public ActionPoint MakeTurn(float degree)
     {
         var ap = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP).GetNewOne<PersonActionPoint>();
-        ap.State = PersonActionPoint.StateKind.TurnAround;
+        ap.State = PersonAniController.StateKind.TurnAround;
         ap.targetDegree = degree;
         ap.during = ap.GetLength(GetStateNameByDegree(ap.targetDegree));
         StartAni(ap, true);
@@ -182,7 +181,7 @@ public class PersonAniController : AniController
     public ActionPoint MakeHeadTurn()
     {
         var ap = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP).GetNewOne<PersonActionPoint>();
-        ap.State = PersonActionPoint.StateKind.TurnHead;
+        ap.State = PersonAniController.StateKind.TurnHead;
         ap.during = 3f;
         StartAni(ap, true);
 

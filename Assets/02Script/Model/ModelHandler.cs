@@ -3,16 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class ModelPhysicsController : MonoBehaviour, IObjDetectorConnector_OnDetected, IObjDetectorConnector_OnRemoved
+public class ModelHandler : MonoBehaviour, IObjDetectorConnector_OnDetected, IObjDetectorConnector_OnRemoved
 {
     Model model;
     public ActionPointHandler actionPointHandler { private set; get; }
-    bool hasAPHChanged = false;
-    bool HasAPHChanged { set { hasAPHChanged = actionPointHandler != value; } get { return hasAPHChanged; } }
     public NavController naviController { private set; get; }
     public AniController aniController { private set; get; }
     RagDollHandler ragDollHandler { set; get; }
-    bool isInterrupt = false;
     private void Awake()
     {
         model = GetComponentInParent<Model>();
@@ -20,13 +17,17 @@ public class ModelPhysicsController : MonoBehaviour, IObjDetectorConnector_OnDet
         aniController = GetComponent<AniController>();
         ragDollHandler = GetComponent<RagDollHandler>();
     }
-
+    private void Update()
+    {
+        if (true)
+        {
+            var sd = 10;
+        }
+    }
     public void SetAPH(ActionPointHandler handler)
     {
-        HasAPHChanged = handler;
-
         if (actionPointHandler != null)
-            APHManager.Instance.ReturnAPH(actionPointHandler);
+            model.ReturnAPH(actionPointHandler);
 
         actionPointHandler = handler;
         SetNextTargetPosition(handler.GetNowActionPoint());
@@ -35,8 +36,7 @@ public class ModelPhysicsController : MonoBehaviour, IObjDetectorConnector_OnDet
     public void ChageLastAPPosition(Transform target)
     {
         var lastAP = actionPointHandler.GetActionPoint(actionPointHandler.GetActionCount - 1);
-        lastAP.SetPositionForTracking(transform, target, false);
-        SetNextTargetPosition(lastAP);
+        lastAP.SetPositionForTracking(transform, target, true);
     }
 
     public void SetNextTargetPosition(ActionPoint ap)
@@ -55,7 +55,7 @@ public class ModelPhysicsController : MonoBehaviour, IObjDetectorConnector_OnDet
 
         if (ap.HasAction)
         {
-            aniController.MakeCorrect(ap);
+            aniController.DoAction(ap);
         }
         else
         {

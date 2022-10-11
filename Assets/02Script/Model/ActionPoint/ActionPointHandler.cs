@@ -5,12 +5,12 @@ using UnityEngine;
 
 public class ActionPointHandler : MonoBehaviour
 {
+    public GameObject originalOwener;
     public List<ActionPoint> actionPoints { set; get; } = new List<ActionPoint>();
-    public int GetActionCount { get { return transform.childCount; } }
-    public int index = -1;
+    public int GetActionCount { get { return actionPoints.Count; } }
+    public int index = 0;
     public bool ShouldLoop = true;
     public bool IsReachedToEnd = false;
-    public System.Action<ActionPointHandler> comingFromOther = null;
     public void Awake()
     {
         SetAPs();
@@ -27,6 +27,8 @@ public class ActionPointHandler : MonoBehaviour
 
     void SetActionPoint()
     {
+        actionPoints.Clear();
+
         for (int i = 0; i < transform.childCount; i++)
         {
             actionPoints.Add(transform.GetChild(i).GetComponent<ActionPoint>());
