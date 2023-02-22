@@ -1,21 +1,23 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using JMath;
 
 public partial class Person : Model
 {
     private PersonAniController aniController;
-    public enum StateKinds { Normal, Notice, Warn, Follow, Wait, Attack, Avoid, Dead, Non }
     enum StateByDist { Notice = 3, Attack = 1 }
     [SerializeField]
     private Renderer modelRenderer;
-
+    Dictionary<PersonState.StateKinds, PersonState> states { set; get; } = new Dictionary<PersonState.StateKinds, PersonState>();
+    public PersonState GetState(PersonState.StateKinds state) => states != null && states.ContainsKey(state) ? states[state] : null;
+    private PersonState currentState = null;
     protected override IEnumerator Start()
     {
         yield return StartCoroutine(base.Start());
         aniController = modelHandler.aniController as PersonAniController;
-
+        states = PersonState.GetNewStateList();
         yield return null;
     }
     public Material belongTo
@@ -24,14 +26,15 @@ public partial class Person : Model
         get { return modelRenderer.material; }
     }
 
-    bool ShouldRecongnize(Player player) => player.belongTo == belongTo;
+    bool ShouldRecongnize(Transform target) => target.GetComponent<Player>()?.belongTo == belongTo;
 
     public override void ChangedState(int state)
     {
-        switch ((StateKinds)state)
+        if (state < states.Count)
         {
-            case StateKinds.Normal: SetOriginalAPH(); break;
-            default: break;
+            currentState?.Exit();
+            currentState = states[(PersonState.StateKinds)state];
+            currentState?.Enter();
         }
     }
 
@@ -39,4 +42,50 @@ public partial class Person : Model
     {
 
     }
+
+    public ActionPointHandler GetNewAPH(int APCounts)
+    {
+        var requireAPCount = APCounts;
+        var apPooler = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP);
+        var APs = new List<ActionPoint>();
+        APs.Capacity = requireAPCount;
+
+        for (int i = 0; i < requireAPCount; i++)
+            APs.Add(apPooler.GetNewOne<PersonActionPoint>());
+
+        var aph = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.APH).GetNewOne<ActionPointHandler>();
+        aph.SetAPs(APs);
+        aph.ShouldLoop = false;
+
+        return aph;
+    }
+
+    public void SetAPs(ActionPoint ap, Transform target, PersonAniController.StateKind kind, bool isTimeFixed = false, float time = 0, bool shouldChangePosition = false, bool shouldChangeRotation = false)
+    {
+        if (isTimeFixed)
+        {
+            ap.SetAPWithFixedDuring(modelHandler.transform, target, (int)kind, kind.ToString(), shouldChangePosition, shouldChangeRotation);
+        }
+        else
+        {
+            ap.SetAPWithDuring(modelHandler.transform, target, (int)kind, time, shouldChangePosition, shouldChangeRotation);
+        }
+    }
+
+
+    public float GetDistTo(Transform target)
+    {
+        return Vector3.Distance(modelHandler.transform.position, target.transform.position);
+    }
+
+    public RaycastHit[] GetAllRayHIts(Transform target)
+    {
+        var from = modelHandler.transform.position;
+        var to = target.position;
+        var dir = Vector3Extentioner.GetDirection(from, to);
+        var dist = Vector3.Distance(from, to);
+
+        return Physics.RaycastAll(from, dir, dist, 0, QueryTriggerInteraction.Ignore);
+    }
+
 }

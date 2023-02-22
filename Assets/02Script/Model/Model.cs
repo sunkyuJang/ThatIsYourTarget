@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,9 +6,10 @@ using UnityEngine;
 public class Model : MonoBehaviour
 {
     public int state { private set; get; } = 0;
-    protected ModelHandler modelHandler;
+    public ModelHandler modelHandler { private set; get; }
     Transform APHGroup;
     ActionPointHandler originalAPH;
+    Action nextActionFromState = null;
 
     protected virtual void Awake()
     {
@@ -26,22 +28,12 @@ public class Model : MonoBehaviour
         if (newState != state)
         {
             state = newState;
-            print(state + "in");
             ChangedState(state);
         }
-        print(state + "out");
     }
     public void SetOriginalAPH()
     {
         SetAPH(originalAPH);
-    }
-
-    private void Update()
-    {
-        if (true)
-        {
-            var sd = 10;
-        }
     }
 
     public void ReturnAPH(ActionPointHandler APH)
@@ -49,9 +41,22 @@ public class Model : MonoBehaviour
         if (APH != originalAPH)
             APHManager.Instance.ReturnAPH(APH);
     }
-    public void SetAPH(ActionPointHandler handler)
+    public void SetAPH(ActionPointHandler handler, Action nextActionFromState = null)
     {
         modelHandler.SetAPH(handler);
+        if (nextActionFromState != null) this.nextActionFromState = nextActionFromState;
+    }
+
+    public void GetNextAPH()
+    {
+        if (nextActionFromState == null)
+        {
+            SetOriginalAPH();
+        }
+        else
+        {
+            nextActionFromState.Invoke();
+        }
     }
     public void StartToAPHRead() { modelHandler.ReadNextAction(); }
     public virtual void Contected(Collider collider) { }
@@ -59,4 +64,15 @@ public class Model : MonoBehaviour
     public virtual void Removed(Collider collider) { }
     public virtual void ChangedState(int i) { }
     public virtual void GetHit() { }
+    protected class CheckingTrackingState
+    {
+        public Transform target = null;
+        public bool isFollowing = false;
+        public bool shouldRemove = false;
+        public bool CanRemove { get { return !isFollowing && shouldRemove; } }
+        public CheckingTrackingState(Transform target)
+        {
+            this.target = target;
+        }
+    }
 }

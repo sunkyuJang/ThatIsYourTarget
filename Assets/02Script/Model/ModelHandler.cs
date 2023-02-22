@@ -17,13 +17,6 @@ public class ModelHandler : MonoBehaviour, IObjDetectorConnector_OnDetected, IOb
         aniController = GetComponent<AniController>();
         ragDollHandler = GetComponent<RagDollHandler>();
     }
-    private void Update()
-    {
-        if (true)
-        {
-            var sd = 10;
-        }
-    }
     public void SetAPH(ActionPointHandler handler)
     {
         if (actionPointHandler != null)
@@ -68,7 +61,7 @@ public class ModelHandler : MonoBehaviour, IObjDetectorConnector_OnDetected, IOb
     {
         if (actionPointHandler.IsReachedToEnd)
         {
-            model.SetOriginalAPH();
+            model.GetNextAPH();
         }
         else
         {

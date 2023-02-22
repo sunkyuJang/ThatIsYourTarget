@@ -44,14 +44,6 @@ public class AniController : MonoBehaviour
         StartCoroutine(DoHeadFollow());
     }
 
-    private void Update()
-    {
-        if (true)
-        {
-            var sd = 10;
-        }
-    }
-
     IEnumerator DoWalking()
     {
         while (true)
@@ -113,9 +105,7 @@ public class AniController : MonoBehaviour
     protected virtual IEnumerator DoMakeCorrect(ActionPoint ap)
     {
         SetCorrectly(ap);
-
         yield return new WaitUntil(() => isPositionCorrect && isRotationCorrect);
-
         StartAni(ap);
         yield return null;
     }
@@ -229,7 +219,6 @@ public class AniController : MonoBehaviour
     protected virtual IEnumerator DoResetAni(bool shouldReadNextAction)
     {
         PlayingAni = null;
-        print("entered end animation");
         if (reservatiedAP == null)
         {
             if (shouldReadNextAction)
@@ -241,9 +230,6 @@ public class AniController : MonoBehaviour
             reservatiedAP = null;
             DoAction(ap);
         }
-
-        print("exit end animation");
-        print(reservatiedAP == null);
         yield return null;
     }
 }

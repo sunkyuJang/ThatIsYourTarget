@@ -33,7 +33,7 @@ public class TargetManager : MonoBehaviour
         var left = 0;
         for (int i = 0; i < TargetPerson.Count; i++)
         {
-            left += (Person.StateKinds)TargetPerson[i].state != Person.StateKinds.Dead ? 1 : 0;
+            left += (PersonState.StateKinds)TargetPerson[i].state != PersonState.StateKinds.Dead ? 1 : 0;
         }
         return left;
     }

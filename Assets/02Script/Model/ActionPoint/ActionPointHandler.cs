@@ -49,6 +49,8 @@ public class ActionPointHandler : MonoBehaviour
             {
                 index = GetActionCount - 1;
                 IsReachedToEnd = true;
+
+                return null;
             }
         }
 
