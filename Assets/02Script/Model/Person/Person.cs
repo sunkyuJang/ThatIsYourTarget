@@ -34,7 +34,22 @@ public partial class Person : Model
         {
             currentState?.Exit();
             currentState = states[(PersonState.StateKinds)state];
-            currentState?.Enter();
+
+            if (currentState == null)
+            {
+                Debug.Log("state dosnt exist");
+            }
+            else
+            {
+                if (currentState.IsReadyForEnter())
+                {
+                    currentState.Enter();
+                }
+                else
+                {
+                    currentState.EnterToException();
+                }
+            }
         }
     }
 
@@ -71,7 +86,6 @@ public partial class Person : Model
             ap.SetAPWithDuring(modelHandler.transform, target, (int)kind, time, shouldChangePosition, shouldChangeRotation);
         }
     }
-
 
     public float GetDistTo(Transform target)
     {

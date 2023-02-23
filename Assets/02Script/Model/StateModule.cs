@@ -3,10 +3,12 @@ using UnityEngine;
 public abstract class StateModule
 {
     protected bool isStateRunning = false;
+    public abstract bool IsReadyForEnter();
     public abstract void Enter();
-    protected abstract void Update();
+    public abstract void EnterToException();
+    public virtual void AfterAPHDone() { }
+    public virtual bool PrepareState<T>(T param) { return true; }
     public abstract void Exit();
-    public abstract void AfterAPHDone();
     protected class TrackingData
     {
         public Transform target = null;

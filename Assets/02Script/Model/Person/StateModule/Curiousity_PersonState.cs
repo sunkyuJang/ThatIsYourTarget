@@ -10,15 +10,33 @@ public class Curiousity_PersonState : PersonState
     float maxWarningTime = 3f;
     bool isAPHDone = false;
     Coroutine procCountingTime = null;
+    public override bool PrepareState<T>(T param)
+    {
+        if (param is Transform)
+        {
+            this.target = param as Transform;
+            SetState(StateKinds.Curiousity);
+            return true;
+        }
+        return false;
+    }
+
+    public override bool IsReadyForEnter()
+    {
+        return target != null;
+    }
+    public override void EnterToException()
+    {
+        SetNormalState();
+    }
     public override void Enter()
     {
-        if (target == null)
-            SetNormalState();
-
         var aph = GetCuriousityAPH(target);
         person.SetAPH(aph, AfterAPHDone);
         if (procCountingTime != null)
+        {
             person.StopCoroutine(procCountingTime);
+        }
 
         procCountingTime = person.StartCoroutine(CountingTime(target));
     }
@@ -63,13 +81,6 @@ public class Curiousity_PersonState : PersonState
         isAPHDone = false;
         warningTime = 0;
     }
-    protected override void Update() { }
-    public void SetChangeForThisState(Transform transform)
-    {
-        this.target = transform;
-        SetState(StateKinds.Curiousity);
-    }
-
     public override void AfterAPHDone()
     {
         isAPHDone = true;
