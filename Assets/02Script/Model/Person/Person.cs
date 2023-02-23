@@ -28,7 +28,7 @@ public partial class Person : Model
 
     bool ShouldRecongnize(Transform target) => target.GetComponent<Player>()?.belongTo == belongTo;
 
-    public override void ChangedState(int state)
+    protected override void ChangedState(int state)
     {
         if (state < states.Count)
         {
@@ -102,4 +102,8 @@ public partial class Person : Model
         return Physics.RaycastAll(from, dir, dist, 0, QueryTriggerInteraction.Ignore);
     }
 
+    public override void Contected(Collider collider)
+    {
+        //SetState()
+    }
 }

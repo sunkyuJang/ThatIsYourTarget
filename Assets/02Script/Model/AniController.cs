@@ -26,11 +26,6 @@ public class AniController : MonoBehaviour
         }
     }
 
-    // public bool IsPlayingAni(int layer, string stateName)
-    // {
-    //     var stateInfo = animator.GetCurrentAnimatorStateInfo(layer);
-    //     return stateInfo.IsName(stateName);
-    // }
     protected void Awake()
     {
         ragDollHandler = GetComponent<RagDollHandler>();

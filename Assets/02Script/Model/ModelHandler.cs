@@ -37,15 +37,21 @@ public class ModelHandler : MonoBehaviour, IObjDetectorConnector_OnDetected, IOb
         naviController.SetNextPosition(ap);
     }
 
-    public void ReadNowAction()
+    public void ReadNowAction(ActionPoint ap)
     {
-        StartCoroutine(DoReadNowAction());
+        var targetAP = actionPointHandler.GetNowActionPoint();
+        if (ap.Equals(targetAP))
+        {
+            StartCoroutine(DoReadNowAction(targetAP));
+        }
+        else
+        {
+            Debug.Log("APHChanged");
+        }
     }
 
-    IEnumerator DoReadNowAction()
+    IEnumerator DoReadNowAction(ActionPoint ap)
     {
-        var ap = actionPointHandler.GetNowActionPoint();
-
         if (ap.HasAction)
         {
             aniController.DoAction(ap);

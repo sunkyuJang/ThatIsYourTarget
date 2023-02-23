@@ -5,11 +5,23 @@ using UnityEngine;
 
 public abstract class PersonState : StateModule
 {
-    public enum StateKinds { Normal, Sensed, Curiousity, Warn, Follow, Wait, Attack, Avoid, Dead, Non }
+    public enum StateKinds
+    {
+        Normal,
+        Sensed,
+        Curiousity,
+        Warn,
+        Follow,
+        Wait,
+        Attack,
+        Avoid,
+        Dead,
+        Non
+    }
+
     protected Person person;
-    protected float attackDist = 1f;
     protected void SetNormalState() => SetState(StateKinds.Normal);
-    protected void SetState(StateKinds kinds) => person.ChangedState((int)kinds);
+    protected void SetState(StateKinds kinds) => person.SetState((int)kinds);
     protected PersonState GetState(StateKinds kinds) => person.GetState(kinds);
     public static Dictionary<StateKinds, PersonState> GetNewStateList()
     {

@@ -50,7 +50,7 @@ public class NavController : MonoBehaviour
         }
 
         TurnOnNavi(false);
-        modelPhysicsController.ReadNowAction();
+        modelPhysicsController.ReadNowAction(ap);
     }
 
     public void TurnOnNavi(bool shouldTurnOn)

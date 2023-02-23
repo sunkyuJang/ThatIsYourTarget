@@ -14,7 +14,7 @@ public class Sensed_PersonState : PersonState
     public override void Enter()
     {
         var dist = person.GetDistTo(target);
-        var shouldAttack = dist < attackDist;
+        var shouldAttack = dist < Attack_PersonState.attackDist;
         if (shouldAttack)
         {
 
@@ -27,7 +27,7 @@ public class Sensed_PersonState : PersonState
                 (state as Curiousity_PersonState)?.PrepareState(target);
             }
         }
-        SetState(dist < attackDist ? StateKinds.Attack : StateKinds.Curiousity);
+        SetState(dist < Attack_PersonState.attackDist ? StateKinds.Attack : StateKinds.Curiousity);
     }
     public override void Exit() { target = null; }
     public void SetChangeForThisState(Transform transform)
