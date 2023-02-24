@@ -5,27 +5,31 @@ using UnityEngine;
 
 public class Curiousity_PersonState : PersonState
 {
-    public Transform target;
+    Sensed_PersonState.PreparingData preparingData;
     int curiosityCnt = 0;
     const int MaxCuriosityCnt = 0;
     float warningTime = 0f;
     const float maxWarningTime = 3f;
     bool isAPHDone = false;
     Coroutine procCountingTime = null;
-    public override bool PrepareState<T>(T param)
+    public void PrepareState(Sensed_PersonState.PreparingData param)
     {
-        if (param is Transform)
+        if (preparingData == null)
         {
-            this.target = param as Transform;
-            SetState(StateKinds.Curiousity);
-            return true;
+            preparingData = param as Sensed_PersonState.PreparingData;
         }
-        return false;
+        else
+        {
+
+        }
+
+        SetState(StateKinds.Curiousity);
     }
 
     public override bool IsReadyForEnter()
     {
-        return target != null &&
+        return preparingData != null &&
+                preparingData.target != null &&
                 curiosityCnt < MaxCuriosityCnt;
     }
     public override void EnterToException()
@@ -41,14 +45,14 @@ public class Curiousity_PersonState : PersonState
     }
     public override void Enter()
     {
-        var aph = GetCuriousityAPH(target);
+        var aph = GetCuriousityAPH(preparingData.target);
         person.SetAPH(aph, AfterAPHDone);
         if (procCountingTime != null)
         {
             person.StopCoroutine(procCountingTime);
         }
 
-        procCountingTime = person.StartCoroutine(CountingTime(target));
+        procCountingTime = person.StartCoroutine(CountingTime(preparingData.target));
     }
 
     IEnumerator CountingTime(Transform target)

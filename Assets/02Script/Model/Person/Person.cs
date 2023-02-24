@@ -104,6 +104,23 @@ public partial class Person : Model
 
     public override void Contected(Collider collider)
     {
-        //SetState()
+        SetSensedState(collider, true);
+    }
+
+    public override void Removed(Collider collider)
+    {
+        SetSensedState(collider, false);
+    }
+
+    void SetSensedState(Collider collider, bool isContected)
+    {
+        if (states.ContainsKey(PersonState.StateKinds.Sensed))
+        {
+            var sensedState = states[PersonState.StateKinds.Sensed];
+            if (sensedState is Sensed_PersonState)
+            {
+                (sensedState as Sensed_PersonState)?.PrepareState(new Sensed_PersonState.PreparingData(collider.transform, isContected));
+            }
+        }
     }
 }

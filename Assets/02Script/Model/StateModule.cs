@@ -7,7 +7,6 @@ public abstract class StateModule
     public abstract void Enter();
     public abstract void EnterToException();
     public virtual void AfterAPHDone() { }
-    public virtual bool PrepareState<T>(T param) { return true; }
     public abstract void Exit();
     protected class TrackingData
     {
