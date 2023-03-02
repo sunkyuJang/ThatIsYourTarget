@@ -31,7 +31,7 @@ public class Sensed_PersonState : PersonState
             var state = GetState(StateKinds.Curiousity);
             if (state != null)
             {
-                (state as Curiousity_PersonState)?.PrepareState(preparingData.target);
+                (state as Curiousity_PersonState)?.PrepareState(preparingData);
             }
         }
         SetState(dist < Attack_PersonState.attackDist ? StateKinds.Attack : StateKinds.Curiousity);

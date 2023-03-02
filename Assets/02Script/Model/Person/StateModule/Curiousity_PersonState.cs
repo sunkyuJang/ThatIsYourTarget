@@ -7,7 +7,7 @@ public class Curiousity_PersonState : PersonState
 {
     Sensed_PersonState.PreparingData preparingData;
     int curiosityCnt = 0;
-    const int MaxCuriosityCnt = 0;
+    const int MaxCuriosityCnt = 3;
     float warningTime = 0f;
     const float maxWarningTime = 3f;
     bool isAPHDone = false;
@@ -18,14 +18,13 @@ public class Curiousity_PersonState : PersonState
         {
             preparingData = param as Sensed_PersonState.PreparingData;
         }
-        else
+        else if (preparingData.target.Equals(param.target))
         {
-
+            curiosityCnt++;
         }
 
         SetState(StateKinds.Curiousity);
     }
-
     public override bool IsReadyForEnter()
     {
         return preparingData != null &&
@@ -99,10 +98,10 @@ public class Curiousity_PersonState : PersonState
 
     public override void Exit()
     {
-        target = null;
         isAPHDone = false;
         warningTime = 0;
         procCountingTime = null;
+        curiosityCnt = 0;
     }
     public override void AfterAPHDone()
     {
