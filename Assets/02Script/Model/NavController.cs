@@ -6,7 +6,7 @@ using JMath;
 
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(NavMeshObstacle))]
-public class NavController : MonoBehaviour
+public class NavController : MonoBehaviour, IModelHandlerJobStarter
 {
     ModelHandler modelPhysicsController;
     public NavMeshAgent navMeshAgent { private set; get; }
@@ -21,7 +21,7 @@ public class NavController : MonoBehaviour
         navMeshObstacle = GetComponent<NavMeshObstacle>();
         navMeshObstacle.enabled = false;
     }
-    public void SetNextPosition(ActionPoint ap)
+    public void StartJob(ActionPoint ap)
     {
         TurnOnNavi(true);
         navMeshAgent.SetDestination(ap.transform.position);
@@ -33,7 +33,6 @@ public class NavController : MonoBehaviour
 
         CheckingUntilArrive = StartCoroutine(DoCheckUntilArrive(ap));
     }
-
     IEnumerator DoCheckUntilArrive(ActionPoint ap)
     {
         TurnOnNavi(true);

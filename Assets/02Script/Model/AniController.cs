@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using JMath;
 
-public class AniController : MonoBehaviour
+public class AniController : MonoBehaviour, IModelHandlerJobStarter
 {
     protected RagDollHandler ragDollHandler { set; get; }
     protected ModelHandler modelPhysicsController;
@@ -84,7 +84,7 @@ public class AniController : MonoBehaviour
 
         }
     }
-    public void DoAction(ActionPoint ap)
+    public void StartJob(ActionPoint ap)
     {
         if (!IsPlayingAni)
         {
@@ -96,7 +96,6 @@ public class AniController : MonoBehaviour
             print("reservatiedAP");
         }
     }
-
     protected virtual IEnumerator DoMakeCorrect(ActionPoint ap)
     {
         SetCorrectly(ap);
