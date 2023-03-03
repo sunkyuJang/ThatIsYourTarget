@@ -1,12 +1,12 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-using JMath;
 
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(NavMeshObstacle))]
-public class NavController : MonoBehaviour, IModelHandlerJobStarter
+public class NaviController : MonoBehaviour, IModelHandlerJobStarter
 {
     ModelHandler modelPhysicsController;
     public NavMeshAgent navMeshAgent { private set; get; }
@@ -21,20 +21,29 @@ public class NavController : MonoBehaviour, IModelHandlerJobStarter
         navMeshObstacle = GetComponent<NavMeshObstacle>();
         navMeshObstacle.enabled = false;
     }
-    public void StartJob(ActionPoint ap)
+    public void StartJob(Job jobOption)
     {
-        TurnOnNavi(true);
-        navMeshAgent.SetDestination(ap.transform.position);
-
-        if (CheckingUntilArrive != null)
+        if (jobOption is NaviJob)
         {
-            StopCoroutine(CheckingUntilArrive);
-        }
+            var job = jobOption as NaviJob;
+            if (job.ap != null)
+            {
+                var ap = job.ap;
+                TurnOnNavi(true);
+                navMeshAgent.SetDestination(ap.transform.position);
 
-        CheckingUntilArrive = StartCoroutine(DoCheckUntilArrive(ap));
+                if (CheckingUntilArrive != null)
+                {
+                    StopCoroutine(CheckingUntilArrive);
+                }
+
+                CheckingUntilArrive = StartCoroutine(DoCheckUntilArrive(job));
+            }
+        }
     }
-    IEnumerator DoCheckUntilArrive(ActionPoint ap)
+    IEnumerator DoCheckUntilArrive(NaviJob job)
     {
+        var ap = job.ap;
         TurnOnNavi(true);
         var lastPosition = ap.transform.position;
 
@@ -49,7 +58,8 @@ public class NavController : MonoBehaviour, IModelHandlerJobStarter
         }
 
         TurnOnNavi(false);
-        modelPhysicsController.ReadNowAction(ap);
+
+        job.EndJob();
     }
 
     public void TurnOnNavi(bool shouldTurnOn)
@@ -64,6 +74,18 @@ public class NavController : MonoBehaviour, IModelHandlerJobStarter
         {
             navMeshAgent.enabled = shouldTurnOn;
             navMeshObstacle.enabled = !shouldTurnOn;
+        }
+    }
+
+    public class NaviJob : Job
+    {
+        public ActionPoint ap { private set; get; }
+        public NaviJob(IJobStarter starter, ActionPoint ap, Action endAction, Action exceptionAction)
+        {
+            this.jobStarter = starter;
+            this.endAction = endAction;
+            this.exceptionAction = exceptionAction;
+            this.ap = ap;
         }
     }
 }

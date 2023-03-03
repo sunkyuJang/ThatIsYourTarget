@@ -8,27 +8,21 @@ public class ModelHandler : MonoBehaviour, IObjDetectorConnector_OnDetected, IOb
 {
     Model model;
     public ActionPointHandler actionPointHandler { private set; get; }
-    public IModelHandlerJobStarter naviJobStarter { private set; get; }
-    public IModelHandlerJobStarter aniJobStarter { private set; get; }
+    public NaviController naviController { private set; get; }
+    public AniController aniController { private set; get; }
+    IJobStarter naviJobStarter;
+    IJobStarter aniJobStarter;
     RagDollHandler ragDollHandler { set; get; }
-    private Queue<Action> jobList = new Queue<Action>();
+
     private void Awake()
     {
         model = GetComponentInParent<Model>();
-        naviJobStarter = GetComponent<NavController>() as IModelHandlerJobStarter;
-        aniJobStarter = GetComponent<AniController>() as IModelHandlerJobStarter;
+        naviController = GetComponent<NaviController>();
+        aniController = GetComponent<AniController>();
         ragDollHandler = GetComponent<RagDollHandler>();
-    }
-    public void SetJob(List<Action> jobs)
-    {
-        jobs.ForEach(x => jobList.Enqueue(x));
-    }
-    public void StartNextJob()
-    {
-        if (jobList.Count > 0)
-        {
-            jobList.Dequeue().Invoke();
-        }
+
+        naviJobStarter = naviController as IJobStarter;
+        aniJobStarter = aniJobStarter as IJobStarter;
     }
     public void SetAPH(ActionPointHandler handler)
     {
@@ -36,16 +30,11 @@ public class ModelHandler : MonoBehaviour, IObjDetectorConnector_OnDetected, IOb
             model.ReturnAPH(actionPointHandler);
 
         actionPointHandler = handler;
-        jobList.Clear();
 
-        SetJob(
-            new List<Action>()
-                {
-                    SetNextTargetPosition,
-                    ReadNowAction
-                });
+        var jobList = new List<Action>();
+        jobList.Add(SetNextTargetPosition);
+        jobList.Add(ReadNextAction);
 
-        StartNextJob();
     }
     public void ChageLastAPPosition(Transform target)
     {
@@ -53,9 +42,18 @@ public class ModelHandler : MonoBehaviour, IObjDetectorConnector_OnDetected, IOb
         lastAP.SetPositionForTracking(transform, target, true);
     }
 
-    public void SetNextTargetPosition()
+    void SetNextTargetPosition()
     {
-        naviJobStarter.StartJob(actionPointHandler.GetNowActionPoint());
+        var naviJob = new NaviController.NaviJob(naviJobStarter, actionPointHandler.GetNowActionPoint(), StartNextJob, SetException);
+    }
+
+    void StartNextJob()
+    {
+
+    }
+    void SetException()
+    {
+
     }
 
     private void ReadNowAction()
@@ -92,4 +90,26 @@ public class ModelHandler : MonoBehaviour, IObjDetectorConnector_OnDetected, IOb
     {
         model.Contected(collider);
     }
+
+    // class ModelJobStater
+    // {
+    //     IModelHandlerJobStarter targetJobStarter;
+    //     Queue<Action> jobs = new Queue<Action>();
+    //     Action endAction = null;
+    //     Action exceptionAction = null;
+    //     List<T> requiredOption = new List<T>();
+    //     public ModelJobStater(IModelHandlerJobStarter jobStarter, List<Action> jobs, Action endAction, Action exceptionAction, List<T> requiredOption)
+    //     {
+    //         targetJobStarter = jobStarter;
+    //         jobs.ForEach(x => this.jobs.Enqueue(x));
+    //         this.endAction = endAction;
+    //         this.exceptionAction = exceptionAction;
+    //         this.requiredOption = requiredOption;
+    //     }
+
+    //     public void StartJob()
+    //     {
+    //         targetJobStarter.StartJob(requiredOption, endAction, exceptionAction);
+    //     }
+    // }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -225,5 +226,16 @@ public class AniController : MonoBehaviour, IModelHandlerJobStarter
             DoAction(ap);
         }
         yield return null;
+    }
+
+    class AniJob : Job
+    {
+        public ActionPoint ap { private set; get; }
+        public AniJob(ActionPoint ap, Action endAcion, Action exceptionAction)
+        {
+            this.ap = ap;
+            this.endAction = endAcion;
+            this.exceptionAction = exceptionAction;
+        }
     }
 }

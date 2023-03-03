@@ -6,7 +6,6 @@ using JMath;
 
 public partial class Person : Model
 {
-    private PersonAniController aniController;
     enum StateByDist { Notice = 3, Attack = 1 }
     [SerializeField]
     private Renderer modelRenderer;
@@ -16,7 +15,6 @@ public partial class Person : Model
     protected override IEnumerator Start()
     {
         yield return StartCoroutine(base.Start());
-        aniController = modelHandler.aniController as PersonAniController;
         states = PersonState.GetNewStateList();
         yield return null;
     }

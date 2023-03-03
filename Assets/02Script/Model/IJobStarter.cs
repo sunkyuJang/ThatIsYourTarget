@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface IModelHandlerJobStarter
+public interface IJobStarter
 {
-    void StartJob(ActionPoint ap);
+    void StartJob(Job jobOption);
 }
