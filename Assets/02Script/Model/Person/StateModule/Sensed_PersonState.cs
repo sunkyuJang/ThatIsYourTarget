@@ -3,7 +3,7 @@ using UnityEngine;
 public class Sensed_PersonState : PersonState
 {
     private PreparingData preparingData;
-
+    public Sensed_PersonState(Person person) : base(person) { }
     public void PrepareState(PreparingData param)
     {
         preparingData = param as PreparingData;

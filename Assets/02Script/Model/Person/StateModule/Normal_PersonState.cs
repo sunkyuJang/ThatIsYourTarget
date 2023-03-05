@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class Normal_PersonState : PersonState
 {
+    public Normal_PersonState(Person person) : base(person)
+    {
+
+    }
     public override bool IsReadyForEnter()
     {
         return true;

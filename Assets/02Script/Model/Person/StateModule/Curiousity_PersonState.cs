@@ -12,6 +12,7 @@ public class Curiousity_PersonState : PersonState
     const float maxWarningTime = 3f;
     bool isAPHDone = false;
     Coroutine procCountingTime = null;
+    public Curiousity_PersonState(Person person) : base(person) { }
     public void PrepareState(Sensed_PersonState.PreparingData param)
     {
         if (preparingData == null)

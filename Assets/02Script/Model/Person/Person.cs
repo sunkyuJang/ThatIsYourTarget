@@ -15,7 +15,7 @@ public partial class Person : Model
     protected override IEnumerator Start()
     {
         yield return StartCoroutine(base.Start());
-        states = PersonState.GetNewStateList();
+        states = PersonState.GetNewStateList(this);
         yield return null;
     }
     public Material belongTo
@@ -26,7 +26,7 @@ public partial class Person : Model
 
     bool ShouldRecongnize(Transform target) => target.GetComponent<Player>()?.belongTo == belongTo;
 
-    protected override void ChangedState(int state)
+    protected override void ChangedState()
     {
         if (state < states.Count)
         {
@@ -68,7 +68,7 @@ public partial class Person : Model
 
         var aph = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.APH).GetNewOne<ActionPointHandler>();
         aph.SetAPs(APs);
-        aph.ShouldLoop = false;
+        aph.shouldLoop = false;
 
         return aph;
     }

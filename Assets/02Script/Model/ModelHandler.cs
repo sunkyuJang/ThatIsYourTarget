@@ -13,6 +13,7 @@ public class ModelHandler : MonoBehaviour, IObjDetectorConnector_OnDetected, IOb
     IJobStarter naviJobStarter;
     IJobStarter aniJobStarter;
     RagDollHandler ragDollHandler { set; get; }
+    public Queue<Action> jobList = new Queue<Action>();
 
     private void Awake()
     {
@@ -22,7 +23,7 @@ public class ModelHandler : MonoBehaviour, IObjDetectorConnector_OnDetected, IOb
         ragDollHandler = GetComponent<RagDollHandler>();
 
         naviJobStarter = naviController as IJobStarter;
-        aniJobStarter = aniJobStarter as IJobStarter;
+        aniJobStarter = aniController as IJobStarter;
     }
     public void SetAPH(ActionPointHandler handler)
     {
@@ -30,38 +31,34 @@ public class ModelHandler : MonoBehaviour, IObjDetectorConnector_OnDetected, IOb
             model.ReturnAPH(actionPointHandler);
 
         actionPointHandler = handler;
-
-        var jobList = new List<Action>();
-        jobList.Add(SetNextTargetPosition);
-        jobList.Add(ReadNextAction);
-
-    }
-    public void ChageLastAPPosition(Transform target)
-    {
-        var lastAP = actionPointHandler.GetActionPoint(actionPointHandler.GetActionCount - 1);
-        lastAP.SetPositionForTracking(transform, target, true);
+        SetJobForAPHRead();
     }
 
-    void SetNextTargetPosition()
+    void SetNowAPPosition()
     {
-        var naviJob = new NaviController.NaviJob(naviJobStarter, actionPointHandler.GetNowActionPoint(), StartNextJob, SetException);
+        var nowAP = actionPointHandler.GetNowActionPoint();
+        new ModelJob(naviJobStarter, nowAP, StartNextJob, SetExceptionByNavi).StartJob();
+    }
+
+    void SetJobForAPHRead()
+    {
+        jobList.Clear();
+        jobList.Enqueue(SetNowAPPosition);
+        jobList.Enqueue(ReadAP);
+        StartNextJob();
     }
 
     void StartNextJob()
     {
-
-    }
-    void SetException()
-    {
-
+        jobList.Dequeue().Invoke();
     }
 
-    private void ReadNowAction()
+    private void ReadAP()
     {
-        var ap = actionPointHandler.GetNowActionPoint();
-        if (ap.HasAction)
+        var nowAP = actionPointHandler.GetNowActionPoint();
+        if (nowAP.HasAction)
         {
-            aniJobStarter.StartJob(ap);
+            new ModelJob(aniJobStarter, nowAP, ReadNextAction, SetExceptionByAni).StartJob();
         }
         else
         {
@@ -71,15 +68,18 @@ public class ModelHandler : MonoBehaviour, IObjDetectorConnector_OnDetected, IOb
 
     public void ReadNextAction()
     {
-        if (actionPointHandler.IsReachedToEnd)
+        if (actionPointHandler.isAPHDone)
         {
             model.GetNextAPH();
         }
         else
         {
-            SetNextTargetPosition();
+            actionPointHandler.GetNextActionPoint();
+            SetJobForAPHRead();
         }
     }
+    void SetExceptionByNavi() { }
+    void SetExceptionByAni() { }
 
     public void OnRemoved(ObjDetector detector, Collider collider)
     {
@@ -90,26 +90,15 @@ public class ModelHandler : MonoBehaviour, IObjDetectorConnector_OnDetected, IOb
     {
         model.Contected(collider);
     }
-
-    // class ModelJobStater
-    // {
-    //     IModelHandlerJobStarter targetJobStarter;
-    //     Queue<Action> jobs = new Queue<Action>();
-    //     Action endAction = null;
-    //     Action exceptionAction = null;
-    //     List<T> requiredOption = new List<T>();
-    //     public ModelJobStater(IModelHandlerJobStarter jobStarter, List<Action> jobs, Action endAction, Action exceptionAction, List<T> requiredOption)
-    //     {
-    //         targetJobStarter = jobStarter;
-    //         jobs.ForEach(x => this.jobs.Enqueue(x));
-    //         this.endAction = endAction;
-    //         this.exceptionAction = exceptionAction;
-    //         this.requiredOption = requiredOption;
-    //     }
-
-    //     public void StartJob()
-    //     {
-    //         targetJobStarter.StartJob(requiredOption, endAction, exceptionAction);
-    //     }
-    // }
+    public class ModelJob : Job
+    {
+        public ActionPoint ap { private set; get; }
+        public ModelJob(IJobStarter starter, ActionPoint ap, Action endAction, Action exceptionAction)
+        {
+            this.jobStarter = starter;
+            this.endAction = endAction;
+            this.exceptionAction = exceptionAction;
+            this.ap = ap;
+        }
+    }
 }

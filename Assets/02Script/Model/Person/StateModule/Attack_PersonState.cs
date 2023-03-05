@@ -5,6 +5,7 @@ using UnityEngine;
 public class Attack_PersonState : PersonState
 {
     public static float attackDist = 1f;
+    public Attack_PersonState(Person person) : base(person) { }
     public override bool IsReadyForEnter()
     {
 

@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEditor;
 using JMath;
 
-public class AniController : MonoBehaviour, IModelHandlerJobStarter
+public class AniController : MonoBehaviour, IJobStarter
 {
     protected RagDollHandler ragDollHandler { set; get; }
     protected ModelHandler modelPhysicsController;
@@ -19,6 +19,7 @@ public class AniController : MonoBehaviour, IModelHandlerJobStarter
     Coroutine PlayingAni { set; get; }
     public bool IsPlayingAni { get { return PlayingAni != null; } }
     protected Coroutine ProcResetAni { set; get; }
+    private ModelHandler.ModelJob modelJob { set; get; }
     bool ShouldReserveAP
     {
         get
@@ -85,7 +86,17 @@ public class AniController : MonoBehaviour, IModelHandlerJobStarter
 
         }
     }
-    public void StartJob(ActionPoint ap)
+    public void StartJob(Job job)
+    {
+        if (job is ModelHandler.ModelJob)
+        {
+            modelJob = job as ModelHandler.ModelJob;
+            var ap = modelJob.ap;
+
+            StartAni(ap);
+        }
+    }
+    void StartAni(ActionPoint ap)
     {
         if (!IsPlayingAni)
         {
@@ -217,25 +228,14 @@ public class AniController : MonoBehaviour, IModelHandlerJobStarter
         if (reservatiedAP == null)
         {
             if (shouldReadNextAction)
-                modelPhysicsController.ReadNextAction();
+                modelJob.EndJob();
         }
         else
         {
             var ap = reservatiedAP;
             reservatiedAP = null;
-            DoAction(ap);
+            StartAni(ap);
         }
         yield return null;
-    }
-
-    class AniJob : Job
-    {
-        public ActionPoint ap { private set; get; }
-        public AniJob(ActionPoint ap, Action endAcion, Action exceptionAction)
-        {
-            this.ap = ap;
-            this.endAction = endAcion;
-            this.exceptionAction = exceptionAction;
-        }
     }
 }

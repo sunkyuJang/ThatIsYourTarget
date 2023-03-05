@@ -6,7 +6,7 @@ using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(NavMeshObstacle))]
-public class NaviController : MonoBehaviour, IModelHandlerJobStarter
+public class NaviController : MonoBehaviour, IJobStarter
 {
     ModelHandler modelPhysicsController;
     public NavMeshAgent navMeshAgent { private set; get; }
@@ -23,9 +23,9 @@ public class NaviController : MonoBehaviour, IModelHandlerJobStarter
     }
     public void StartJob(Job jobOption)
     {
-        if (jobOption is NaviJob)
+        if (jobOption is ModelHandler.ModelJob)
         {
-            var job = jobOption as NaviJob;
+            var job = jobOption as ModelHandler.ModelJob;
             if (job.ap != null)
             {
                 var ap = job.ap;
@@ -41,7 +41,7 @@ public class NaviController : MonoBehaviour, IModelHandlerJobStarter
             }
         }
     }
-    IEnumerator DoCheckUntilArrive(NaviJob job)
+    IEnumerator DoCheckUntilArrive(ModelHandler.ModelJob job)
     {
         var ap = job.ap;
         TurnOnNavi(true);
@@ -74,18 +74,6 @@ public class NaviController : MonoBehaviour, IModelHandlerJobStarter
         {
             navMeshAgent.enabled = shouldTurnOn;
             navMeshObstacle.enabled = !shouldTurnOn;
-        }
-    }
-
-    public class NaviJob : Job
-    {
-        public ActionPoint ap { private set; get; }
-        public NaviJob(IJobStarter starter, ActionPoint ap, Action endAction, Action exceptionAction)
-        {
-            this.jobStarter = starter;
-            this.endAction = endAction;
-            this.exceptionAction = exceptionAction;
-            this.ap = ap;
         }
     }
 }

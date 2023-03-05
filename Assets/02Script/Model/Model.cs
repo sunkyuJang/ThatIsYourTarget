@@ -28,6 +28,7 @@ public class Model : MonoBehaviour
         if (newState != state)
         {
             state = newState;
+            ChangedState();
         }
     }
     public void SetOriginalAPH()
@@ -61,7 +62,7 @@ public class Model : MonoBehaviour
     public virtual void Contected(Collider collider) { }
     public virtual void Contecting(Collider collider) { }
     public virtual void Removed(Collider collider) { }
-    protected virtual void ChangedState(int i) { }
+    protected virtual void ChangedState() { }
     public virtual void GetHit() { }
     protected class CheckingTrackingState
     {

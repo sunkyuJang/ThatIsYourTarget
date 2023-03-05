@@ -23,13 +23,14 @@ public abstract class PersonState : StateModule
     protected void SetNormalState() => SetState(StateKinds.Normal);
     protected void SetState(StateKinds kinds) => person.SetState((int)kinds);
     protected PersonState GetState(StateKinds kinds) => person.GetState(kinds);
-    public static Dictionary<StateKinds, PersonState> GetNewStateList()
+    public PersonState(Person person) => this.person = person;
+    public static Dictionary<StateKinds, PersonState> GetNewStateList(Person person)
     {
         var dic = new Dictionary<StateKinds, PersonState>();
 
-        dic.Add(StateKinds.Normal, new Normal_PersonState());
-        dic.Add(StateKinds.Sensed, new Sensed_PersonState());
-        dic.Add(StateKinds.Curiousity, new Curiousity_PersonState());
+        dic.Add(StateKinds.Normal, new Normal_PersonState(person));
+        dic.Add(StateKinds.Sensed, new Sensed_PersonState(person));
+        dic.Add(StateKinds.Curiousity, new Curiousity_PersonState(person));
 
         return dic;
     }
