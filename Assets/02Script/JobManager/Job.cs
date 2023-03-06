@@ -6,10 +6,10 @@ using UnityEngine;
 public abstract class Job
 {
     protected IJobStarter jobStarter;
-    protected Action<Job> endAction;
-    protected Action<Job> exceptionAction;
+    protected Action endAction;
+    protected Action exceptionAction;
     protected Job section;
-    public Job(IJobStarter jobStarter, Action<Job> endAction, Action<Job> exceptionAction)
+    public Job(IJobStarter jobStarter, Action endAction, Action exceptionAction)
     {
         this.jobStarter = jobStarter;
         this.endAction = endAction;
@@ -22,9 +22,9 @@ public abstract class Job
     public virtual void EndJob()
     {
         if (endAction != null)
-            endAction.Invoke(this);
+            endAction.Invoke();
         else if (exceptionAction != null)
-            exceptionAction.Invoke(this);
+            exceptionAction.Invoke();
         else
         {
             Debug.Log("job has exception");

@@ -19,7 +19,7 @@ public class AniController : MonoBehaviour, IJobStarter
     Coroutine PlayingAni { set; get; }
     public bool IsPlayingAni { get { return PlayingAni != null; } }
     protected Coroutine ProcResetAni { set; get; }
-    private ModelHandler.ModelHandlerJob modelJob { set; get; }
+    private ModelHandler.ModelHandlerJob modelHandlerJob { set; get; }
     bool ShouldReserveAP
     {
         get
@@ -27,6 +27,7 @@ public class AniController : MonoBehaviour, IJobStarter
             return ProcResetAni != null;
         }
     }
+    protected List<Coroutine> playingAniList { set; get; } = new List<Coroutine>();
 
     protected void Awake()
     {
@@ -90,8 +91,8 @@ public class AniController : MonoBehaviour, IJobStarter
     {
         if (job is ModelHandler.ModelHandlerJob)
         {
-            modelJob = job as ModelHandler.ModelHandlerJob;
-            var ap = modelJob.ap;
+            modelHandlerJob = job as ModelHandler.ModelHandlerJob;
+            var ap = modelHandlerJob.ap;
 
             StartAni(ap);
         }
@@ -228,7 +229,7 @@ public class AniController : MonoBehaviour, IJobStarter
         if (reservatiedAP == null)
         {
             if (shouldReadNextAction)
-                modelJob.EndJob();
+                modelHandlerJob.EndJob();
         }
         else
         {

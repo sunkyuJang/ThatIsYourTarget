@@ -47,13 +47,13 @@ public class Model : MonoBehaviour
         if (nextActionFromState != null) this.nextActionFromState = nextActionFromState;
     }
 
-    protected virtual void EndEachJob(Job job)
+    protected virtual void EndEachJob()
     {
-
+        GetNextAPH();
     }
-    protected virtual void ExceptionJob(Job job)
+    protected virtual void ExceptionJob()
     {
-
+        GetNextAPH();
     }
 
     public void GetNextAPH()
@@ -87,7 +87,7 @@ public class Model : MonoBehaviour
     public class ModelJob : Job
     {
         public ActionPointHandler aph { private set; get; }
-        public ModelJob(ActionPointHandler aph, IJobStarter starter, Action<Job> endAction, Action<Job> exceptionAction)
+        public ModelJob(ActionPointHandler aph, IJobStarter starter, Action endAction, Action exceptionAction)
                 : base(starter, endAction, exceptionAction)
         {
             this.aph = aph;

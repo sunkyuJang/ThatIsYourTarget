@@ -7,18 +7,12 @@ public abstract class SectionJob : Job
 {
     protected Job highLevelJob { set; get; }
     protected ISectionJobChecker sectionJobChecker { set; get; }
-    public SectionJob(Job highLevelJob, IJobStarter jobStarter, ISectionJobChecker sectionJobChecker, Action<Job> endAction, Action<Job> exceptionAction)
+    public SectionJob(Job highLevelJob, IJobStarter jobStarter, ISectionJobChecker sectionJobChecker, Action endAction, Action exceptionAction)
         : base(jobStarter, endAction, exceptionAction)
     {
         this.highLevelJob = highLevelJob;
         this.sectionJobChecker = sectionJobChecker;
     }
-    public void StartJob(Job job)
-    {
-        if (job.Equals(highLevelJob))
-            jobStarter.StartJob(this);
-    }
-
     public override void EndJob()
     {
         if (sectionJobChecker.IsSameSection(highLevelJob))
@@ -27,7 +21,7 @@ public abstract class SectionJob : Job
         }
         else
         {
-            exceptionAction(this);
+            exceptionAction();
         }
     }
 }
