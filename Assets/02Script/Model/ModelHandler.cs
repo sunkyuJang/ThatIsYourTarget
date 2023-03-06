@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class ModelHandler : MonoBehaviour, IObjDetectorConnector_OnDetected, IObjDetectorConnector_OnRemoved
+public class ModelHandler : MonoBehaviour, IJobStarter, ISectionJobChecker, IObjDetectorConnector_OnDetected, IObjDetectorConnector_OnRemoved
 {
     Model model;
     public ActionPointHandler actionPointHandler { private set; get; }
@@ -13,8 +13,10 @@ public class ModelHandler : MonoBehaviour, IObjDetectorConnector_OnDetected, IOb
     IJobStarter naviJobStarter;
     IJobStarter aniJobStarter;
     RagDollHandler ragDollHandler { set; get; }
+    Model.ModelJob modelJob { set; get; }
     public Queue<Action> jobList = new Queue<Action>();
 
+    enum JobKind { naviJob, aniJob, nextJob, SetNextJob, doneJob, non }
     private void Awake()
     {
         model = GetComponentInParent<Model>();
@@ -25,61 +27,86 @@ public class ModelHandler : MonoBehaviour, IObjDetectorConnector_OnDetected, IOb
         naviJobStarter = naviController as IJobStarter;
         aniJobStarter = aniController as IJobStarter;
     }
+    public void StartJob(Job job)
+    {
+        if (job is Model.ModelJob)
+        {
+            modelJob = job as Model.ModelJob;
+            SetAPH(modelJob.aph);
+        }
+    }
     public void SetAPH(ActionPointHandler handler)
     {
         if (actionPointHandler != null)
             model.ReturnAPH(actionPointHandler);
 
         actionPointHandler = handler;
-        SetJobForAPHRead();
+        CreatingJob(modelJob);
+        EndEachJob();
     }
 
-    void SetNowAPPosition()
-    {
-        var nowAP = actionPointHandler.GetNowActionPoint();
-        new ModelJob(naviJobStarter, nowAP, StartNextJob, SetExceptionByNavi).StartJob();
-    }
-
-    void SetJobForAPHRead()
+    void CreatingJob(Model.ModelJob sectionJob)
     {
         jobList.Clear();
-        jobList.Enqueue(SetNowAPPosition);
-        jobList.Enqueue(ReadAP);
-        StartNextJob();
-    }
 
-    void StartNextJob()
-    {
-        jobList.Dequeue().Invoke();
-    }
-
-    private void ReadAP()
-    {
         var nowAP = actionPointHandler.GetNowActionPoint();
-        if (nowAP.HasAction)
+        var isAPHDone = actionPointHandler.isAPHDone;
+        var state = isAPHDone ? (int)JobKind.doneJob : 0;
+        for (int i = state; i < (int)JobKind.non; i++)
         {
-            new ModelJob(aniJobStarter, nowAP, ReadNextAction, SetExceptionByAni).StartJob();
-        }
-        else
-        {
-            ReadNextAction();
+            Action action = null;
+            switch ((JobKind)i)
+            {
+                case JobKind.naviJob:
+                    {
+                        action = GetNewModelHandlerJob(sectionJob, naviJobStarter, EndEachJob, SetExceptionByNavi).StartJob;
+                    }
+                    break;
+                case JobKind.aniJob:
+                    {
+                        if (nowAP.HasAction)
+                            action = GetNewModelHandlerJob(sectionJob, aniJobStarter, EndEachJob, SetExceptionByAni).StartJob;
+                        else continue;
+                    }
+                    break;
+                case JobKind.nextJob:
+                    {
+                        action = ReadNextAP;
+                    }
+                    break;
+                case JobKind.doneJob:
+                    if (isAPHDone)
+                        action = DonePersonJob;
+                    break;
+            }
+
+            if (action != null)
+                jobList.Enqueue(action);
         }
     }
 
-    public void ReadNextAction()
+    void EndEachJob(Job job = null)
     {
-        if (actionPointHandler.isAPHDone)
-        {
-            model.GetNextAPH();
-        }
+        if (jobList.Count > 0)
+            jobList.Dequeue().Invoke();
         else
         {
-            actionPointHandler.GetNextActionPoint();
-            SetJobForAPHRead();
+            DonePersonJob();
         }
     }
-    void SetExceptionByNavi() { }
-    void SetExceptionByAni() { }
+    void ReadNextAP()
+    {
+        actionPointHandler.GetNextActionPoint();
+        CreatingJob(modelJob);
+    }
+
+    void DonePersonJob()
+    {
+        modelJob.EndJob();
+    }
+
+    void SetExceptionByNavi(Job job) { }
+    void SetExceptionByAni(Job job) { }
 
     public void OnRemoved(ObjDetector detector, Collider collider)
     {
@@ -90,14 +117,25 @@ public class ModelHandler : MonoBehaviour, IObjDetectorConnector_OnDetected, IOb
     {
         model.Contected(collider);
     }
-    public class ModelJob : Job
+
+    public ModelHandlerJob GetNewModelHandlerJob(Job job, IJobStarter jobStarter, Action<Job> endAction, Action<Job> exceptionAction)
+    {
+        var ap = actionPointHandler.GetNowActionPoint();
+        var sectionChecker = this as ISectionJobChecker;
+        return new ModelHandlerJob(sectionChecker, job, jobStarter, ap, endAction, exceptionAction);
+    }
+
+    public bool IsSameSection(Job job)
+    {
+        return modelJob.Equals(job);
+    }
+
+    public class ModelHandlerJob : SectionJob
     {
         public ActionPoint ap { private set; get; }
-        public ModelJob(IJobStarter starter, ActionPoint ap, Action endAction, Action exceptionAction)
+        public ModelHandlerJob(ISectionJobChecker sectionChecker, Job job, IJobStarter starter, ActionPoint ap, Action<Job> endAction, Action<Job> exceptionAction)
+                : base(job, starter, sectionChecker, endAction, exceptionAction)
         {
-            this.jobStarter = starter;
-            this.endAction = endAction;
-            this.exceptionAction = exceptionAction;
             this.ap = ap;
         }
     }

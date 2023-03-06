@@ -23,9 +23,9 @@ public class NaviController : MonoBehaviour, IJobStarter
     }
     public void StartJob(Job jobOption)
     {
-        if (jobOption is ModelHandler.ModelJob)
+        if (jobOption is ModelHandler.ModelHandlerJob)
         {
-            var job = jobOption as ModelHandler.ModelJob;
+            var job = jobOption as ModelHandler.ModelHandlerJob;
             if (job.ap != null)
             {
                 var ap = job.ap;
@@ -41,7 +41,7 @@ public class NaviController : MonoBehaviour, IJobStarter
             }
         }
     }
-    IEnumerator DoCheckUntilArrive(ModelHandler.ModelJob job)
+    IEnumerator DoCheckUntilArrive(ModelHandler.ModelHandlerJob job)
     {
         var ap = job.ap;
         TurnOnNavi(true);

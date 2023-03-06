@@ -6,18 +6,25 @@ using UnityEngine;
 public abstract class Job
 {
     protected IJobStarter jobStarter;
-    protected Action endAction;
-    protected Action exceptionAction;
-    public void StartJob()
+    protected Action<Job> endAction;
+    protected Action<Job> exceptionAction;
+    protected Job section;
+    public Job(IJobStarter jobStarter, Action<Job> endAction, Action<Job> exceptionAction)
+    {
+        this.jobStarter = jobStarter;
+        this.endAction = endAction;
+        this.exceptionAction = exceptionAction;
+    }
+    public virtual void StartJob()
     {
         jobStarter.StartJob(this);
     }
-    public void EndJob()
+    public virtual void EndJob()
     {
         if (endAction != null)
-            endAction.Invoke();
+            endAction.Invoke(this);
         else if (exceptionAction != null)
-            exceptionAction.Invoke();
+            exceptionAction.Invoke(this);
         else
         {
             Debug.Log("job has exception");

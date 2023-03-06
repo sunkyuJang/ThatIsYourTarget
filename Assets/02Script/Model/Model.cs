@@ -43,8 +43,17 @@ public class Model : MonoBehaviour
     }
     public void SetAPH(ActionPointHandler handler, Action nextActionFromState = null)
     {
-        modelHandler.SetAPH(handler);
+        new ModelJob(handler, modelHandler as IJobStarter, EndEachJob, ExceptionJob).StartJob();
         if (nextActionFromState != null) this.nextActionFromState = nextActionFromState;
+    }
+
+    protected virtual void EndEachJob(Job job)
+    {
+
+    }
+    protected virtual void ExceptionJob(Job job)
+    {
+
     }
 
     public void GetNextAPH()
@@ -58,7 +67,6 @@ public class Model : MonoBehaviour
             nextActionFromState.Invoke();
         }
     }
-    public void StartToAPHRead() { modelHandler.ReadNextAction(); }
     public virtual void Contected(Collider collider) { }
     public virtual void Contecting(Collider collider) { }
     public virtual void Removed(Collider collider) { }
@@ -73,6 +81,16 @@ public class Model : MonoBehaviour
         public CheckingTrackingState(Transform target)
         {
             this.target = target;
+        }
+    }
+
+    public class ModelJob : Job
+    {
+        public ActionPointHandler aph { private set; get; }
+        public ModelJob(ActionPointHandler aph, IJobStarter starter, Action<Job> endAction, Action<Job> exceptionAction)
+                : base(starter, endAction, exceptionAction)
+        {
+            this.aph = aph;
         }
     }
 }

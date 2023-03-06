@@ -19,7 +19,7 @@ public class AniController : MonoBehaviour, IJobStarter
     Coroutine PlayingAni { set; get; }
     public bool IsPlayingAni { get { return PlayingAni != null; } }
     protected Coroutine ProcResetAni { set; get; }
-    private ModelHandler.ModelJob modelJob { set; get; }
+    private ModelHandler.ModelHandlerJob modelJob { set; get; }
     bool ShouldReserveAP
     {
         get
@@ -88,9 +88,9 @@ public class AniController : MonoBehaviour, IJobStarter
     }
     public void StartJob(Job job)
     {
-        if (job is ModelHandler.ModelJob)
+        if (job is ModelHandler.ModelHandlerJob)
         {
-            modelJob = job as ModelHandler.ModelJob;
+            modelJob = job as ModelHandler.ModelHandlerJob;
             var ap = modelJob.ap;
 
             StartAni(ap);
