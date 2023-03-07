@@ -36,7 +36,7 @@ public class ActionPointHandler : MonoBehaviour
         ResetIndex();
     }
 
-    public ActionPoint GetNowActionPoint() { return actionPoints[index]; }
+    public ActionPoint GetNowActionPoint() { return isAPHDone ? null : actionPoints[index]; }
 
     public ActionPoint GetNextActionPoint()
     {

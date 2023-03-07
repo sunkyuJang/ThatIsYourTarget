@@ -14,12 +14,12 @@ public class ModelHandlerJobManager : JobManager
     public ModelHandlerJobManager(Action doEndJob, IJobStarter naviJobStarter, IJobStarter aniJobStarter, Job parentJob, ActionPointHandler aph, ISectionJobChecker sectionJobChecker)
         : base(null, doEndJob)
     {
-        jobList = CreatingJob(parentJob);
         this.sectionJobChecker = sectionJobChecker;
         this.parentJob = parentJob;
         this.naviJobStarter = naviJobStarter;
         this.aniJobStarter = aniJobStarter;
         this.aph = aph;
+        jobList = CreatingJob(parentJob);
     }
 
     Queue<Action> CreatingJob(Job parentJob)
@@ -66,12 +66,5 @@ public class ModelHandlerJobManager : JobManager
     {
         aph.GetNextActionPoint();
         CreatingJob(parentJob);
-    }
-
-    public ModelHandler.ModelHandlerJob GetNewModelHandlerJob(Job job, IJobStarter jobStarter, Action endAction, Action exceptionAction)
-    {
-        var ap = aph.GetNowActionPoint();
-        var sectionChecker = this as ISectionJobChecker;
-        return new ModelHandler.ModelHandlerJob(sectionChecker, job, jobStarter, ap, endAction, exceptionAction);
     }
 }

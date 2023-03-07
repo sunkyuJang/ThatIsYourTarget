@@ -6,4 +6,5 @@ using UnityEngine;
 public interface IJobStarter
 {
     void StartJob(Job jobOption);
+    void StopJob();
 }

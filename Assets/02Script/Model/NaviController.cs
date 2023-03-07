@@ -62,6 +62,12 @@ public class NaviController : MonoBehaviour, IJobStarter
         job.EndJob();
     }
 
+    public void StopJob()
+    {
+        if (CheckingUntilArrive != null)
+            StopCoroutine(CheckingUntilArrive);
+    }
+
     public void TurnOnNavi(bool shouldTurnOn)
     {
         //dont change the sequence.

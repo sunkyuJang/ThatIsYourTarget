@@ -46,6 +46,12 @@ public class Curiousity_PersonState : PersonState
     public override void Enter()
     {
         var aph = GetCuriousityAPH(preparingData.target);
+        var fisrtAP = aph.GetNowActionPoint();
+
+        // 하는 중. 
+        //첫 애니메이션 작동시 model이 움직이면서 콜라이터의 connect 및 remove가 지속적으로 발생하는 것을 막기위해
+        //척 애니메이션이 동작하는 동안 만큼은 connect 및 remove를 통해 입력된 값을 무시하도록 한다.
+        fisrtAP.during;
         person.SetAPH(aph, AfterAPHDone);
         if (procCountingTime != null)
         {
@@ -53,6 +59,12 @@ public class Curiousity_PersonState : PersonState
         }
 
         procCountingTime = person.StartCoroutine(CountingTime(preparingData.target));
+    }
+    IEnumerator IgnoreTime()
+    {
+        Application.
+        PersonAniController.StateKind.Surprize
+        yield return null;
     }
 
     IEnumerator CountingTime(Transform target)

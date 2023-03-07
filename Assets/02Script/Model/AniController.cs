@@ -18,6 +18,7 @@ public class AniController : MonoBehaviour, IJobStarter
     protected ActionPoint reservatiedAP { set; get; }
     Coroutine PlayingAni { set; get; }
     public bool IsPlayingAni { get { return PlayingAni != null; } }
+    List<Coroutine> jobStopList = new List<Coroutine>();
     protected Coroutine ProcResetAni { set; get; }
     private ModelHandler.ModelHandlerJob modelHandlerJob { set; get; }
     bool ShouldReserveAP
@@ -101,7 +102,7 @@ public class AniController : MonoBehaviour, IJobStarter
     {
         if (!IsPlayingAni)
         {
-            StartCoroutine(DoMakeCorrect(ap));
+            jobStopList.Add(StartCoroutine(DoMakeCorrect(ap)));
         }
         else
         {
@@ -119,13 +120,8 @@ public class AniController : MonoBehaviour, IJobStarter
 
     protected void SetCorrectly(ActionPoint ap)
     {
-        SetPositionCorrectly(ap.transform.position);
-        SetRotationCorrectly(ap.transform.forward);
-    }
-
-    protected void SetPositionCorrectly(Vector3 worldPosition)
-    {
-        StartCoroutine(DoPositionCorrectly(worldPosition));
+        jobStopList.Add(StartCoroutine(DoPositionCorrectly(ap.transform.position)));
+        jobStopList.Add(StartCoroutine(DoRotationCorrectly(ap.transform.forward)));
     }
 
     protected virtual IEnumerator DoPositionCorrectly(Vector3 worldPosition)
@@ -142,11 +138,6 @@ public class AniController : MonoBehaviour, IJobStarter
             transform.position = Vector3.Lerp(beforePosition, Vector3Extentioner.GetOverrideY(worldPosition, beforePosition.y), ratio);
         }
         isPositionCorrect = true;
-    }
-
-    protected void SetRotationCorrectly(Vector3 dir)
-    {
-        StartCoroutine(DoRotationCorrectly(dir));
     }
     protected virtual IEnumerator DoRotationCorrectly(Vector3 dir)
     {
@@ -185,6 +176,19 @@ public class AniController : MonoBehaviour, IJobStarter
 
         isRotationCorrect = true;
         yield return null;
+    }
+
+    public void StopJob()
+    {
+        jobStopList.ForEach(x =>
+        {
+            if (x != null)
+            {
+                StopCoroutine(x);
+            }
+        });
+
+        MakeResetAni(false);
     }
 
     private void OnAnimatorIK(int layer)

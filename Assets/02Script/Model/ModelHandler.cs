@@ -35,12 +35,20 @@ public class ModelHandler : MonoBehaviour, IJobStarter, ISectionJobChecker, IObj
             if (modelHandlerJobManager != null)
                 modelHandlerJobManager.StopRunning();
 
+            StopJob();
+
             actionPointHandler = modelJob.aph;
             var naviJobStarter = naviController as IJobStarter;
             var aniJobStarter = aniController as IJobStarter;
             modelHandlerJobManager = new ModelHandlerJobManager(DonePersonJob, naviJobStarter, aniJobStarter, modelJob, actionPointHandler, this as ISectionJobChecker);
             modelHandlerJobManager.StartJob();
         }
+    }
+
+    public void StopJob()
+    {
+        (naviController as IJobStarter).StopJob();
+        (aniController as IJobStarter).StopJob();
     }
 
     void DonePersonJob()
