@@ -7,23 +7,30 @@ public class JobManager
 {
     protected Queue<Action> jobList = new Queue<Action>();
     Action doEndJob;
-    bool canJobRunning = true;
+    bool canRunningJob = true;
 
     public JobManager(Queue<Action> jobList, Action doEndJob)
     {
         this.jobList = jobList;
         this.doEndJob = doEndJob;
     }
-    public void StopRunning() { canJobRunning = false; }
+    public void StopRunning() { canRunningJob = false; }
     public virtual void StartJob()
     {
-        if (canJobRunning && jobList.Count > 0)
+        if (canRunningJob)
         {
-            jobList.Dequeue().Invoke();
+            if (jobList.Count > 0)
+            {
+                jobList.Dequeue().Invoke();
+            }
+            else
+            {
+                EndJob();
+            }
         }
         else
         {
-            EndJob();
+            // Destory job
         }
     }
 

@@ -12,6 +12,9 @@ public partial class Person : Model
     Dictionary<PersonState.StateKinds, PersonState> states { set; get; } = new Dictionary<PersonState.StateKinds, PersonState>();
     public PersonState GetState(PersonState.StateKinds state) => states != null && states.ContainsKey(state) ? states[state] : null;
     private PersonState currentState = null;
+    internal object idmgController;
+
+    public Weapon weapon { private set; get; } = null;
     protected override IEnumerator Start()
     {
         yield return StartCoroutine(base.Start());

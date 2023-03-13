@@ -43,12 +43,12 @@ public class Sensed_PersonState : PersonState
     public class PreparingData
     {
         public Transform target { private set; get; }
-        public bool isContected { private set; get; }
+        public bool isInSight { private set; get; }
 
-        public PreparingData(Transform target, bool isContected)
+        public PreparingData(Transform target, bool isInSight)
         {
             this.target = target;
-            this.isContected = isContected;
+            this.isInSight = isInSight;
         }
     }
 }
