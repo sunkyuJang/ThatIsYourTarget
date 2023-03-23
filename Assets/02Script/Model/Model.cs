@@ -3,14 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Model : MonoBehaviour
+public class Model : MonoBehaviour, IDamageController
 {
+    public int HP { set; get; } = 10;
     public int state { private set; get; } = 0;
     public ModelHandler modelHandler { private set; get; }
     Transform APHGroup;
     ActionPointHandler originalAPH;
     Action nextActionFromState = null;
-
+    float MaxAcceptableDmgTime { set; get; } = 2f;
+    bool CanAcceptableDmg { set; get; } = true;
     protected virtual void Awake()
     {
         modelHandler = GetComponentInChildren<ModelHandler>();
@@ -71,16 +73,14 @@ public class Model : MonoBehaviour
     public virtual void Contecting(Collider collider) { }
     public virtual void Removed(Collider collider) { }
     protected virtual void ChangedState() { }
-    public virtual void GetHit() { }
-    protected class CheckingTrackingState
+
+    public void SetDamage(float damege)
     {
-        public Transform target = null;
-        public bool isFollowing = false;
-        public bool shouldRemove = false;
-        public bool CanRemove { get { return !isFollowing && shouldRemove; } }
-        public CheckingTrackingState(Transform target)
+        if (CanAcceptableDmg)
         {
-            this.target = target;
+            CanAcceptableDmg = false;
+            Action removeTimeData = () => { CanAcceptableDmg = true; };
+            TimeCounter.Instance.SetTimeCounting(MaxAcceptableDmgTime, removeTimeData);
         }
     }
 

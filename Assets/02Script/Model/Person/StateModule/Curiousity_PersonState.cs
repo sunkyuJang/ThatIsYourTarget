@@ -71,13 +71,13 @@ public class Curiousity_PersonState : PersonState
     {
         while (!isAPHDone)
         {
-            var hits = person.GetAllRayHIts(target);
+            var hits = person.modelHandler.GetAllRayHIts(target);
             if (hits.Length == 1)
             {
                 var hit = hits[0];
                 if (hit.transform.CompareTag(Player.playerTag))
                 {
-                    var dist = person.GetDistTo(hit.transform);
+                    var dist = person.modelHandler.GetDistTo(hit.transform);
                     if (dist < Attack_PersonState.attackDist)
                     {
                         warningTime += maxWarningTime;

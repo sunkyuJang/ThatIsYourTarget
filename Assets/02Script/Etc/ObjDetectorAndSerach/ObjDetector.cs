@@ -8,20 +8,23 @@ public class ObjDetector : MonoBehaviour
     public List<string> targetTags = new List<string>();
     public bool shouldFindByName = false;
 
-    protected Collider Collider { set; get; }
+    protected Collider DectectCollider { set; get; }
     protected IObjDetectorConnector_OnDetected I_OnDetected { set; get; }
     protected IObjDetectorConnector_OnContecting I_OnContecting { set; get; }
     protected IObjDetectorConnector_OnRemoved I_OnRemoved { set; get; }
 
-    private void Start()
+    protected virtual void SetDetectCollider()
     {
         //check collider
-        Collider = gameObject.GetComponent<Collider>();
-        if (Collider == null)
+        DectectCollider = gameObject.GetComponent<Collider>();
+        if (DectectCollider == null)
             Debug.Log("collider not Attached");
         else
-            Collider.isTrigger = true;
+            DectectCollider.isTrigger = true;
+    }
 
+    protected virtual void SetInterface()
+    {
         //check Connected Obj
         if (connectedObj == null)
             Debug.Log("no Connected Obj");
@@ -31,7 +34,11 @@ public class ObjDetector : MonoBehaviour
             I_OnContecting = connectedObj.GetComponent<IObjDetectorConnector_OnContecting>();
             I_OnRemoved = connectedObj.GetComponent<IObjDetectorConnector_OnRemoved>();
         }
-
+    }
+    private void Start()
+    {
+        SetDetectCollider();
+        SetInterface();
     }
     protected virtual void OnTriggerEnter(Collider other)
     {

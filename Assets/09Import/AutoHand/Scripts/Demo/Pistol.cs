@@ -47,7 +47,7 @@ namespace Autohand.Demo
             {
                 if (hit.collider.tag == "Person")
                 {
-                    hit.transform.GetComponentInParent<Person>()?.GetHit();
+                    hit.transform.GetComponentInParent<Person>()?.SetDamage(1);
                     hit.transform.GetComponent<Rigidbody>()?.AddForceAtPosition((hit.point - barrelTip.position).normalized * hitPower * 100, hit.point, ForceMode.Impulse);
                 }
                 // var hitBody = hit.transform.GetComponent<Rigidbody>();

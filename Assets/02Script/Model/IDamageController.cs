@@ -4,5 +4,5 @@ using UnityEngine;
 
 public interface IDamageController
 {
-    void SetDamage(float damege);
+    void SetDamage(float damege, out bool isDead);
 }

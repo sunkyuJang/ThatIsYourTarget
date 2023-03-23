@@ -31,6 +31,7 @@ public abstract class PersonState : StateModule
         dic.Add(StateKinds.Normal, new Normal_PersonState(person));
         dic.Add(StateKinds.Sensed, new Sensed_PersonState(person));
         dic.Add(StateKinds.Curiousity, new Curiousity_PersonState(person));
+        dic.Add(StateKinds.Attack, new Attack_PersonState(person));
 
         return dic;
     }

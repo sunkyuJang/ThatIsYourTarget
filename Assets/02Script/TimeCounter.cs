@@ -20,6 +20,10 @@ public class TimeCounter : MonoBehaviour
             print("there has two TimeCounter Exist");
         }
     }
+    public TimeCountData SetTimeCounting(float maxTime, Action function)
+    {
+        return SetTimeCounting(maxTime, maxTime, function);
+    }
     public TimeCountData SetTimeCounting(float maxTime, float timeUnit, Action function)
     {
         var find = countingList.Find(x => x.requestFunction.Equals(function));

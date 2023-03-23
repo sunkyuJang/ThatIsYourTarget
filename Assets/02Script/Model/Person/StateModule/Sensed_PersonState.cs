@@ -20,7 +20,7 @@ public class Sensed_PersonState : PersonState
     }
     public override void Enter()
     {
-        var dist = person.GetDistTo(preparingData.target);
+        var dist = person.modelHandler.GetDistTo(preparingData.target);
         var shouldAttack = dist < Attack_PersonState.attackDist;
         if (shouldAttack)
         {

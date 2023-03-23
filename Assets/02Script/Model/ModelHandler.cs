@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AI;
+using JMath;
 
 public class ModelHandler : MonoBehaviour, IJobStarter, ISectionJobChecker, IObjDetectorConnector_OnDetected, IObjDetectorConnector_OnRemoved
 {
@@ -79,5 +79,20 @@ public class ModelHandler : MonoBehaviour, IJobStarter, ISectionJobChecker, IObj
         {
             this.ap = ap;
         }
+    }
+
+    public float GetDistTo(Transform target)
+    {
+        return Vector3.Distance(transform.position, target.transform.position);
+    }
+
+    public RaycastHit[] GetAllRayHIts(Transform target)
+    {
+        var from = transform.position;
+        var to = target.position;
+        var dir = Vector3Extentioner.GetDirection(from, to);
+        var dist = Vector3.Distance(from, to);
+
+        return Physics.RaycastAll(from, dir, dist, 0, QueryTriggerInteraction.Ignore);
     }
 }

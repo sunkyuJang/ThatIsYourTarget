@@ -54,11 +54,6 @@ public partial class Person : Model
         }
     }
 
-    public override void GetHit()
-    {
-
-    }
-
     public ActionPointHandler GetNewAPH(int APCounts)
     {
         var requireAPCount = APCounts;
@@ -86,21 +81,6 @@ public partial class Person : Model
         {
             ap.SetAPWithDuring(modelHandler.transform, target, (int)kind, time, shouldChangePosition, shouldChangeRotation);
         }
-    }
-
-    public float GetDistTo(Transform target)
-    {
-        return Vector3.Distance(modelHandler.transform.position, target.transform.position);
-    }
-
-    public RaycastHit[] GetAllRayHIts(Transform target)
-    {
-        var from = modelHandler.transform.position;
-        var to = target.position;
-        var dir = Vector3Extentioner.GetDirection(from, to);
-        var dist = Vector3.Distance(from, to);
-
-        return Physics.RaycastAll(from, dir, dist, 0, QueryTriggerInteraction.Ignore);
     }
 
     public override void Contected(Collider collider)

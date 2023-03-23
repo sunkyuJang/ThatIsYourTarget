@@ -49,10 +49,27 @@ public class Attack_PersonState : PersonState
         return aph;
     }
 
-    IEnumerator TraceTarget(Sensed_PersonState.PreparingData preparingData)
+    IEnumerator TraceTarget(Sensed_PersonState.PreparingData preparingData, ActionPointHandler aph)
     {
-        var isMoving = true;
+        var target = preparingData.target;
+        var targetDmgController = target.GetComponent<IDamageController>();
+        while (!aph.isAPHDone)
+        {
+            if (IsTargetInRange(target, weapon.range))
+            {
+                SetDmgToTarget(targetDmgController);
+            }
+
+
+
+            yield return new WaitForFixedUpdate();
+        }
 
         yield return null;
+    }
+
+    bool IsTargetInRange(Transform target, float range)
+    {
+        return Vector3.Distance(target.position, person.modelHandler.transform.position) <= range;
     }
 }
