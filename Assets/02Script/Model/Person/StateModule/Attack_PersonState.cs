@@ -35,7 +35,7 @@ public class Attack_PersonState : PersonState
 
     void SetDmgToTarget(IDamageController target)
     {
-        target.SetDamage(weapon.dmg);
+        //var isDead = target.SetDamage(weapon.dmg);
     }
     public ActionPointHandler GetAttckHandler(Sensed_PersonState.PreparingData preparingData)
     {

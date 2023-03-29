@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class Model : MonoBehaviour, IDamageController
 {
-    public int HP { set; get; } = 10;
+    public float HP { set { HP -= value; HP = HP < 0 ? 0 : HP; } get { return HP; } }
     public int state { private set; get; } = 0;
     public ModelHandler modelHandler { private set; get; }
     Transform APHGroup;
@@ -74,14 +74,22 @@ public class Model : MonoBehaviour, IDamageController
     public virtual void Removed(Collider collider) { }
     protected virtual void ChangedState() { }
 
-    public void SetDamage(float damege)
+    public bool SetDamage(float damege)
     {
         if (CanAcceptableDmg)
         {
             CanAcceptableDmg = false;
             Action removeTimeData = () => { CanAcceptableDmg = true; };
             TimeCounter.Instance.SetTimeCounting(MaxAcceptableDmgTime, removeTimeData);
+
+            HP = damege;
         }
+
+        return false;
+    }
+    public void PushByForce()
+    {
+
     }
 
     public class ModelJob : Job

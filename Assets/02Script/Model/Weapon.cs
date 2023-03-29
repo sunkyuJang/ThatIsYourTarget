@@ -2,12 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Weapon : MonoBehaviour, IObjDetectorConnector_OnContecting
+public class Weapon : MonoBehaviour, IObjCollisionDetectorConnector_OnCollisionEnter
 {
     public float Dmg { set; get; } = 1;
     public float Range { set; get; } = 0;
     public bool ShouldUsingCollider { get { return Range == 0; } }
     public bool IsSingleTarget { set; get; }
+    public float hitPower { set; get; } = 1;
     public void Attack()
     {
         if (ShouldUsingCollider)
@@ -24,17 +25,27 @@ public class Weapon : MonoBehaviour, IObjDetectorConnector_OnContecting
 
         yield return null;
     }
-    public void OnContecting(ObjDetector detector, Collider collider)
+    public void OnCollisionEnter(ObjCollisionDetector detector, Collision collision)
     {
-        IDamageController damageController = collider.GetComponent<IDamageController>();
+        IDamageController damageController = collision.collider.GetComponent<IDamageController>();
         if (damageController != null)
         {
-            damageController.SetDamage(Dmg, out bool isDead);
+            var isDead = damageController.SetDamage(Dmg);
             if (isDead)
             {
-                
+                if (Range > 0)
+                {
+                    if (collision.contacts.Length > 0)
+                    {
+                        var hipPoint = collision.contacts[0];
+                        damageController.PushByForce((hipPoint.point - transform.position).normalized * hitPower * 100, hipPoint.point, ForceMode.Impulse);
+                    }
+                }
+                else
+                {
+
+                }
             }
         }
     }
-
 }

@@ -4,5 +4,7 @@ using UnityEngine;
 
 public interface IDamageController
 {
-    void SetDamage(float damege, out bool isDead);
+    bool SetDamage(float damege);
+    void SetDestroying();
+    void PushByForce(Vector3 force, Vector3 hitPosition, ForceMode forceMode);
 }
