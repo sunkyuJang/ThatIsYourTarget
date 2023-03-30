@@ -4,14 +4,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using JMath;
 
-public class ModelHandler : MonoBehaviour, IJobStarter, ISectionJobChecker, IObjDetectorConnector_OnDetected, IObjDetectorConnector_OnRemoved
+public class ModelHandler : MonoBehaviour, IJobStarter, IObjDetectorConnector_OnDetected, IObjDetectorConnector_OnRemoved
 {
     Model model;
     public ActionPointHandler actionPointHandler { private set; get; }
     public NaviController naviController { private set; get; }
     public AniController aniController { private set; get; }
-    IJobStarter naviJobStarter;
-    IJobStarter aniJobStarter;
     RagDollHandler ragDollHandler { set; get; }
     Model.ModelJob modelJob { set; get; }
     ModelHandlerJobManager modelHandlerJobManager { set; get; }
