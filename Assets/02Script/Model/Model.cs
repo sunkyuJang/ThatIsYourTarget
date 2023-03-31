@@ -95,10 +95,12 @@ public class Model : MonoBehaviour, IDamageController
     public class ModelJob : Job
     {
         public ActionPointHandler aph { private set; get; }
-        public ModelJob(ActionPointHandler aph, IJobStarter starter, Action endAction, Action exceptionAction)
+        public Action<ActionPointHandler> recycleAPHFunc { private set; get; }
+        public ModelJob(ActionPointHandler aph, Action<ActionPointHandler> recycleAPHFunc, IJobStarter starter, Action endAction, Action exceptionAction)
                 : base(starter, endAction, exceptionAction)
         {
             this.aph = aph;
+            this.recycleAPHFunc = recycleAPHFunc;
         }
     }
 }

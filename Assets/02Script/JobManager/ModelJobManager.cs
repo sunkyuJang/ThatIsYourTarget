@@ -5,13 +5,13 @@ using UnityEngine;
 
 public class ModelHandlerJobManager : JobManager
 {
-    ISectionJobChecker sectionJobChecker;
+    IJobStartWithCheck sectionJobChecker;
     Job parentJob;
     IJobStarter naviJobStarter;
     IJobStarter aniJobStarter;
     ActionPointHandler aph;
     enum JobKind { naviJob, aniJob, nextJob, SetNextJob, doneJob, non }
-    public ModelHandlerJobManager(Action doEndJob, IJobStarter naviJobStarter, IJobStarter aniJobStarter, Job parentJob, ActionPointHandler aph, ISectionJobChecker sectionJobChecker)
+    public ModelHandlerJobManager(Action doEndJob, IJobStarter naviJobStarter, IJobStarter aniJobStarter, Job parentJob, ActionPointHandler aph, IJobStartWithCheck sectionJobChecker)
         : base(null, doEndJob)
     {
         this.sectionJobChecker = sectionJobChecker;

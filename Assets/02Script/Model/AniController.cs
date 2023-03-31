@@ -8,7 +8,7 @@ using JMath;
 public class AniController : MonoBehaviour, IJobStarter
 {
     protected RagDollHandler ragDollHandler { set; get; }
-    protected ModelHandler modelPhysicsController;
+    protected NaviController naviController;
     protected Animator animator;
     protected bool isPositionCorrect { set; get; } = false;
     protected bool isRotationCorrect { set; get; } = false;
@@ -33,7 +33,7 @@ public class AniController : MonoBehaviour, IJobStarter
     protected void Awake()
     {
         ragDollHandler = GetComponent<RagDollHandler>();
-        modelPhysicsController = GetComponent<ModelHandler>();
+        var naviController = GetComponent<NaviController>();
         animator = GetComponent<Animator>();
     }
 
@@ -47,26 +47,22 @@ public class AniController : MonoBehaviour, IJobStarter
     {
         while (true)
         {
-            if (modelPhysicsController.naviController.navMeshAgent != null)
+            var direction = naviController.GetNaviDirection();
+            if (direction == Vector3.zero)
             {
-                if (modelPhysicsController.naviController.navMeshAgent.isOnNavMesh
-                    && !modelPhysicsController.naviController.navMeshAgent.isStopped)
-                {
-                    var NavMeshAgent = modelPhysicsController.naviController.navMeshAgent;
-
-                    var degree = Mathf.Round(Vector3.Angle(transform.forward, NavMeshAgent.velocity.normalized));
-                    var cross = Vector3.Cross(transform.forward, NavMeshAgent.velocity.normalized);
-                    degree *= cross.y >= 0 ? 1 : -1;
-
-                    animator.SetFloat("WalkY", Mathf.Cos(degree * Mathf.Deg2Rad));
-                    animator.SetFloat("WalkX", Mathf.Sin(degree * Mathf.Deg2Rad));
-                }
-                else
-                {
-                    animator.SetFloat("WalkY", 0f);
-                    animator.SetFloat("WalkX", 0f);
-                }
+                animator.SetFloat("WalkY", 0f);
+                animator.SetFloat("WalkX", 0f);
             }
+            else
+            {
+                var degree = Mathf.Round(Vector3.Angle(transform.forward, direction));
+                var cross = Vector3.Cross(transform.forward, direction);
+                degree *= cross.y >= 0 ? 1 : -1;
+
+                animator.SetFloat("WalkY", Mathf.Cos(degree * Mathf.Deg2Rad));
+                animator.SetFloat("WalkX", Mathf.Sin(degree * Mathf.Deg2Rad));
+            }
+
             yield return new WaitForFixedUpdate();
         }
     }
@@ -87,6 +83,10 @@ public class AniController : MonoBehaviour, IJobStarter
             }
 
         }
+    }
+    public bool IsSameSection(Job job)
+    {
+        return false;
     }
     public void StartJob(Job job)
     {

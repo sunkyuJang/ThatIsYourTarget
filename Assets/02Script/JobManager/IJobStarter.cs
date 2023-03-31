@@ -7,5 +7,4 @@ public interface IJobStarter
 {
     void StartJob(Job jobOption);
     void StopJob();
-    bool IsSameSection(Job job);
 }

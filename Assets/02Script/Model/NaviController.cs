@@ -82,4 +82,19 @@ public class NaviController : MonoBehaviour, IJobStarter
             navMeshObstacle.enabled = !shouldTurnOn;
         }
     }
+
+    public Vector3 GetNaviDirection()
+    {
+        var direction = Vector3.zero;
+        if (navMeshAgent != null)
+        {
+            if (navMeshAgent.isOnNavMesh
+                    && navMeshAgent.isStopped)
+            {
+                direction = navMeshAgent.velocity.normalized;
+            }
+        }
+
+        return direction;
+    }
 }

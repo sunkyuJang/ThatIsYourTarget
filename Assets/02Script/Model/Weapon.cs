@@ -33,6 +33,7 @@ public class Weapon : MonoBehaviour, IObjCollisionDetectorConnector_OnCollisionE
             var isDead = damageController.SetDamage(Dmg);
             if (isDead)
             {
+                damageController.
                 if (Range > 0)
                 {
                     if (collision.contacts.Length > 0)
