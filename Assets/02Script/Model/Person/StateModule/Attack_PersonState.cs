@@ -55,12 +55,10 @@ public class Attack_PersonState : PersonState
         var targetDmgController = target.GetComponent<IDamageController>();
         while (!aph.isAPHDone)
         {
-            if (IsTargetInRange(target, weapon.range))
+            if (IsTargetInRange(target, weapon.Range))
             {
-                SetDmgToTarget(targetDmgController);
+                weapon.Attack();
             }
-
-
 
             yield return new WaitForFixedUpdate();
         }

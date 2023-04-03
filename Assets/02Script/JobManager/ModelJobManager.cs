@@ -5,13 +5,13 @@ using UnityEngine;
 
 public class ModelHandlerJobManager : JobManager
 {
-    IJobStartWithCheck sectionJobChecker;
+    ISectionJobChecker sectionJobChecker;
     Job parentJob;
     IJobStarter naviJobStarter;
     IJobStarter aniJobStarter;
     ActionPointHandler aph;
     enum JobKind { naviJob, aniJob, nextJob, SetNextJob, doneJob, non }
-    public ModelHandlerJobManager(Action doEndJob, IJobStarter naviJobStarter, IJobStarter aniJobStarter, Job parentJob, ActionPointHandler aph, IJobStartWithCheck sectionJobChecker)
+    public ModelHandlerJobManager(Action doEndJob, IJobStarter naviJobStarter, IJobStarter aniJobStarter, Job parentJob, ActionPointHandler aph, ISectionJobChecker sectionJobChecker)
         : base(null, doEndJob)
     {
         this.sectionJobChecker = sectionJobChecker;
@@ -35,13 +35,31 @@ public class ModelHandlerJobManager : JobManager
             {
                 case JobKind.naviJob:
                     {
-                        action = (new ModelHandler.ModelHandlerJob(sectionJobChecker, parentJob, naviJobStarter, nowAP, StartJob, null)).StartJob;
+                        action = (new ModelHandler.ModelHandlerJob
+                                    (
+                                        sectionChecker: sectionJobChecker,
+                                        job: parentJob,
+                                        starter: naviJobStarter,
+                                        ap: nowAP,
+                                        endAction: StartJob,
+                                        exceptionAction: null
+                                    )
+                                ).StartJob;
                     }
                     break;
                 case JobKind.aniJob:
                     {
                         if (nowAP.HasAction)
-                            action = (new ModelHandler.ModelHandlerJob(sectionJobChecker, parentJob, aniJobStarter, nowAP, StartJob, null)).StartJob;
+                            action = (new ModelHandler.ModelHandlerJob
+                                        (
+                                            sectionChecker: sectionJobChecker,
+                                            job: parentJob,
+                                            starter: aniJobStarter,
+                                            ap: nowAP,
+                                            endAction: StartJob,
+                                            exceptionAction: null
+                                        )
+                                    ).StartJob;
                         else continue;
                     }
                     break;

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using JMath;
 
-public class ModelHandler : MonoBehaviour, IJobStarter
+public class ModelHandler : MonoBehaviour, IJobStartWithCheck
 {
     public ActionPointHandler actionPointHandler { private set; get; }
     public IJobStarter naviJobStarter { private set; get; }
