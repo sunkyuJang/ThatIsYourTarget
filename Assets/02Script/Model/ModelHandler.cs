@@ -50,7 +50,15 @@ public class ModelHandler : MonoBehaviour, IJobStartWithCheck
             StopJob();
 
             actionPointHandler = modelJob.aph;
-            modelHandlerJobManager = new ModelHandlerJobManager(DonePersonJob, naviJobStarter, aniJobstarter, modelJob, actionPointHandler, this as ISectionJobChecker);
+            modelHandlerJobManager = new ModelHandlerJobManager
+                                        (
+                                            doEndJob: DonePersonJob,
+                                            naviJobStarter: naviJobStarter,
+                                            aniJobStarter: aniJobstarter,
+                                            parentJob: modelJob,
+                                            aph: actionPointHandler,
+                                            sectionJobChecker: this as ISectionJobChecker
+                                        );
             modelHandlerJobManager.StartJob();
         }
     }
@@ -94,5 +102,11 @@ public class ModelHandler : MonoBehaviour, IJobStartWithCheck
         var dist = Vector3.Distance(from, to);
 
         return Physics.RaycastAll(from, dir, dist, 0, QueryTriggerInteraction.Ignore);
+    }
+
+    public void SetDead()
+    {
+        StopJob();
+        ragDollHandler.TrunOnRigid(true);
     }
 }

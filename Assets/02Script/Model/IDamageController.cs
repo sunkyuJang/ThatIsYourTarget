@@ -5,6 +5,4 @@ using UnityEngine;
 public interface IDamageController
 {
     bool SetDamage(float damege);
-    void SetDestroying();
-    Rigidbody GetRigidbody();
 }

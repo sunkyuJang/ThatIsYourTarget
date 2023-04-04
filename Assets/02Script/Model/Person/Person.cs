@@ -104,4 +104,9 @@ public partial class Person : Model
             }
         }
     }
+
+    protected override void DoDie()
+    {
+        SetState((int)PersonState.StateKinds.Dead);
+    }
 }

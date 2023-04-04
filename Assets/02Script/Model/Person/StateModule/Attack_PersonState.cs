@@ -57,7 +57,14 @@ public class Attack_PersonState : PersonState
         {
             if (IsTargetInRange(target, weapon.Range))
             {
-                weapon.Attack();
+                if (weapon.IsMelee)
+                {
+
+                }
+                else
+                {
+                    weapon.Attack();
+                }
             }
 
             yield return new WaitForFixedUpdate();

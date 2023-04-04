@@ -37,22 +37,6 @@ public class PersonModel : MonoBehaviour
         }
     }
 
-    // public void SetAlertLevel(Person.AlertLevel level)
-    // {
-    //     var index = -1;
-    //     switch (level)
-    //     {
-    //         case Person.AlertLevel.Normal:
-    //             {
-    //                 CheckAnimationBeforeGoingToNormalState();
-    //                 index = 0;
-    //                 break;
-    //             }
-    //         case Person.AlertLevel.Notice: index = 1; animator.SetBool("PrepareAttack", true); animator.SetLayerWeight(index, 1); break;
-    //         case Person.AlertLevel.Attack: index = 2; break;
-    //         case Person.AlertLevel.Avoid: index = 3; break;
-    //     }
-    // }
     void CheckAnimationBeforeGoingToNormalState()
     {
         if (animator.GetBool("PrepareAttack"))

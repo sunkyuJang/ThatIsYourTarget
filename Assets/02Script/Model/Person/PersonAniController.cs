@@ -6,12 +6,13 @@ using UnityEngine;
 public class PersonAniController : AniController
 {
     public GameObject personNeck;
-    public enum StateKind { non = 0, Walk, Run, Standing, LookAround, Sitting, Surprize, PrepareAttack, Fight, Avoid, TurnAround, TurnHead }
+    public enum StateKind { non, Walk, Run, Standing, LookAround, Sitting, Surprize, PrepareAttack, Fight, Avoid, TurnAround, TurnHead }
     public enum AnimationsWithLevel { WalkAroundLevel = (int)StateKind.Walk, SittingLevel = (int)StateKind.Sitting }
-    public enum WalkLevel { Stop = 0, Walk, Run }
-    public enum SittingLevel { Non = 0, High, Middle, Low }
+    public enum WalkLevel { Stop, Walk, Run }
+    public enum SittingLevel { Non, High, Middle, Low }
     public enum AnimationsWithFloat { TurnDegree = (int)StateKind.TurnAround }
     public enum AnimationsWithBool { ShouldStand = (int)StateKind.Standing, LookAround = (int)StateKind.LookAround, ShouldSurprize = (int)StateKind.Surprize }
+    public enum FightType { Gun, Stick }
     private List<StateKind> playStandList = new List<StateKind>()
     {
         StateKind.Standing, StateKind.PrepareAttack, StateKind.TurnHead

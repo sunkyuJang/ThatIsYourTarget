@@ -45,7 +45,14 @@ public class Model : MonoBehaviour, IDamageController
     }
     public void SetAPH(ActionPointHandler handler, Action nextActionFromState = null)
     {
-        new ModelJob(handler, modelHandler as IJobStarter, EndEachJob, ExceptionJob).StartJob();
+        new ModelJob
+            (
+                aph: handler,
+                recycleAPHFunc: ReturnAPH,
+                starter: modelHandler as IJobStarter,
+                endAction: EndEachJob,
+                exceptionAction: ExceptionJob
+            ).StartJob();
         if (nextActionFromState != null) this.nextActionFromState = nextActionFromState;
     }
 
@@ -55,6 +62,7 @@ public class Model : MonoBehaviour, IDamageController
     }
     protected virtual void ExceptionJob()
     {
+        print("somthing wrong with ModelJob");
         GetNextAPH();
     }
 
@@ -73,6 +81,7 @@ public class Model : MonoBehaviour, IDamageController
     public virtual void Contecting(Collider collider) { }
     public virtual void Removed(Collider collider) { }
     protected virtual void ChangedState() { }
+    protected virtual void DoDie() { }
 
     public bool SetDamage(float damege)
     {
@@ -83,13 +92,14 @@ public class Model : MonoBehaviour, IDamageController
             TimeCounter.Instance.SetTimeCounting(MaxAcceptableDmgTime, removeTimeData);
 
             HP = damege;
+
+            if (HP <= 0)
+            {
+                DoDie();
+            }
         }
 
         return false;
-    }
-    public void PushByForce()
-    {
-
     }
 
     public class ModelJob : Job
