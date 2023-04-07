@@ -11,6 +11,9 @@ public class PersonActionPoint : ActionPoint
     public int sittingNum = 0;
     public bool shouldReadyForBattle;
     public int weaponLayer;
+    public int subState_int = 0;
+    public bool subState_bool = false;
+    public float subState_float = 0f;
     public float GetLength() => GetLength(((PersonAniController.StateKind)state).ToString());
 }
 

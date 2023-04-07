@@ -30,6 +30,8 @@ public class AniController : MonoBehaviour, IJobStarter
     }
     protected List<Coroutine> playingAniList { set; get; } = new List<Coroutine>();
 
+    int CurrentStateNum { set; get; }
+
     protected void Awake()
     {
         ragDollHandler = GetComponent<RagDollHandler>();

@@ -24,6 +24,7 @@ public abstract class PersonState : StateModule
     protected void SetState(StateKinds kinds) => person.SetState((int)kinds);
     protected PersonState GetState(StateKinds kinds) => person.GetState(kinds);
     public PersonState(Person person) => this.person = person;
+    public virtual void AfterAPHDone() { }
     public static Dictionary<StateKinds, PersonState> GetNewStateList(Person person)
     {
         var dic = new Dictionary<StateKinds, PersonState>();
