@@ -1,7 +1,7 @@
 using UnityEngine;
 public class Non_PersonAniState : PersonAniState
 {
-    public Non_PersonAniState(PersonAniController ani) : base(ani)
+    public Non_PersonAniState(Animator ani) : base(ani)
     {
 
     }

@@ -4,8 +4,9 @@ using UnityEngine;
 internal class Walk_PersonAniState : PersonAniState
 {
     Action<int> intAction;
+    string walkLevel { get { return "WalkAroundLevel"; } }
     enum SubState { Walk, Run, Non }
-    public Walk_PersonAniState(PersonAniController aniController) : base(aniController)
+    public Walk_PersonAniState(Animator ani) : base(ani)
     {
 
     }
@@ -19,16 +20,17 @@ internal class Walk_PersonAniState : PersonAniState
 
     public override void Enter()
     {
-        intAction(ap.subState_int);
+        Animator.SetInteger(walkLevel, ap.subState_int);
     }
 
     public override void EnterToException()
     {
-        throw new System.NotImplementedException();
+
     }
 
     public override void Exit()
     {
-        throw new System.NotImplementedException();
+        intAction((int)SubState.Non);
+        intAction = null;
     }
 }

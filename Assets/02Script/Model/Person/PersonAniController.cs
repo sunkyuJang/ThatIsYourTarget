@@ -6,7 +6,7 @@ using UnityEngine;
 public class PersonAniController : AniController
 {
     public GameObject personNeck;
-    public enum StateKind { non, Walk, Run, Standing, LookAround, Sitting, Surprize, PrepareAttack, Fight, Avoid, TurnAround, TurnHead }
+    public enum StateKind { non, Walk, Standing, LookAround, Sitting, Surprize, PrepareAttack, Fight, Avoid, TurnAround, TurnHead }
     public enum AnimationsWithLevel { WalkAroundLevel = (int)StateKind.Walk, SittingLevel = (int)StateKind.Sitting }
     public enum WalkLevel { Stop, Walk, Run }
     public enum SittingLevel { Non, High, Middle, Low }
