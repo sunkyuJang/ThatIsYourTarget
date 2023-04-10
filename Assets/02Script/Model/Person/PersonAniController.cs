@@ -6,86 +6,84 @@ using UnityEngine;
 public class PersonAniController : AniController
 {
     public GameObject personNeck;
-    public enum StateKind { non, Walk, Standing, LookAround, Sitting, Surprize, PrepareAttack, Fight, Avoid, TurnAround, TurnHead }
-    public enum AnimationsWithLevel { WalkAroundLevel = (int)StateKind.Walk, SittingLevel = (int)StateKind.Sitting }
-    public enum WalkLevel { Stop, Walk, Run }
-    public enum SittingLevel { Non, High, Middle, Low }
-    public enum AnimationsWithFloat { TurnDegree = (int)StateKind.TurnAround }
-    public enum AnimationsWithBool { ShouldStand = (int)StateKind.Standing, LookAround = (int)StateKind.LookAround, ShouldSurprize = (int)StateKind.Surprize }
-    public enum FightType { Gun, Stick }
-    private List<StateKind> playStandList = new List<StateKind>()
+    // private List<StateKind> playStandList = new List<StateKind>()
+    // {
+    //     StateKind.Standing, StateKind.PrepareAttack, StateKind.TurnHead
+    // };
+
+    protected Dictionary<PersonAniState.StateKind, PersonAniState> StateModule { set; get; }
+
+    protected override void Start()
     {
-        StateKind.Standing, StateKind.PrepareAttack, StateKind.TurnHead
-    };
+        base.Start();
+        StateModule = PersonAniState.GetNewStateList(animator);
+    }
     public override void StartAni(ActionPoint actionPoint, bool shouldReturnAP = false)
     {
-        var ap = actionPoint as PersonActionPoint;
-        switch (ap.State)
+        if (actionPoint is PersonActionPoint)
         {
-            case StateKind.Sitting: SetSittingAnimation((SittingLevel)ap.sittingNum); break;
-            case StateKind.LookAround: SetLookAroundAnimation(); break;
-            case StateKind.Standing: break;
-            case StateKind.PrepareAttack: SetPrepareAttack(ap.shouldReadyForBattle, ap.weaponLayer); break;
-            case StateKind.Surprize: SetSurprizeAnimation(); break;
-            case StateKind.TurnAround: SetTurnAroundAnimation(ap); break;
-            case StateKind.TurnHead: SetTurnHead(ap); break;
-            default:
-                break;
-        }
+            var ap = actionPoint as PersonActionPoint;
 
-        animator.SetInteger(AnimationsWithLevel.WalkAroundLevel.ToString(), (int)WalkLevel.Stop);
-        foreach (var state in playStandList)
-        {
-            if (state == ap.State)
+            if (StateModule.ContainsKey(ap.State))
             {
-                animator.SetBool(AnimationsWithBool.ShouldStand.ToString(), true);
-                break;
+                var module = StateModule[ap.State];
+                module.SetAP(ap);
+
+                if (module.IsReadyForEnter())
+                {
+                    module.Enter();
+                }
+                else
+                {
+                    module.EnterToException();
+                }
+
+                StartAniTimeCount(ap, shouldReturnAP);
             }
         }
-        StartAniTimeCount(ap, shouldReturnAP);
+        // switch (ap.State)
+        // {
+        //     case StateKind.Sitting: SetSittingAnimation((SittingLevel)ap.sittingNum); break;
+        //     case StateKind.LookAround: SetLookAroundAnimation(); break;
+        //     case StateKind.Standing: break;
+        //     case StateKind.PrepareAttack: SetPrepareAttack(ap.shouldReadyForBattle, ap.weaponLayer); break;
+        //     case StateKind.Surprize: SetSurprizeAnimation(); break;
+        //     case StateKind.TurnAround: SetTurnAroundAnimation(ap); break;
+        //     case StateKind.TurnHead: SetTurnHead(ap); break;
+        //     default:
+        //         break;
+        // }
+
+        // animator.SetInteger(AnimationsWithLevel.WalkAroundLevel.ToString(), (int)WalkLevel.Stop);
+        // foreach (var state in playStandList)
+        // {
+        //     if (state == ap.State)
+        //     {
+        //         animator.SetBool(AnimationsWithBool.ShouldStand.ToString(), true);
+        //         break;
+        //     }
+        // }
     }
 
-
-    public void SetPrepareAttack(bool shouldPrepare, int weaponLayer)
-    {
-        if (shouldPrepare)
-        {
-            animator.SetLayerWeight(weaponLayer, 1);
-        }
-        else
-        {
-            MakeResetAni();
-        }
-    }
-    public void SetSittingAnimation(SittingLevel sittingLevel)
-    {
-        animator.SetInteger(AnimationsWithLevel.SittingLevel.ToString(), (int)sittingLevel);
-    }
-    public void SetLookAroundAnimation()
-    {
-        animator.SetBool(AnimationsWithBool.LookAround.ToString(), true);
-    }
-    public void SetSurprizeAnimation()
-    {
-        animator.SetBool(AnimationsWithBool.ShouldSurprize.ToString(), true);
-    }
-    public void SetTurnAroundAnimation(ActionPoint ap)
-    {
-        animator.SetFloat(AnimationsWithFloat.TurnDegree.ToString(), ap.targetDegree);
-    }
     public void SetTurnHead(ActionPoint ap)
     {
         headFollowTarget = ap.transform;
     }
-    protected override IEnumerator DoResetAni(bool shouldReadNextAction)
+    protected override IEnumerator DoResetAni(int state, bool shouldReadNextAction)
     {
-        for (int i = 1; i < animator.layerCount; i++)
-            animator.SetLayerWeight(i, 0);
-        animator.SetInteger(AnimationsWithLevel.SittingLevel.ToString(), (int)SittingLevel.Non);
-        animator.SetBool(AnimationsWithBool.LookAround.ToString(), false);
-        animator.SetBool(AnimationsWithBool.ShouldStand.ToString(), false);
-        animator.SetBool(AnimationsWithBool.ShouldSurprize.ToString(), false);
-        animator.SetFloat(AnimationsWithFloat.TurnDegree.ToString(), 361f);
+        // for (int i = 1; i < animator.layerCount; i++)
+        //     animator.SetLayerWeight(i, 0);
+        // animator.SetInteger(AnimationsWithLevel.SittingLevel.ToString(), (int)SittingLevel.Non);
+        // animator.SetBool(AnimationsWithBool.LookAround.ToString(), false);
+        // animator.SetBool(AnimationsWithBool.ShouldStand.ToString(), false);
+        // animator.SetBool(AnimationsWithBool.ShouldSurprize.ToString(), false);
+        // animator.SetFloat(AnimationsWithFloat.TurnDegree.ToString(), 361f);
+        Enum.GetValues(typeof(PersonAniState.StateKind)).Length
+        var num = (PersonAniState.)
+        if (StateModule.ContainsKey((PersonAniState.StateKind)state))
+        {
+
+        }
 
         SetWalkState(WalkLevel.Walk);
         yield return new WaitUntil(() => IsWalkState());
@@ -99,10 +97,10 @@ public class PersonAniController : AniController
         animator.GetCurrentAnimatorStateInfo(0).IsName("RunningAround");
 
 
-    public void SetWalkState(WalkLevel walkLevel)
-    {
-        animator.SetInteger(AnimationsWithLevel.WalkAroundLevel.ToString(), (int)walkLevel);
-    }
+    // public void SetWalkState(WalkLevel walkLevel)
+    // {
+    //     animator.SetInteger(AnimationsWithLevel.WalkAroundLevel.ToString(), (int)walkLevel);
+    // }
 
     protected override IEnumerator DoMakeCorrect(ActionPoint ap)
     {

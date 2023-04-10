@@ -32,14 +32,14 @@ public class AniController : MonoBehaviour, IJobStarter
 
     int CurrentStateNum { set; get; }
 
-    protected void Awake()
+    protected virtual void Awake()
     {
         ragDollHandler = GetComponent<RagDollHandler>();
         var naviController = GetComponent<NaviController>();
         animator = GetComponent<Animator>();
     }
 
-    protected void Start()
+    protected virtual void Start()
     {
         StartCoroutine(DoWalking());
         StartCoroutine(DoHeadFollow());

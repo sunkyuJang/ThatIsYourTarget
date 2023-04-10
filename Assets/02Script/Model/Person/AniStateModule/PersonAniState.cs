@@ -28,7 +28,7 @@ public abstract class PersonAniState : StateModule
     public override bool IsReadyForEnter() { return ap != null && Animator != null; }
     public PersonAniState(Animator aniController) => this.Animator = aniController;
 
-    public static Dictionary<StateKind, StateModule> GetNewStateList(Animator animator)
+    public static Dictionary<StateKind, PersonAniState> GetNewStateList(Animator animator)
     {
         var dic = new Dictionary<StateKind, StateModule>();
 
