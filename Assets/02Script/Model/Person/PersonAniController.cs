@@ -69,7 +69,7 @@ public class PersonAniController : AniController
     {
         headFollowTarget = ap.transform;
     }
-    protected override IEnumerator DoResetAni(int state, bool shouldReadNextAction)
+    protected override IEnumerator DoResetAni(bool shouldReadNextAction, StateModule stateModule = null)
     {
         // for (int i = 1; i < animator.layerCount; i++)
         //     animator.SetLayerWeight(i, 0);
@@ -78,18 +78,25 @@ public class PersonAniController : AniController
         // animator.SetBool(AnimationsWithBool.ShouldStand.ToString(), false);
         // animator.SetBool(AnimationsWithBool.ShouldSurprize.ToString(), false);
         // animator.SetFloat(AnimationsWithFloat.TurnDegree.ToString(), 361f);
-        Enum.GetValues(typeof(PersonAniState.StateKind)).Length
-        var num = (PersonAniState.)
-        if (StateModule.ContainsKey((PersonAniState.StateKind)state))
+        if (stateModule == null)
         {
 
         }
+        else
+        {
+            if (stateModule is PersonAniState)
+            {
+                (stateModule as PersonAniState).Exit();
+            }
+        }
 
-        SetWalkState(WalkLevel.Walk);
-        yield return new WaitUntil(() => IsWalkState());
-        yield return StartCoroutine(base.DoResetAni(shouldReadNextAction));
+        // SetWalkState(WalkLevel.Walk);
+        // yield return new WaitUntil(() => IsWalkState());
+        // yield return StartCoroutine(base.DoResetAni(shouldReadNextAction));
 
         ProcResetAni = null;
+
+        yield return null;
     }
 
     bool IsWalkState() =>

@@ -30,7 +30,8 @@ public class AniController : MonoBehaviour, IJobStarter
     }
     protected List<Coroutine> playingAniList { set; get; } = new List<Coroutine>();
 
-    int CurrentStateNum { set; get; }
+
+    StateModule currentModule;
 
     protected virtual void Awake()
     {
@@ -207,11 +208,11 @@ public class AniController : MonoBehaviour, IJobStarter
 
     public virtual void MakeTurn(float degree) { }
     public virtual void StartAni(ActionPoint actionPoint, bool shouldReturnAP = false) { }
-    protected void StartAniTimeCount(ActionPoint ap, bool shouldReturnAP)
+    protected void StartAniTimeCount(ActionPoint ap, bool shouldReturnAP, StateModule stateModule)
     {
-        PlayingAni = StartCoroutine(DoAnimationTimeCount(ap, shouldReturnAP));
+        PlayingAni = StartCoroutine(DoAnimationTimeCount(ap, shouldReturnAP, stateModule));
     }
-    protected IEnumerator DoAnimationTimeCount(ActionPoint ap, bool shouldReturnAP = false)
+    protected IEnumerator DoAnimationTimeCount(ActionPoint ap, bool shouldReturnAP = false, StateModule stateModule = null)
     {
         if (ap.during < -1) yield return null;
         var maxTime = Mathf.Lerp(0, ap.during, animationPlayLimit);
@@ -225,11 +226,11 @@ public class AniController : MonoBehaviour, IJobStarter
         if (shouldReturnAP)
             APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP).ReturnTargetObj(ap.gameObject);
     }
-    public void MakeResetAni(bool shouldReadNextAction = true)
+    public void MakeResetAni(bool shouldReadNextAction = true, StateModule stateModule = null)
     {
-        ProcResetAni = StartCoroutine(DoResetAni(shouldReadNextAction));
+        ProcResetAni = StartCoroutine(DoResetAni(shouldReadNextAction, stateModule));
     }
-    protected virtual IEnumerator DoResetAni(bool shouldReadNextAction)
+    protected virtual IEnumerator DoResetAni(bool shouldReadNextAction, StateModule stateModule)
     {
         PlayingAni = null;
         if (reservatiedAP == null)
