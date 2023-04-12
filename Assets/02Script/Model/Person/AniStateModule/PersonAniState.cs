@@ -30,7 +30,7 @@ public abstract class PersonAniState : StateModule
 
     public static Dictionary<StateKind, PersonAniState> GetNewStateList(Animator animator)
     {
-        var dic = new Dictionary<StateKind, StateModule>();
+        var dic = new Dictionary<StateKind, PersonAniState>();
 
         dic.Add(StateKind.Non, new Non_PersonAniState(animator));
         dic.Add(StateKind.Reset, new Reset_PersonAniState(animator));

@@ -38,7 +38,7 @@ public class PersonAniController : AniController
                     module.EnterToException();
                 }
 
-                StartAniTimeCount(ap, shouldReturnAP);
+                StartAniTimeCount(ap, shouldReturnAP, module);
             }
         }
         // switch (ap.State)
@@ -71,16 +71,9 @@ public class PersonAniController : AniController
     }
     protected override IEnumerator DoResetAni(bool shouldReadNextAction, StateModule stateModule = null)
     {
-        // for (int i = 1; i < animator.layerCount; i++)
-        //     animator.SetLayerWeight(i, 0);
-        // animator.SetInteger(AnimationsWithLevel.SittingLevel.ToString(), (int)SittingLevel.Non);
-        // animator.SetBool(AnimationsWithBool.LookAround.ToString(), false);
-        // animator.SetBool(AnimationsWithBool.ShouldStand.ToString(), false);
-        // animator.SetBool(AnimationsWithBool.ShouldSurprize.ToString(), false);
-        // animator.SetFloat(AnimationsWithFloat.TurnDegree.ToString(), 361f);
         if (stateModule == null)
         {
-
+            // activate reset module.
         }
         else
         {
@@ -92,7 +85,7 @@ public class PersonAniController : AniController
 
         // SetWalkState(WalkLevel.Walk);
         // yield return new WaitUntil(() => IsWalkState());
-        // yield return StartCoroutine(base.DoResetAni(shouldReadNextAction));
+        yield return StartCoroutine(base.DoResetAni(shouldReadNextAction, null));
 
         ProcResetAni = null;
 
@@ -157,7 +150,7 @@ public class PersonAniController : AniController
     new public ActionPoint MakeTurn(float degree)
     {
         var ap = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP).GetNewOne<PersonActionPoint>();
-        ap.State = PersonAniController.StateKind.TurnAround;
+        ap.State = PersonAniState.StateKind.TurnAround;
         ap.targetDegree = degree;
         ap.during = ap.GetLength(GetStateNameByDegree(ap.targetDegree));
         StartAni(ap, true);
@@ -176,13 +169,13 @@ public class PersonAniController : AniController
         }
     }
 
-    public ActionPoint MakeHeadTurn()
-    {
-        var ap = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP).GetNewOne<PersonActionPoint>();
-        ap.State = PersonAniController.StateKind.TurnHead;
-        ap.during = 3f;
-        StartAni(ap, true);
+    // public ActionPoint MakeHeadTurn()
+    // {
+    //     var ap = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP).GetNewOne<PersonActionPoint>();
+    //     ap.State = PersonAniController.StateKind.TurnHead;
+    //     ap.during = 3f;
+    //     StartAni(ap, true);
 
-        return ap;
-    }
+    //     return ap;
+    // }
 }
