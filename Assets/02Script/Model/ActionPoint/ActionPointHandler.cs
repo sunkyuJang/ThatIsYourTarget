@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class ActionPointHandler : MonoBehaviour
 {
+    public enum WalkingState { Non, Walk, Run }
+    public WalkingState walkingState = WalkingState.Walk;
     public GameObject originalOwener;
     public List<ActionPoint> actionPoints { set; get; } = new List<ActionPoint>();
     public int GetActionCount { get { return actionPoints.Count; } }

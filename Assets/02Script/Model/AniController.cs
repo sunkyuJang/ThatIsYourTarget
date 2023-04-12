@@ -29,10 +29,7 @@ public class AniController : MonoBehaviour, IJobStarter
         }
     }
     protected List<Coroutine> playingAniList { set; get; } = new List<Coroutine>();
-
-
-    StateModule currentModule;
-
+    protected ActionPointHandler.WalkingState walkingState { set; get; }
     protected virtual void Awake()
     {
         ragDollHandler = GetComponent<RagDollHandler>();

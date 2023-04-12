@@ -8,7 +8,6 @@ public class PersonActionPoint : ActionPoint
 {
     public PersonAniState.StateKind State { set { base.state = (int)value; } get { return (PersonAniState.StateKind)state; } }
     public override bool HasAction { get { return state != (int)PersonAniState.StateKind.Non; } }
-    public int sittingNum = 0;
     public bool shouldReadyForBattle;
     public int weaponLayer;
     public int subState_int = 0;
@@ -66,7 +65,7 @@ public class PersonActionPointEditor : Editor
     void SetSittingInspector(PersonActionPoint ap)
     {
         ExpresseDuring(ap);
-        ap.sittingNum = (int)EditorGUILayout.Slider("SittingLevel", ap.sittingNum, 1, 4);
+        ap.subState_int = (int)EditorGUILayout.Slider(Sitting_PersonAniState.SittingLevel, ap.subState_int, (int)Sitting_PersonAniState.SittingState.Ground, (int)Sitting_PersonAniState.SittingState.High);
     }
 
     void SetLookAround(PersonActionPoint ap)

@@ -103,8 +103,8 @@ public class Curiousity_PersonState : PersonState
     private ActionPointHandler GetCuriousityAPH(Transform target)
     {
         var aph = person.GetNewAPH(2);
-        person.SetAPs(aph.actionPoints[0], target, PersonAniController.StateKind.Surprize, true);
-        person.SetAPs(aph.actionPoints[1], target, PersonAniController.StateKind.LookAround, true, 0, false, false);
+        person.SetAPs(aph.actionPoints[0], target, PersonAniState.StateKind.Surprize, true);
+        person.SetAPs(aph.actionPoints[1], target, PersonAniState.StateKind.LookAround, true, 0, false, false);
 
         return aph;
     }

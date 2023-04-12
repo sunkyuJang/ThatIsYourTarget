@@ -38,9 +38,10 @@ public class ModelHandlerJobManager : JobManager
                         action = (new ModelHandler.ModelHandlerJob
                                     (
                                         sectionChecker: sectionJobChecker,
+                                        walkingState: aph.walkingState,
+                                        ap: nowAP,
                                         job: parentJob,
                                         starter: naviJobStarter,
-                                        ap: nowAP,
                                         endAction: StartJob,
                                         exceptionAction: null
                                     )
@@ -53,9 +54,10 @@ public class ModelHandlerJobManager : JobManager
                             action = (new ModelHandler.ModelHandlerJob
                                         (
                                             sectionChecker: sectionJobChecker,
+                                            walkingState: aph.walkingState,
+                                            ap: nowAP,
                                             job: parentJob,
                                             starter: aniJobStarter,
-                                            ap: nowAP,
                                             endAction: StartJob,
                                             exceptionAction: null
                                         )

@@ -3,24 +3,22 @@ using UnityEngine;
 
 internal class Walk_PersonAniState : PersonAniState
 {
-    Action<int> intAction;
     string walkLevel { get { return "WalkAroundLevel"; } }
-    enum SubState { Walk, Run, Non }
+    ActionPointHandler.WalkingState state = ActionPointHandler.WalkingState.Walk;
+    public void SetWalkState(ActionPointHandler.WalkingState state) => this.state = state;
     public Walk_PersonAniState(Animator ani) : base(ani)
     {
 
     }
 
-    public void SetAction(Action<int> action) => intAction = action;
-
     public override bool IsReadyForEnter()
     {
-        return base.IsReadyForEnter() && intAction != null;
+        return Animator != null && state >= 0;
     }
 
     public override void Enter()
     {
-        Animator.SetInteger(walkLevel, ap.subState_int);
+        Animator.SetInteger(walkLevel, (int)state);
     }
 
     public override void EnterToException()
@@ -30,7 +28,6 @@ internal class Walk_PersonAniState : PersonAniState
 
     public override void Exit()
     {
-        intAction((int)SubState.Non);
-        intAction = null;
+
     }
 }

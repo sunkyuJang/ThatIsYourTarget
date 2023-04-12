@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using JMath;
 
-public class ModelHandler : MonoBehaviour, IJobStartWithCheck
+public class ModelHandler : MonoBehaviour, IJobStarter, ISectionJobChecker
 {
     public ActionPointHandler actionPointHandler { private set; get; }
     public IJobStarter naviJobStarter { private set; get; }
@@ -82,9 +82,11 @@ public class ModelHandler : MonoBehaviour, IJobStartWithCheck
     public class ModelHandlerJob : SectionJob
     {
         public ActionPoint ap { private set; get; }
-        public ModelHandlerJob(ISectionJobChecker sectionChecker, Job job, IJobStarter starter, ActionPoint ap, Action endAction, Action exceptionAction)
-                : base(job, starter, sectionChecker, endAction, exceptionAction)
+        public ActionPointHandler.WalkingState walkingState { private set; get; }
+        public ModelHandlerJob(ISectionJobChecker sectionChecker, ActionPointHandler.WalkingState walkingState, ActionPoint ap, Job job, IJobStarter starter, Action endAction, Action exceptionAction)
+                    : base(job, starter, sectionChecker, endAction, exceptionAction)
         {
+            this.walkingState = walkingState;
             this.ap = ap;
         }
     }

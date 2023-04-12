@@ -71,7 +71,7 @@ public partial class Person : Model
         return aph;
     }
 
-    public void SetAPs(ActionPoint ap, Transform target, PersonAniController.StateKind kind, bool isTimeFixed = false, float time = 0, bool shouldChangePosition = false, bool shouldChangeRotation = false)
+    public void SetAPs(ActionPoint ap, Transform target, PersonAniState.StateKind kind, bool isTimeFixed = false, float time = 0, bool shouldChangePosition = false, bool shouldChangeRotation = false)
     {
         if (isTimeFixed)
         {

@@ -12,7 +12,6 @@ public class PersonAniController : AniController
     // };
 
     protected Dictionary<PersonAniState.StateKind, PersonAniState> StateModule { set; get; }
-
     protected override void Start()
     {
         base.Start();
@@ -37,6 +36,9 @@ public class PersonAniController : AniController
                 {
                     module.EnterToException();
                 }
+
+                // walk animation should stop for other animation
+                SetWalkModule(ActionPointHandler.WalkingState.Non);
 
                 StartAniTimeCount(ap, shouldReturnAP, module);
             }
@@ -65,6 +67,20 @@ public class PersonAniController : AniController
         // }
     }
 
+    void SetWalkModule(ActionPointHandler.WalkingState walkingState)
+    {
+        var module = StateModule[PersonAniState.StateKind.Walk] as Walk_PersonAniState;
+        if (module != null)
+        {
+            module.SetWalkState(walkingState);
+            module.Enter();
+        }
+        else
+        {
+            Debug.Log("there has no walk module");
+        }
+    }
+
     public void SetTurnHead(ActionPoint ap)
     {
         headFollowTarget = ap.transform;
@@ -83,8 +99,7 @@ public class PersonAniController : AniController
             }
         }
 
-        // SetWalkState(WalkLevel.Walk);
-        // yield return new WaitUntil(() => IsWalkState());
+        SetWalkModule(walkingState);
         yield return StartCoroutine(base.DoResetAni(shouldReadNextAction, null));
 
         ProcResetAni = null;
@@ -95,12 +110,6 @@ public class PersonAniController : AniController
     bool IsWalkState() =>
         animator.GetCurrentAnimatorStateInfo(0).IsName("WalkAround") ||
         animator.GetCurrentAnimatorStateInfo(0).IsName("RunningAround");
-
-
-    // public void SetWalkState(WalkLevel walkLevel)
-    // {
-    //     animator.SetInteger(AnimationsWithLevel.WalkAroundLevel.ToString(), (int)walkLevel);
-    // }
 
     protected override IEnumerator DoMakeCorrect(ActionPoint ap)
     {

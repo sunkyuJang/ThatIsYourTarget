@@ -21,12 +21,11 @@ public abstract class PersonAniState : StateModule
         TurnAround,
         //TurnHead,
     }
-
+    public PersonAniState(Animator aniController) => this.Animator = aniController;
+    public override bool IsReadyForEnter() { return ap != null && Animator != null; }
     protected Animator Animator { set; get; }
     protected PersonActionPoint ap;
     public void SetAP(PersonActionPoint ap) => this.ap = ap;
-    public override bool IsReadyForEnter() { return ap != null && Animator != null; }
-    public PersonAniState(Animator aniController) => this.Animator = aniController;
 
     public static Dictionary<StateKind, PersonAniState> GetNewStateList(Animator animator)
     {

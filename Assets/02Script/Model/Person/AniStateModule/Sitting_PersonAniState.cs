@@ -2,8 +2,8 @@ using UnityEngine;
 
 internal class Sitting_PersonAniState : PersonAniState
 {
-    string SittingLevel { get { return "SittingLevel"; } }
-    enum State { Ground = 1, Low, Middle, High }
+    public const string SittingLevel = "SittingLevel";
+    public enum SittingState { non, Ground, Low, Middle, High }
     public Sitting_PersonAniState(Animator aniController) : base(aniController)
     {
 
