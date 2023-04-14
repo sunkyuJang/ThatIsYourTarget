@@ -95,10 +95,10 @@ public class AniController : MonoBehaviour, IJobStarter
             modelHandlerJob = job as ModelHandler.ModelHandlerJob;
             var ap = modelHandlerJob.ap;
 
-            StartAni(ap);
+            MakeCorrectAni(ap);
         }
     }
-    void StartAni(ActionPoint ap)
+    void MakeCorrectAni(ActionPoint ap)
     {
         if (!IsPlayingAni)
         {
