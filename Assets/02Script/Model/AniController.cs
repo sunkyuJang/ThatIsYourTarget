@@ -17,7 +17,7 @@ public class AniController : MonoBehaviour, IJobStarter
     protected float animationPlayLimit = 0.85f;
     protected ActionPoint reservatiedAP { set; get; }
     Coroutine PlayingAni { set; get; }
-    public bool IsPlayingAni { get { return PlayingAni != null; } }
+    protected bool IsPlayingAni { get { return PlayingAni != null; } }
     List<Coroutine> jobStopList = new List<Coroutine>();
     protected Coroutine ProcResetAni { set; get; }
     private ModelHandler.ModelHandlerJob modelHandlerJob { set; get; }
@@ -187,8 +187,6 @@ public class AniController : MonoBehaviour, IJobStarter
                 StopCoroutine(x);
             }
         });
-
-        MakeResetAni(false);
     }
 
     private void OnAnimatorIK(int layer)

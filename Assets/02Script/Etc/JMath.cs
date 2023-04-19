@@ -33,6 +33,15 @@ namespace JMath
             }
         }
         public static bool IsArrived(Transform center, Transform target, float marginOfError = 0f) => Vector3.Distance(center.position, target.position) <= marginOfError;
+        public static float GetRotationDir(Vector3 from, Vector3 to)
+        {
+            var rotateDir = Vector3.Angle(from, to);
+            var rotateDirABS = Mathf.Abs(rotateDir);
+            if (rotateDirABS == 0f || rotateDirABS == 135 || rotateDirABS == 360)
+                rotateDir += rotateDir >= 0 ? 1 : -1;
+
+            return rotateDir;
+        }
         public static Vector3 GetDirection(Vector3 from, Vector3 to) => to - from;
         public static Vector3 GetOverrideX(Vector3 original, float x) => OverrideVector(original, new Vector3(x, 0, 0), true, false, false);
         public static Vector3 GetOverrideY(Vector3 original, float y) => OverrideVector(original, new Vector3(0, y, 0), false, true, false);

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using JMath;
 
 public class PersonAniController : AniController
 {
@@ -43,28 +44,6 @@ public class PersonAniController : AniController
                 StartAniTimeCount(ap, shouldReturnAP, module);
             }
         }
-        // switch (ap.State)
-        // {
-        //     case StateKind.Sitting: SetSittingAnimation((SittingLevel)ap.sittingNum); break;
-        //     case StateKind.LookAround: SetLookAroundAnimation(); break;
-        //     case StateKind.Standing: break;
-        //     case StateKind.PrepareAttack: SetPrepareAttack(ap.shouldReadyForBattle, ap.weaponLayer); break;
-        //     case StateKind.Surprize: SetSurprizeAnimation(); break;
-        //     case StateKind.TurnAround: SetTurnAroundAnimation(ap); break;
-        //     case StateKind.TurnHead: SetTurnHead(ap); break;
-        //     default:
-        //         break;
-        // }
-
-        // animator.SetInteger(AnimationsWithLevel.WalkAroundLevel.ToString(), (int)WalkLevel.Stop);
-        // foreach (var state in playStandList)
-        // {
-        //     if (state == ap.State)
-        //     {
-        //         animator.SetBool(AnimationsWithBool.ShouldStand.ToString(), true);
-        //         break;
-        //     }
-        // }
     }
 
     void SetWalkModule(ActionPointHandler.WalkingState walkingState)
@@ -126,21 +105,14 @@ public class PersonAniController : AniController
         var cross = Vector3.Cross(Vector3.up, startForward);
         var dot = Vector3.Dot(cross, dir);
         var isLeft = dot < 0;
-        var lastAngle = Vector3.Angle(transform.forward, dir);
-
-        // make correction for animation float
-        {
-            var lastAngleABS = Mathf.Abs(lastAngle);
-            if (lastAngleABS == 0f || lastAngleABS == 135 || lastAngleABS == 360)
-                lastAngle += lastAngle >= 0 ? 1 : -1;
-        }
+        var rotateDir = Vector3Extentioner.GetRotationDir(transform.forward, dir);
 
         var limitDegreeOfHead = 80f;
-        var shouldBodyTurnWithAnimation = lastAngle >= limitDegreeOfHead;
+        var shouldBodyTurnWithAnimation = rotateDir >= limitDegreeOfHead;
 
         if (shouldBodyTurnWithAnimation)
         {
-            var ap = MakeTurn(lastAngle);
+            var ap = MakeTurn(rotateDir);
 
             var rotateTime = Mathf.Lerp(0, ap.during, 0.45f);
             var totalAngle = Vector3.Angle(transform.forward, dir);
@@ -156,6 +128,7 @@ public class PersonAniController : AniController
         isRotationCorrect = true;
         yield return null;
     }
+
     new public ActionPoint MakeTurn(float degree)
     {
         var ap = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP).GetNewOne<PersonActionPoint>();
