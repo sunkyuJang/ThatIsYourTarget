@@ -10,26 +10,18 @@ public class AniController : MonoBehaviour, IJobStarter
     protected RagDollHandler ragDollHandler { set; get; }
     protected NaviController naviController;
     protected Animator animator;
-    protected bool isPositionCorrect { set; get; } = false;
-    protected bool isRotationCorrect { set; get; } = false;
     protected Transform headFollowTarget { set; get; } = null;
     float lookAtWeight = 0f;
     protected float animationPlayLimit = 0.85f;
     protected ActionPoint reservatiedAP { set; get; }
+    protected bool IsAniReservatied { get { return reservatiedAP != null; } }
     Coroutine PlayingAni { set; get; }
     protected bool IsPlayingAni { get { return PlayingAni != null; } }
     List<Coroutine> jobStopList = new List<Coroutine>();
     protected Coroutine ProcResetAni { set; get; }
     private ModelHandler.ModelHandlerJob modelHandlerJob { set; get; }
-    bool ShouldReserveAP
-    {
-        get
-        {
-            return ProcResetAni != null;
-        }
-    }
-    protected List<Coroutine> playingAniList { set; get; } = new List<Coroutine>();
     protected ActionPointHandler.WalkingState walkingState { set; get; }
+    protected float bodyThreshold = 0f;
     protected virtual void Awake()
     {
         ragDollHandler = GetComponent<RagDollHandler>();
@@ -84,10 +76,6 @@ public class AniController : MonoBehaviour, IJobStarter
 
         }
     }
-    public bool IsSameSection(Job job)
-    {
-        return false;
-    }
     public void StartJob(Job job)
     {
         if (job is ModelHandler.ModelHandlerJob)
@@ -112,69 +100,58 @@ public class AniController : MonoBehaviour, IJobStarter
     }
     protected virtual IEnumerator DoMakeCorrect(ActionPoint ap)
     {
-        SetCorrectly(ap);
-        yield return new WaitUntil(() => isPositionCorrect && isRotationCorrect);
-        StartAni(ap);
+        var positionCorrect = StartCoroutine(DoPositionCorrectly(ap.transform.position));
+        var rotationCorrect = StartCoroutine(DoRotationCorrectly(ap.transform.forward));
+
+        yield return positionCorrect;
+        yield return rotationCorrect;
+        yield return new WaitUntil(() => IsWalkState());
+
+        if (!IsAniReservatied)
+            StartAni(ap);
         yield return null;
     }
 
-    protected void SetCorrectly(ActionPoint ap)
-    {
-        jobStopList.Add(StartCoroutine(DoPositionCorrectly(ap.transform.position)));
-        jobStopList.Add(StartCoroutine(DoRotationCorrectly(ap.transform.forward)));
-    }
+    protected virtual bool IsWalkState() { return true; }
 
     protected virtual IEnumerator DoPositionCorrectly(Vector3 worldPosition)
     {
         var t = 0f;
         var maxT = 0.05f;
         var beforePosition = transform.position;
-        isPositionCorrect = false;
-        while (t < maxT)
+        while (t < maxT || !IsAniReservatied)
         {
             yield return new WaitForFixedUpdate();
             t += Time.fixedDeltaTime;
             var ratio = Mathf.InverseLerp(0, maxT, t);
             transform.position = Vector3.Lerp(beforePosition, Vector3Extentioner.GetOverrideY(worldPosition, beforePosition.y), ratio);
         }
-        isPositionCorrect = true;
     }
     protected virtual IEnumerator DoRotationCorrectly(Vector3 dir)
     {
-        isRotationCorrect = false;
         var startForward = transform.forward;
         var cross = Vector3.Cross(Vector3.up, startForward);
         var dot = Vector3.Dot(cross, dir);
         var isLeft = dot < 0;
-        var rotateSpeed = 300f;
-        var lastAngle = Vector3.Angle(transform.forward, dir);
+        var rotateDir = Vector3Extentioner.GetRotationDir(transform.forward, dir);
 
-        //Roughly
-        while (true)
-        {
-            transform.Rotate(isLeft ? Vector3.down : Vector3.up, rotateSpeed * Time.fixedDeltaTime);
-            var nowAngle = Vector3.Angle(transform.forward, dir);
-            if (nowAngle > lastAngle) break;
-            else lastAngle = nowAngle;
-            yield return new WaitForFixedUpdate();
-        }
+        var shouldBodyTurnWithAnimation = rotateDir >= bodyThreshold;
 
-        //Correctly
-        if (Vector3.Angle(transform.forward, dir) * Mathf.Rad2Deg > 3f)
+        if (shouldBodyTurnWithAnimation)
         {
-            var t = 0f;
-            var maxT = 1f;
-            startForward = transform.forward;
-            while (t < maxT)
+            var during = GetMakeTurnDuring(rotateDir);
+
+            var rotateTime = Mathf.Lerp(0, during, 0.45f);
+            var totalAngle = Vector3.Angle(transform.forward, dir);
+            var eachFrameAngle = totalAngle / (rotateTime / Time.fixedDeltaTime);
+            for (float t = 0; t < during || !IsAniReservatied; t += Time.fixedDeltaTime)
             {
-                var ratio = Mathf.InverseLerp(0, maxT, t);
-                transform.forward = Vector3.Lerp(startForward, dir, ratio);
-                t += Time.fixedDeltaTime;
+                if (t < rotateTime)
+                    transform.Rotate(isLeft ? Vector3.down : Vector3.up, eachFrameAngle);
                 yield return new WaitForFixedUpdate();
             }
         }
 
-        isRotationCorrect = true;
         yield return null;
     }
 
@@ -201,8 +178,8 @@ public class AniController : MonoBehaviour, IJobStarter
         }
     }
 
-    public virtual void MakeTurn(float degree) { }
-    public virtual void StartAni(ActionPoint actionPoint, bool shouldReturnAP = false) { }
+    protected virtual float GetMakeTurnDuring(float degree) { return 0; }
+    protected virtual void StartAni(ActionPoint actionPoint, bool shouldReturnAP = false) { }
     protected void StartAniTimeCount(ActionPoint ap, bool shouldReturnAP, StateModule stateModule)
     {
         PlayingAni = StartCoroutine(DoAnimationTimeCount(ap, shouldReturnAP, stateModule));
@@ -221,7 +198,7 @@ public class AniController : MonoBehaviour, IJobStarter
         if (shouldReturnAP)
             APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP).ReturnTargetObj(ap.gameObject);
     }
-    public void MakeResetAni(bool shouldReadNextAction = true, StateModule stateModule = null)
+    protected void MakeResetAni(bool shouldReadNextAction = true, StateModule stateModule = null)
     {
         ProcResetAni = StartCoroutine(DoResetAni(shouldReadNextAction, stateModule));
     }

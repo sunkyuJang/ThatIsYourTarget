@@ -17,6 +17,7 @@ public class PersonAniController : AniController
     {
         base.Start();
         StateModule = PersonAniState.GetNewStateList(animator);
+        bodyThreshold = 80f;
     }
     public override void StartAni(ActionPoint actionPoint, bool shouldReturnAP = false)
     {
@@ -86,57 +87,21 @@ public class PersonAniController : AniController
         yield return null;
     }
 
-    bool IsWalkState() =>
-        animator.GetCurrentAnimatorStateInfo(0).IsName("WalkAround") ||
-        animator.GetCurrentAnimatorStateInfo(0).IsName("RunningAround");
-
-    protected override IEnumerator DoMakeCorrect(ActionPoint ap)
+    protected override bool IsWalkState()
     {
-        SetCorrectly(ap);
-        yield return new WaitUntil(() => isPositionCorrect && isRotationCorrect);
-        yield return new WaitUntil(() => IsWalkState());
-        StartAni(ap);
+        return
+            animator.GetCurrentAnimatorStateInfo(0).IsName("WalkAround") ||
+            animator.GetCurrentAnimatorStateInfo(0).IsName("RunningAround");
     }
 
-    protected override IEnumerator DoRotationCorrectly(Vector3 dir)
-    {
-        isRotationCorrect = false;
-        var startForward = transform.forward;
-        var cross = Vector3.Cross(Vector3.up, startForward);
-        var dot = Vector3.Dot(cross, dir);
-        var isLeft = dot < 0;
-        var rotateDir = Vector3Extentioner.GetRotationDir(transform.forward, dir);
-
-        var limitDegreeOfHead = 80f;
-        var shouldBodyTurnWithAnimation = rotateDir >= limitDegreeOfHead;
-
-        if (shouldBodyTurnWithAnimation)
-        {
-            var ap = MakeTurn(rotateDir);
-
-            var rotateTime = Mathf.Lerp(0, ap.during, 0.45f);
-            var totalAngle = Vector3.Angle(transform.forward, dir);
-            var eachFrameAngle = totalAngle / (rotateTime / Time.fixedDeltaTime);
-            for (float t = 0; t < ap.during; t += Time.fixedDeltaTime)
-            {
-                if (t < rotateTime)
-                    transform.Rotate(isLeft ? Vector3.down : Vector3.up, eachFrameAngle);
-                yield return new WaitForFixedUpdate();
-            }
-        }
-
-        isRotationCorrect = true;
-        yield return null;
-    }
-
-    new public ActionPoint MakeTurn(float degree)
+    protected override float GetMakeTurnDuring(float degree)
     {
         var ap = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP).GetNewOne<PersonActionPoint>();
         ap.State = PersonAniState.StateKind.TurnAround;
         ap.targetDegree = degree;
         ap.during = ap.GetLength(GetStateNameByDegree(ap.targetDegree));
         StartAni(ap, true);
-        return ap;
+        return ap.during;
     }
 
     string GetStateNameByDegree(float degree)
