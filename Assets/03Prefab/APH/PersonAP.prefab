@@ -132,6 +132,8 @@ MonoBehaviour:
   state: 0
   during: 0
   targetDegree: 0
-  sittingNum: 0
   shouldReadyForBattle: 0
   weaponLayer: 0
+  subState_int: 0
+  subState_bool: 0
+  subState_float: 0

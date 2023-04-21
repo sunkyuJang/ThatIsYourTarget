@@ -58,27 +58,6 @@ public class ActionPoint : MonoBehaviour
 
         return 0;
     }
-    IEnumerator DoTimeCount(Action action)
-    {
-        var t = 0f;
-        var maxT = during;
-        if (during >= 0)
-        {
-            while (t < maxT)
-            {
-                t += Time.fixedDeltaTime;
-                yield return new WaitForFixedUpdate();
-            }
-        }
-        else
-        {
-            while (during < 0)
-            {
-                yield return new WaitForFixedUpdate();
-            }
-        }
-        action?.Invoke();
-    }
     public void ChangePosition(Vector3 position) => transform.position = position;
     public void MakeLookAtTo(Vector3 to) => transform.LookAt(to - Vector3.up * to.y);
     public void SetPositionForTracking(Transform from, Transform to, bool shouldChangePosition = false, bool shouldChangeRotation = false)

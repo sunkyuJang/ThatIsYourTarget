@@ -54,7 +54,7 @@ public partial class Person : Model
         }
     }
 
-    public ActionPointHandler GetNewAPH(int APCounts)
+    public ActionPointHandler GetNewAPH(int APCounts, ActionPointHandler.WalkingState walkingState = ActionPointHandler.WalkingState.Walk)
     {
         var requireAPCount = APCounts;
         var apPooler = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP);
@@ -67,6 +67,7 @@ public partial class Person : Model
         var aph = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.APH).GetNewOne<ActionPointHandler>();
         aph.SetAPs(APs);
         aph.shouldLoop = false;
+        aph.walkingState = walkingState;
 
         return aph;
     }

@@ -40,7 +40,7 @@ public class Attack_PersonState : PersonState
     public ActionPointHandler GetAttckHandler(Sensed_PersonState.PreparingData preparingData)
     {
         var target = preparingData.target;
-        var aph = person.GetNewAPH(4);
+        var aph = person.GetNewAPH(4, ActionPointHandler.WalkingState.Run);
         // person.SetAPs(aph.GetActionPoint(0), target, PersonAniState.StateKind.PrepareAttack, true, 0, false, true);
         // person.SetAPs(aph.GetActionPoint(1), target, PersonAniController.StateKind.Run, false, 0, false, false);
         // person.SetAPs(aph.GetActionPoint(2), target, PersonAniController.StateKind.Fight, false, 0, false, false);

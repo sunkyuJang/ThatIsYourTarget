@@ -19,6 +19,13 @@ public class PersonAniController : AniController
         StateModule = PersonAniState.GetNewStateList(animator);
         bodyThreshold = 80f;
     }
+    protected override bool IsWalkState()
+    {
+        return
+            animator.GetCurrentAnimatorStateInfo(0).IsName("WalkAround") ||
+            animator.GetCurrentAnimatorStateInfo(0).IsName("RunningAround");
+    }
+
     protected override void StartAni(ActionPoint actionPoint, bool shouldReturnAP = false)
     {
         if (actionPoint is PersonActionPoint)
@@ -80,16 +87,9 @@ public class PersonAniController : AniController
         }
 
         SetWalkModule(walkingState);
-        yield return StartCoroutine(base.DoResetAni(shouldReadNextAction, null));
+        StartCoroutine(base.DoResetAni(shouldReadNextAction, null));
 
         yield return null;
-    }
-
-    protected override bool IsWalkState()
-    {
-        return
-            animator.GetCurrentAnimatorStateInfo(0).IsName("WalkAround") ||
-            animator.GetCurrentAnimatorStateInfo(0).IsName("RunningAround");
     }
 
     protected override float GetMakeTurnDuring(float degree)

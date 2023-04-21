@@ -190,6 +190,8 @@ public class AniController : MonoBehaviour, IJobStarter
     }
     protected virtual IEnumerator DoResetAni(bool shouldReadNextAction, StateModule stateModule)
     {
+        yield return new WaitUntil(() => IsWalkState());
+
         PlayingAni = null;
         if (IsAPReserved)
         {
