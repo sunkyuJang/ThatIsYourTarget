@@ -19,7 +19,7 @@ public class PersonAniController : AniController
         StateModule = PersonAniState.GetNewStateList(animator);
         bodyThreshold = 80f;
     }
-    public override void StartAni(ActionPoint actionPoint, bool shouldReturnAP = false)
+    protected override void StartAni(ActionPoint actionPoint, bool shouldReturnAP = false)
     {
         if (actionPoint is PersonActionPoint)
         {
@@ -81,8 +81,6 @@ public class PersonAniController : AniController
 
         SetWalkModule(walkingState);
         yield return StartCoroutine(base.DoResetAni(shouldReadNextAction, null));
-
-        ProcResetAni = null;
 
         yield return null;
     }

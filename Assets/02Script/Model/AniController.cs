@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
 using JMath;
 
 public class AniController : MonoBehaviour, IJobStarter
@@ -13,12 +12,10 @@ public class AniController : MonoBehaviour, IJobStarter
     protected Transform headFollowTarget { set; get; } = null;
     float lookAtWeight = 0f;
     protected float animationPlayLimit = 0.85f;
-    protected ActionPoint reservatiedAP { set; get; }
-    protected bool IsAniReservatied { get { return reservatiedAP != null; } }
+    protected ActionPoint reservedAP { set; get; }
+    protected bool IsAPReserved { get { return reservedAP != null; } }
     Coroutine PlayingAni { set; get; }
     protected bool IsPlayingAni { get { return PlayingAni != null; } }
-    List<Coroutine> jobStopList = new List<Coroutine>();
-    protected Coroutine ProcResetAni { set; get; }
     private ModelHandler.ModelHandlerJob modelHandlerJob { set; get; }
     protected ActionPointHandler.WalkingState walkingState { set; get; }
     protected float bodyThreshold = 0f;
@@ -73,7 +70,6 @@ public class AniController : MonoBehaviour, IJobStarter
             {
                 lookAtWeight = Mathf.Lerp(lookAtWeight, 1, Time.deltaTime * 2.5f);
             }
-
         }
     }
     public void StartJob(Job job)
@@ -83,22 +79,22 @@ public class AniController : MonoBehaviour, IJobStarter
             modelHandlerJob = job as ModelHandler.ModelHandlerJob;
             var ap = modelHandlerJob.ap;
 
-            MakeCorrectAni(ap);
+            MakeCorrectTransform(ap);
         }
     }
-    void MakeCorrectAni(ActionPoint ap)
+    void MakeCorrectTransform(ActionPoint ap)
     {
         if (!IsPlayingAni)
         {
-            jobStopList.Add(StartCoroutine(DoMakeCorrect(ap)));
+            StartCoroutine(DoMakeCorrectTransform(ap));
         }
         else
         {
-            reservatiedAP = ap;
+            reservedAP = ap;
             print("reservatiedAP");
         }
     }
-    protected virtual IEnumerator DoMakeCorrect(ActionPoint ap)
+    protected virtual IEnumerator DoMakeCorrectTransform(ActionPoint ap)
     {
         var positionCorrect = StartCoroutine(DoPositionCorrectly(ap.transform.position));
         var rotationCorrect = StartCoroutine(DoRotationCorrectly(ap.transform.forward));
@@ -107,7 +103,7 @@ public class AniController : MonoBehaviour, IJobStarter
         yield return rotationCorrect;
         yield return new WaitUntil(() => IsWalkState());
 
-        if (!IsAniReservatied)
+        if (!IsAPReserved)
             StartAni(ap);
         yield return null;
     }
@@ -119,7 +115,7 @@ public class AniController : MonoBehaviour, IJobStarter
         var t = 0f;
         var maxT = 0.05f;
         var beforePosition = transform.position;
-        while (t < maxT || !IsAniReservatied)
+        while (t < maxT || !IsAPReserved)
         {
             yield return new WaitForFixedUpdate();
             t += Time.fixedDeltaTime;
@@ -144,7 +140,7 @@ public class AniController : MonoBehaviour, IJobStarter
             var rotateTime = Mathf.Lerp(0, during, 0.45f);
             var totalAngle = Vector3.Angle(transform.forward, dir);
             var eachFrameAngle = totalAngle / (rotateTime / Time.fixedDeltaTime);
-            for (float t = 0; t < during || !IsAniReservatied; t += Time.fixedDeltaTime)
+            for (float t = 0; t < during || !IsAPReserved; t += Time.fixedDeltaTime)
             {
                 if (t < rotateTime)
                     transform.Rotate(isLeft ? Vector3.down : Vector3.up, eachFrameAngle);
@@ -155,17 +151,7 @@ public class AniController : MonoBehaviour, IJobStarter
         yield return null;
     }
 
-    public void StopJob()
-    {
-        jobStopList.ForEach(x =>
-        {
-            if (x != null)
-            {
-                StopCoroutine(x);
-            }
-        });
-    }
-
+    public void StopJob() { }
     private void OnAnimatorIK(int layer)
     {
         if (animator)
@@ -188,7 +174,7 @@ public class AniController : MonoBehaviour, IJobStarter
     {
         if (ap.during < -1) yield return null;
         var maxTime = Mathf.Lerp(0, ap.during, animationPlayLimit);
-        for (float time = 0f; time < maxTime && reservatiedAP == null; time += Time.fixedDeltaTime)
+        for (float time = 0f; time < maxTime && !IsAPReserved; time += Time.fixedDeltaTime)
         {
             yield return new WaitForFixedUpdate();
         }
@@ -200,21 +186,21 @@ public class AniController : MonoBehaviour, IJobStarter
     }
     protected void MakeResetAni(bool shouldReadNextAction = true, StateModule stateModule = null)
     {
-        ProcResetAni = StartCoroutine(DoResetAni(shouldReadNextAction, stateModule));
+        StartCoroutine(DoResetAni(shouldReadNextAction, stateModule));
     }
     protected virtual IEnumerator DoResetAni(bool shouldReadNextAction, StateModule stateModule)
     {
         PlayingAni = null;
-        if (reservatiedAP == null)
+        if (IsAPReserved)
         {
             if (shouldReadNextAction)
                 modelHandlerJob.EndJob();
         }
         else
         {
-            var ap = reservatiedAP;
-            reservatiedAP = null;
-            StartAni(ap);
+            var ap = reservedAP;
+            reservedAP = null;
+            MakeCorrectTransform(ap);
         }
         yield return null;
     }
