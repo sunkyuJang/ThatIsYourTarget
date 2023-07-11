@@ -29,7 +29,7 @@ public class PersonActionPointEditor : Editor
     {
         var animatorController = EditorGUILayout.ObjectField("Animator Contoller", ap.animatorController, typeof(AnimatorController), false) as AnimatorController;
 
-        kind = (PersonAniState.StateKind)EditorGUILayout.EnumPopup("State", (PersonAniState.StateKind)ap.state);
+        kind = (PersonAniState.StateKind)EditorGUILayout.EnumPopup("State", ap.State);
 
         switch (kind)
         {
@@ -44,6 +44,9 @@ public class PersonActionPointEditor : Editor
             //     break;
             case PersonAniState.StateKind.LookAround:
                 SetLookAround(ap);
+                break;
+            case PersonAniState.StateKind.Surprize:
+                SetSurprize(ap);
                 break;
             default:
                 break;
@@ -74,6 +77,7 @@ public class PersonActionPointEditor : Editor
     }
     void SetWaitingInspector(ActionPoint ap) => ExpresseDuring(ap);
     void SetPrepareAttack(ActionPoint ap) => ExpresseDuring(ap);
+    void SetSurprize(PersonActionPoint ap) => ExpresseFixedDuring(ap, ap.GetLength());
     void ExpresseDuring(ActionPoint ap) => ap.during = (float)EditorGUILayout.FloatField("during", ap.during);
     void ExpresseFixedDuring(ActionPoint ap, float fixedTime) => ap.during = (float)EditorGUILayout.DelayedFloatField("FixedDuring", fixedTime);
 }

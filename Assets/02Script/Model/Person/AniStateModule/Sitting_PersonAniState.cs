@@ -9,7 +9,7 @@ internal class Sitting_PersonAniState : PersonAniState
 
     }
 
-    public override void Enter()
+    protected override void DoEnter()
     {
         Animator.SetInteger(SittingLevel, ap.subState_int);
     }

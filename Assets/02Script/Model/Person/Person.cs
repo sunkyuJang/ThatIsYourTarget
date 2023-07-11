@@ -1,24 +1,24 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using JMath;
 
 public partial class Person : Model
 {
     enum StateByDist { Notice = 3, Attack = 1 }
     [SerializeField]
     private Renderer modelRenderer;
-    Dictionary<PersonState.StateKinds, PersonState> states { set; get; } = new Dictionary<PersonState.StateKinds, PersonState>();
-    public PersonState GetState(PersonState.StateKinds state) => states != null && states.ContainsKey(state) ? states[state] : null;
     private PersonState currentState = null;
     internal object idmgController;
 
     public Weapon weapon { private set; get; } = null;
+    protected override StateModuleHandler SetStateModuleHandler()
+    {
+        return new PersonStateMouleHandler(this);
+    }
     protected override IEnumerator Start()
     {
         yield return StartCoroutine(base.Start());
-        states = PersonState.GetNewStateList(this);
+        SetState(PersonState.ConvertStateKindToInt(PersonState.StateKinds.Normal));
         yield return null;
     }
     public Material belongTo
@@ -28,31 +28,6 @@ public partial class Person : Model
     }
 
     bool ShouldRecongnize(Transform target) => target.GetComponent<Player>()?.belongTo == belongTo;
-
-    protected override void ChangedState()
-    {
-        if (state < states.Count)
-        {
-            currentState?.Exit();
-            currentState = states[(PersonState.StateKinds)state];
-
-            if (currentState == null)
-            {
-                Debug.Log("state dosnt exist");
-            }
-            else
-            {
-                if (currentState.IsReadyForEnter())
-                {
-                    currentState.Enter();
-                }
-                else
-                {
-                    currentState.EnterToException();
-                }
-            }
-        }
-    }
 
     public ActionPointHandler GetNewAPH(int APCounts, ActionPointHandler.WalkingState walkingState = ActionPointHandler.WalkingState.Walk)
     {
@@ -84,24 +59,26 @@ public partial class Person : Model
         }
     }
 
-    public override void Contected(Collider collider)
+    public override void OnContecting(Collider collider)
     {
         SetSensedState(collider, true);
     }
 
-    public override void Removed(Collider collider)
+    public override void OnRemoved(Collider collider)
     {
         SetSensedState(collider, false);
     }
 
     void SetSensedState(Collider collider, bool isContected)
     {
-        if (states.ContainsKey(PersonState.StateKinds.Sensed))
+        var sensedIndex = PersonState.ConvertStateKindToInt(PersonState.StateKinds.Sensed);
+        var state = moduleHandler.GetModule(sensedIndex);
+        if (state != null)
         {
-            var sensedState = states[PersonState.StateKinds.Sensed];
-            if (sensedState is Sensed_PersonState)
+            if (state is Sensed_PersonState)
             {
-                (sensedState as Sensed_PersonState)?.PrepareState(new Sensed_PersonState.PreparingData(collider.transform, isContected));
+                (state as Sensed_PersonState)?.PrepareState(new Sensed_PersonState.PreparingData(collider.transform, isContected));
+                SetState(sensedIndex);
             }
         }
     }

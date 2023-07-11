@@ -44,7 +44,7 @@ public class Curiousity_PersonState : PersonState
             SetState(StateKinds.Attack);
         }
     }
-    public override void Enter()
+    protected override void DoEnter()
     {
         var aph = GetCuriousityAPH(preparingData.target);
         // 하는 중. 

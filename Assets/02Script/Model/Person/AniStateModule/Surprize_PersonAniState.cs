@@ -2,12 +2,12 @@ using UnityEngine;
 
 internal class Surprize_PersonAniState : PersonAniState
 {
-    string Surprize { get { return "Surprize"; } }
+    string Surprize { get { return "ShouldSurprize"; } }
     public Surprize_PersonAniState(Animator ani) : base(ani)
     {
     }
 
-    public override void Enter()
+    protected override void DoEnter()
     {
         Animator.SetBool(Surprize, true);
     }

@@ -7,17 +7,15 @@ using JMath;
 public class PersonAniController : AniController
 {
     public GameObject personNeck;
-    // private List<StateKind> playStandList = new List<StateKind>()
-    // {
-    //     StateKind.Standing, StateKind.PrepareAttack, StateKind.TurnHead
-    // };
-
-    protected Dictionary<PersonAniState.StateKind, PersonAniState> StateModule { set; get; }
+    PersonAniStateModuleHandler moduleHandler => base.stateModuleHandler as PersonAniStateModuleHandler;
     protected override void Start()
     {
         base.Start();
-        StateModule = PersonAniState.GetNewStateList(animator);
         bodyThreshold = 80f;
+    }
+    protected override StateModuleHandler GetStateModuleHandler()
+    {
+        return new PersonAniStateModuleHandler(animator);
     }
     protected override bool IsWalkState()
     {
@@ -31,20 +29,12 @@ public class PersonAniController : AniController
         if (actionPoint is PersonActionPoint)
         {
             var ap = actionPoint as PersonActionPoint;
-
-            if (StateModule.ContainsKey(ap.State))
+            var module = stateModuleHandler.GetModule(ap.state);
+            if (module != null && module is PersonAniState)
             {
-                var module = StateModule[ap.State];
-                module.SetAP(ap);
-
-                if (module.IsReadyForEnter())
-                {
-                    module.Enter();
-                }
-                else
-                {
-                    module.EnterToException();
-                }
+                var aniModule = module as PersonAniState;
+                aniModule.SetAP(ap);
+                aniModule.Enter();
 
                 // walk animation should stop for other animation
                 SetWalkModule(ActionPointHandler.WalkingState.Non);
@@ -56,10 +46,12 @@ public class PersonAniController : AniController
 
     void SetWalkModule(ActionPointHandler.WalkingState walkingState)
     {
-        var module = StateModule[PersonAniState.StateKind.Walk] as Walk_PersonAniState;
-        if (module != null)
+        var module = stateModuleHandler.GetModule(PersonAniState.ConverStateToInt(PersonAniState.StateKind.Walk));
+
+        if (CanModuleRun(module) && module is Walk_PersonAniState)
         {
-            module.SetWalkState(walkingState);
+            var walkingModule = module as Walk_PersonAniState;
+            walkingModule.SetWalkState(walkingState);
             module.Enter();
         }
         else
@@ -112,6 +104,11 @@ public class PersonAniController : AniController
         {
             return degree < -135f ? "TurnL" : "LongTurnL";
         }
+    }
+
+    bool CanModuleRun(StateModule module)
+    {
+        return module != null && module is PersonAniState;
     }
 
     // public ActionPoint MakeHeadTurn()

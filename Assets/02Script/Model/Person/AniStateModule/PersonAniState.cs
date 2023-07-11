@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -21,29 +20,39 @@ public abstract class PersonAniState : StateModule
         TurnAround,
         //TurnHead,
     }
+    public static int ConverStateToInt(PersonAniState.StateKind stateKind) => (int)stateKind;
     public PersonAniState(Animator aniController) => this.Animator = aniController;
     public override bool IsReadyForEnter() { return ap != null && Animator != null; }
     protected Animator Animator { set; get; }
     protected PersonActionPoint ap;
-    public void SetAP(PersonActionPoint ap) => this.ap = ap;
+    protected void SetAP(PersonActionPoint ap) => this.ap = ap;
 
-    public static Dictionary<StateKind, PersonAniState> GetNewStateList(Animator animator)
+    public static List<StateModule> GetStatesList(Animator animator)
     {
-        var dic = new Dictionary<StateKind, PersonAniState>();
+        if (animator == null)
+        {
+            var stateList = new List<StateModule>();
 
-        dic.Add(StateKind.Non, new Non_PersonAniState(animator));
-        dic.Add(StateKind.Reset, new Reset_PersonAniState(animator));
-        dic.Add(StateKind.Walk, new Walk_PersonAniState(animator));
-        dic.Add(StateKind.Standing, new Standing_PersonAniState(animator));
-        dic.Add(StateKind.LookAround, new LookAround_PersonAniState(animator));
-        dic.Add(StateKind.Sitting, new Sitting_PersonAniState(animator));
-        dic.Add(StateKind.Surprize, new Surprize_PersonAniState(animator));
-        // dic.Add(StateKind.PrepareAttack, new PrepareAttack_PersonAniState(animator));
-        // dic.Add(StateKind.Fight, new Fight_PersonAniState(animator));
-        // dic.Add(StateKind.Avoid, new Avoid_PersonAniState(animator));
-        dic.Add(StateKind.TurnAround, new TurnAround_PersonAniState(animator));
-        // dic.Add(StateKind.TurnHead, new TurnHead_PersonAniState(animator));
+            StateModule state = null;
+            for (StateKind stateKind = StateKind.Non; stateKind != StateKind.TurnAround; stateKind++)
+            {
+                switch (stateKind)
+                {
+                    case StateKind.Non: state = new Non_PersonAniState(animator); break;
+                    case StateKind.Reset: state = new Reset_PersonAniState(animator); break;
+                    case StateKind.Walk: state = new Walk_PersonAniState(animator); break;
+                    case StateKind.Standing: state = new Standing_PersonAniState(animator); break;
+                    case StateKind.LookAround: state = new LookAround_PersonAniState(animator); break;
+                    case StateKind.Sitting: state = new Sitting_PersonAniState(animator); break;
+                    case StateKind.Surprize: state = new Surprize_PersonAniState(animator); break;
+                    case StateKind.TurnAround: state = new TurnAround_PersonAniState(animator); break;
+                }
+            }
 
-        return dic;
+            stateList.Add(state);
+            return stateList;
+        }
+
+        return null;
     }
 }

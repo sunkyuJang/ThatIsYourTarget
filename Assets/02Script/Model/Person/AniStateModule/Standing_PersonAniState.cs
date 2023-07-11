@@ -6,7 +6,7 @@ internal class Standing_PersonAniState : PersonAniState
 
     }
 
-    public override void Enter()
+    protected override void DoEnter()
     {
         // when model stop moving, it playing idle.
         // idle == standing

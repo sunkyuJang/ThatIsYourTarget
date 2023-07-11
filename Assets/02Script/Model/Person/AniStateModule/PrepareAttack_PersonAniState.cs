@@ -11,7 +11,7 @@ internal class PrepareAttack_PersonAniState : PersonAniState
     {
         return base.IsReadyForEnter() && attackLayer != AttackLayer.Non;
     }
-    public override void Enter()
+    protected override void DoEnter()
     {
         var layer = 0;
         switch (attackLayer)
@@ -27,7 +27,7 @@ internal class PrepareAttack_PersonAniState : PersonAniState
     void SetPrepareAttackLayer(AttackLayer attackLayer)
     {
         RuntimeAnimatorController runtimeController = Animator.runtimeAnimatorController as AnimatorController;
-        var layerCount = runtimeController.
+        //var layerCount = runtimeController.
     }
 
     public override void EnterToException()

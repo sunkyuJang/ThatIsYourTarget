@@ -5,7 +5,7 @@ public class Non_PersonAniState : PersonAniState
     {
 
     }
-    public override void Enter()
+    protected override void DoEnter()
     {
 
     }

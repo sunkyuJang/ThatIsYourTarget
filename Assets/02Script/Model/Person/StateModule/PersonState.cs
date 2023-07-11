@@ -1,7 +1,5 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
 public abstract class PersonState : StateModule
 {
@@ -20,22 +18,33 @@ public abstract class PersonState : StateModule
     }
 
     protected Person person;
-    protected void SetNormalState() => SetState(StateKinds.Normal);
-    protected void SetState(StateKinds kinds) => person.SetState((int)kinds);
-    protected PersonState GetState(StateKinds kinds) => person.GetState(kinds);
     public PersonState(Person person) => this.person = person;
+    public static int ConvertStateKindToInt(StateKinds kinds) => (int)kinds;
+    protected void SetState(StateKinds kinds) => person.SetState(ConvertStateKindToInt(kinds));
+    protected void SetNormalState() => SetState(StateKinds.Normal);
     public virtual void AfterAPHDone() { }
-    public static Dictionary<StateKinds, PersonState> GetNewStateList(Person person)
-    {
-        var dic = new Dictionary<StateKinds, PersonState>();
-
-        dic.Add(StateKinds.Normal, new Normal_PersonState(person));
-        dic.Add(StateKinds.Sensed, new Sensed_PersonState(person));
-        dic.Add(StateKinds.Curiousity, new Curiousity_PersonState(person));
-        dic.Add(StateKinds.Attack, new Attack_PersonState(person));
-        dic.Add(StateKinds.Dead, new Dead_PersonState(person));
-
-        return dic;
-    }
     public static int GetStateCount() => Enum.GetValues(typeof(StateKinds)).Length;
+    public static List<StateModule> GetStatesList(Person person)
+    {
+        if (person is Person)
+        {
+            var list = new List<StateModule>();
+            for (StateKinds kinds = StateKinds.Normal; kinds != StateKinds.Non; kinds++)
+            {
+                switch (kinds)
+                {
+                    case StateKinds.Normal: list.Add(new Normal_PersonState(person)); break;
+                    case StateKinds.Sensed: list.Add(new Sensed_PersonState(person)); break;
+                    case StateKinds.Curiousity: list.Add(new Curiousity_PersonState(person)); break;
+                    case StateKinds.Attack: list.Add(new Attack_PersonState(person)); break;
+                    case StateKinds.Dead: list.Add(new Dead_PersonState(person)); break;
+                    default: list.Add(null); break;
+                }
+            }
+
+            return list;
+        }
+
+        return null;
+    }
 }

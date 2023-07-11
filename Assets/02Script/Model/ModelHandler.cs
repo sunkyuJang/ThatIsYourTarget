@@ -4,15 +4,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using JMath;
 
-public class ModelHandler : MonoBehaviour, IJobStarter, ISectionJobChecker
+public class ModelHandler : MonoBehaviour, IJobStarter
 {
-    public ActionPointHandler actionPointHandler { private set; get; }
-    public IJobStarter naviJobStarter { private set; get; }
-    public IJobStarter aniJobstarter { private set; get; }
+    ActionPointHandler actionPointHandler { set; get; }
+    IJobStarter naviJobStarter { set; get; }
+    IJobStarter aniJobstarter { set; get; }
     RagDollHandler ragDollHandler { set; get; }
     Model.ModelJob modelJob { set; get; }
-    ModelHandlerJobManager modelHandlerJobManager { set; get; }
-
+    JobManager jobManager { set; get; }
+    enum jobState { navi, ani, done, non }
     private void Awake()
     {
         ragDollHandler = GetComponent<RagDollHandler>();
@@ -41,54 +41,80 @@ public class ModelHandler : MonoBehaviour, IJobStarter, ISectionJobChecker
 
             if (actionPointHandler != null)
             {
-                modelJob.recycleAPHFunc(actionPointHandler);
+                modelJob.returnAPH(actionPointHandler);
             }
 
-            if (modelHandlerJobManager != null)
-                modelHandlerJobManager.StopRunning();
+            if (jobManager != null)
+                jobManager.CancleJob();
 
             StopJob();
 
             actionPointHandler = modelJob.aph;
-            modelHandlerJobManager = new ModelHandlerJobManager
-                                        (
-                                            doEndJob: DonePersonJob,
-                                            naviJobStarter: naviJobStarter,
-                                            aniJobStarter: aniJobstarter,
-                                            parentJob: modelJob,
-                                            aph: actionPointHandler,
-                                            sectionJobChecker: this as ISectionJobChecker
-                                        );
-            modelHandlerJobManager.StartJob();
+            jobManager = new JobManager(job, EndJob);
+            var ap = actionPointHandler.GetNowActionPoint();
+            jobManager.AddJob(CreateJobs(modelJob, ap, actionPointHandler));
+            jobManager.StartJob();
         }
+    }
+
+    void ReadNextAP()
+    {
+        var ap = actionPointHandler.GetNextActionPoint();
+        if(ap != null || !jobManager.shouldCancle) 
+        {
+            jobManager.AddJob(CreateJobs(modelJob, ap, actionPointHandler));
+            jobManager.StartJob();
+        }
+        else
+        {
+            jobManager.EndJob();
+        }
+    }
+
+    void EndJob()
+    {
+        modelJob?.EndJob();
+        modelJob = null;
+        jobManager = null;
+    }
+
+    private Queue<Job> CreateJobs(object section, ActionPoint ap, ActionPointHandler handler)
+    {
+        var queue = new Queue<Job>();
+        for (jobState i = jobState.navi; i < jobState.non; i++)
+        {
+            var job = new ModelHandlerJob(jobManager, ap, handler.walkingState);
+            Action action = null;
+            switch (i)
+            {
+                case jobState.navi:
+                    action = () =>
+                    {
+                        naviJobStarter.StartJob(job);
+                    };
+                    break;
+                case jobState.ani:
+                    action = () =>
+                    {
+                        aniJobstarter.StartJob(job);
+                    };
+                    break;
+                case jobState.done:
+                    action = ReadNextAP; 
+                    break;
+            }
+
+            job.jobAction = action;
+            queue.Enqueue(job);
+        }
+
+        return queue;
     }
 
     public void StopJob()
     {
         naviJobStarter.StopJob();
         aniJobstarter.StopJob();
-    }
-
-    void DonePersonJob()
-    {
-        modelJob.EndJob();
-    }
-
-    public bool IsSameSection(Job job)
-    {
-        return modelJob.Equals(job);
-    }
-
-    public class ModelHandlerJob : SectionJob
-    {
-        public ActionPoint ap { private set; get; }
-        public ActionPointHandler.WalkingState walkingState { private set; get; }
-        public ModelHandlerJob(ISectionJobChecker sectionChecker, ActionPointHandler.WalkingState walkingState, ActionPoint ap, Job job, IJobStarter starter, Action endAction, Action exceptionAction)
-                    : base(job, starter, sectionChecker, endAction, exceptionAction)
-        {
-            this.walkingState = walkingState;
-            this.ap = ap;
-        }
     }
 
     public float GetDistTo(Transform target)
@@ -110,5 +136,16 @@ public class ModelHandler : MonoBehaviour, IJobStarter, ISectionJobChecker
     {
         StopJob();
         ragDollHandler.TrunOnRigid(true);
+    }
+
+    public class ModelHandlerJob : Job
+    {
+        public ActionPoint ap { private set; get; }
+        public ActionPointHandler.WalkingState walkingState { private set; get; }
+        public ModelHandlerJob(JobManager jobManager, ActionPoint ap, ActionPointHandler.WalkingState walkingState) : base(jobManager)
+        {
+            this.ap = ap;
+            this.walkingState = walkingState;
+        }
     }
 }

@@ -16,7 +16,7 @@ internal class Walk_PersonAniState : PersonAniState
         return Animator != null && state >= 0;
     }
 
-    public override void Enter()
+    protected override void DoEnter()
     {
         Animator.SetInteger(walkLevel, (int)state);
     }

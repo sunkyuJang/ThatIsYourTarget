@@ -21,7 +21,7 @@ public class Attack_PersonState : PersonState
     {
         return preparingData != null;
     }
-    public override void Enter()
+    protected override void DoEnter()
     {
 
     }

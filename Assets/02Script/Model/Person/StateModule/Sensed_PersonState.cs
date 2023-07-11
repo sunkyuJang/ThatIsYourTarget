@@ -7,7 +7,6 @@ public class Sensed_PersonState : PersonState
     public void PrepareState(PreparingData param)
     {
         preparingData = param as PreparingData;
-        SetState(StateKinds.Sensed);
     }
 
     public override bool IsReadyForEnter()
@@ -18,7 +17,7 @@ public class Sensed_PersonState : PersonState
     {
         SetNormalState();
     }
-    public override void Enter()
+    protected override void DoEnter()
     {
         var dist = person.modelHandler.GetDistTo(preparingData.target);
         var shouldAttack = dist < Attack_PersonState.attackDist;

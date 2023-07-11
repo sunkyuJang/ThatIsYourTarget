@@ -13,7 +13,7 @@ public class Normal_PersonState : PersonState
         return true;
     }
     public override void EnterToException() { }
-    public override void Enter()
+    protected override void DoEnter()
     {
         person.SetOriginalAPH();
     }

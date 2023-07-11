@@ -2,40 +2,77 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 public class JobManager
 {
-    protected Queue<Action> jobList = new Queue<Action>();
-    Action doEndJob;
-    bool canRunningJob = true;
-
-    public JobManager(Queue<Action> jobList, Action doEndJob)
+    private Action endJob;
+    private Queue<Job> jobList = new Queue<Job>();
+    public bool shouldCancle { private set; get; } = false;
+    private object section = null;
+    public bool IsSameSection(object section) => this.section.Equals(section);
+    public JobManager(object section, Action endJob)
     {
-        this.jobList = jobList;
-        this.doEndJob = doEndJob;
+        this.section = section;
+        this.endJob = endJob;
     }
-    public void StopRunning() { canRunningJob = false; }
+    public JobManager(Action endJob)
+    {
+        this.endJob = endJob;
+    }
+
     public virtual void StartJob()
     {
-        if (canRunningJob)
+        NextJob();
+    }
+    public virtual void NextJob()
+    {
+        if (shouldCancle || jobList.Count <= 0)
         {
-            if (jobList.Count > 0)
-            {
-                jobList.Dequeue().Invoke();
-            }
-            else
-            {
-                EndJob();
-            }
+            EndJob();
         }
         else
         {
-            // Destory job
+            jobList.Dequeue().ProcesseJob();
         }
     }
-
     public virtual void EndJob()
     {
-        doEndJob.Invoke();
+        endJob.Invoke();
+    }
+    public virtual void CancleJob()
+    {
+        shouldCancle = true;
+    }
+    public virtual void AddJob(Job job)
+    {
+        jobList.Enqueue(job);
+    }
+    public virtual void AddJob(Queue<Job> job)
+    {
+        jobList = job;
     }
 }
+
+public class Job
+{
+    private JobManager jobManager;
+    public Action jobAction;
+    public Job(JobManager jobManager)
+    {
+        this.jobManager = jobManager;
+    }
+
+    public virtual void ProcesseJob()
+    {
+        if (jobAction == null) Debug.Log("jobAction is missing");
+        jobAction?.Invoke();
+    }
+
+    // each job must call endJob Function when job is done.
+    public virtual void EndJob()
+    {
+        jobManager.NextJob();
+    }
+}
+
+
+

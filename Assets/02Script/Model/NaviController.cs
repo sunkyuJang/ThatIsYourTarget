@@ -89,7 +89,7 @@ public class NaviController : MonoBehaviour, IJobStarter
         if (navMeshAgent != null)
         {
             if (navMeshAgent.isOnNavMesh
-                    && navMeshAgent.isStopped)
+                    && !navMeshAgent.isStopped)
             {
                 direction = navMeshAgent.velocity.normalized;
             }

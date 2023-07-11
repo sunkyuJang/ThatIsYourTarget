@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using JMath;
 
-public class AniController : MonoBehaviour, IJobStarter
+public abstract class AniController : MonoBehaviour, IJobStarter
 {
     protected RagDollHandler ragDollHandler { set; get; }
     protected NaviController naviController;
@@ -19,10 +19,11 @@ public class AniController : MonoBehaviour, IJobStarter
     private ModelHandler.ModelHandlerJob modelHandlerJob { set; get; }
     protected ActionPointHandler.WalkingState walkingState { set; get; }
     protected float bodyThreshold = 0f;
+    protected StateModuleHandler stateModuleHandler { set; get; }
     protected virtual void Awake()
     {
         ragDollHandler = GetComponent<RagDollHandler>();
-        var naviController = GetComponent<NaviController>();
+        naviController = GetComponent<NaviController>();
         animator = GetComponent<Animator>();
     }
 
@@ -30,7 +31,10 @@ public class AniController : MonoBehaviour, IJobStarter
     {
         StartCoroutine(DoWalking());
         StartCoroutine(DoHeadFollow());
+        stateModuleHandler = GetStateModuleHandler();
     }
+
+    protected abstract StateModuleHandler GetStateModuleHandler();
 
     IEnumerator DoWalking()
     {
@@ -48,8 +52,10 @@ public class AniController : MonoBehaviour, IJobStarter
                 var cross = Vector3.Cross(transform.forward, direction);
                 degree *= cross.y >= 0 ? 1 : -1;
 
-                animator.SetFloat("WalkY", Mathf.Cos(degree * Mathf.Deg2Rad));
-                animator.SetFloat("WalkX", Mathf.Sin(degree * Mathf.Deg2Rad));
+                var walkX = Mathf.Cos(degree * Mathf.Deg2Rad);
+                var walkY = Mathf.Sin(degree * Mathf.Deg2Rad);
+                animator.SetFloat("WalkY", walkX);
+                animator.SetFloat("WalkX", walkY);
             }
 
             yield return new WaitForFixedUpdate();
@@ -77,6 +83,7 @@ public class AniController : MonoBehaviour, IJobStarter
         if (job is ModelHandler.ModelHandlerJob)
         {
             modelHandlerJob = job as ModelHandler.ModelHandlerJob;
+            walkingState = modelHandlerJob.walkingState;
             var ap = modelHandlerJob.ap;
 
             MakeCorrectTransform(ap);
@@ -96,11 +103,12 @@ public class AniController : MonoBehaviour, IJobStarter
     }
     protected virtual IEnumerator DoMakeCorrectTransform(ActionPoint ap)
     {
-        var positionCorrect = StartCoroutine(DoPositionCorrectly(ap.transform.position));
-        var rotationCorrect = StartCoroutine(DoRotationCorrectly(ap.transform.forward));
+        var isPositionDone = false;
+        var isRotationDone = false;
+        var positionCorrect = StartCoroutine(DoPositionCorrectly(ap.transform.position, () => { isPositionDone = true; }));
+        var rotationCorrect = StartCoroutine(DoRotationCorrectly(ap.transform.forward, () => { isRotationDone = true; }));
 
-        yield return positionCorrect;
-        yield return rotationCorrect;
+        yield return new WaitUntil(() => isPositionDone && isRotationDone);
         yield return new WaitUntil(() => IsWalkState());
 
         if (!IsAPReserved)
@@ -110,20 +118,22 @@ public class AniController : MonoBehaviour, IJobStarter
 
     protected virtual bool IsWalkState() { return true; }
 
-    protected virtual IEnumerator DoPositionCorrectly(Vector3 worldPosition)
+    protected virtual IEnumerator DoPositionCorrectly(Vector3 worldPosition, Action done)
     {
         var t = 0f;
         var maxT = 0.05f;
         var beforePosition = transform.position;
-        while (t < maxT || !IsAPReserved)
+        while (t < maxT && !IsAPReserved)
         {
             yield return new WaitForFixedUpdate();
             t += Time.fixedDeltaTime;
             var ratio = Mathf.InverseLerp(0, maxT, t);
             transform.position = Vector3.Lerp(beforePosition, Vector3Extentioner.GetOverrideY(worldPosition, beforePosition.y), ratio);
         }
+
+        done?.Invoke();
     }
-    protected virtual IEnumerator DoRotationCorrectly(Vector3 dir)
+    protected virtual IEnumerator DoRotationCorrectly(Vector3 dir, Action done)
     {
         var startForward = transform.forward;
         var cross = Vector3.Cross(Vector3.up, startForward);
@@ -140,7 +150,7 @@ public class AniController : MonoBehaviour, IJobStarter
             var rotateTime = Mathf.Lerp(0, during, 0.45f);
             var totalAngle = Vector3.Angle(transform.forward, dir);
             var eachFrameAngle = totalAngle / (rotateTime / Time.fixedDeltaTime);
-            for (float t = 0; t < during || !IsAPReserved; t += Time.fixedDeltaTime)
+            for (float t = 0; t < during && !IsAPReserved; t += Time.fixedDeltaTime)
             {
                 if (t < rotateTime)
                     transform.Rotate(isLeft ? Vector3.down : Vector3.up, eachFrameAngle);
@@ -148,6 +158,7 @@ public class AniController : MonoBehaviour, IJobStarter
             }
         }
 
+        done?.Invoke();
         yield return null;
     }
 
@@ -165,7 +176,7 @@ public class AniController : MonoBehaviour, IJobStarter
     }
 
     protected virtual float GetMakeTurnDuring(float degree) { return 0; }
-    protected virtual void StartAni(ActionPoint actionPoint, bool shouldReturnAP = false) { }
+    protected abstract void StartAni(ActionPoint actionPoint, bool shouldReturnAP = false);
     protected void StartAniTimeCount(ActionPoint ap, bool shouldReturnAP, StateModule stateModule)
     {
         PlayingAni = StartCoroutine(DoAnimationTimeCount(ap, shouldReturnAP, stateModule));
@@ -179,7 +190,7 @@ public class AniController : MonoBehaviour, IJobStarter
             yield return new WaitForFixedUpdate();
         }
 
-        MakeResetAni(!shouldReturnAP);
+        MakeResetAni(!shouldReturnAP, stateModule);
 
         if (shouldReturnAP)
             APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP).ReturnTargetObj(ap.gameObject);
@@ -195,14 +206,16 @@ public class AniController : MonoBehaviour, IJobStarter
         PlayingAni = null;
         if (IsAPReserved)
         {
-            if (shouldReadNextAction)
-                modelHandlerJob.EndJob();
-        }
-        else
-        {
             var ap = reservedAP;
             reservedAP = null;
             MakeCorrectTransform(ap);
+        }
+        else
+        {
+            // in this point,
+            // if is ap was returned, next ap will be played by DoMakeCorrectTransform() function
+            if (shouldReadNextAction)
+                modelHandlerJob.EndJob();
         }
         yield return null;
     }

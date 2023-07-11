@@ -8,7 +8,7 @@ internal class LookAround_PersonAniState : PersonAniState
 
     }
 
-    public override void Enter()
+    protected override void DoEnter()
     {
         Animator.SetBool(LookAround, true);
     }

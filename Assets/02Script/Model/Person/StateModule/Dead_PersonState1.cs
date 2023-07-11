@@ -13,7 +13,7 @@ public class Dead_PersonState : PersonState
         return true;
     }
     public override void EnterToException() { }
-    public override void Enter()
+    protected override void DoEnter()
     {
         person.modelHandler.SetDead();
     }

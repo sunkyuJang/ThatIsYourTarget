@@ -2,15 +2,15 @@ using UnityEngine;
 
 internal class TurnAround_PersonAniState : PersonAniState
 {
-    string TurnAround { get { return "TurnAround"; } }
+    string TurnDegree { get { return "TurnDegree"; } }
     float defaultDegree = 361f;
     public TurnAround_PersonAniState(Animator aniController) : base(aniController)
     {
     }
 
-    public override void Enter()
+    protected override void DoEnter()
     {
-        Animator.SetFloat(TurnAround, ap.subState_float);
+        Animator.SetFloat(TurnDegree, ap.targetDegree);
     }
 
     public override void EnterToException()
@@ -20,6 +20,6 @@ internal class TurnAround_PersonAniState : PersonAniState
 
     public override void Exit()
     {
-        Animator.SetFloat(TurnAround, defaultDegree);
+        Animator.SetFloat(TurnDegree, defaultDegree);
     }
 }

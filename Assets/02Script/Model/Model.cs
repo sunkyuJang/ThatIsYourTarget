@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Model : MonoBehaviour, IDamageController
+public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConnector_OnContecting, IObjDetectorConnector_OnDetected, IObjDetectorConnector_OnRemoved
 {
     public float HP { set { HP -= value; HP = HP < 0 ? 0 : HP; } get { return HP; } }
     public int state { private set; get; } = 0;
@@ -13,13 +13,18 @@ public class Model : MonoBehaviour, IDamageController
     Action nextActionFromState = null;
     float MaxAcceptableDmgTime { set; get; } = 2f;
     bool CanAcceptableDmg { set; get; } = true;
+    JobManager jobManager { set; get; }
+    protected StateModuleHandler moduleHandler { set; get; }
     protected virtual void Awake()
     {
         modelHandler = GetComponentInChildren<ModelHandler>();
         APHGroup = transform.Find("APHGroup");
         originalAPH = APHGroup.Find("OriginalAPH").GetComponent<ActionPointHandler>();
         originalAPH.originalOwener = gameObject;
+        jobManager = new JobManager(GetNextAPH);
+        moduleHandler = SetStateModuleHandler();
     }
+    protected abstract StateModuleHandler SetStateModuleHandler();
     protected virtual IEnumerator Start()
     {
         yield return new WaitUntil(() => APHManager.Instance.IsReady);
@@ -27,11 +32,7 @@ public class Model : MonoBehaviour, IDamageController
     }
     public void SetState(int newState)
     {
-        if (newState != state)
-        {
-            state = newState;
-            ChangedState();
-        }
+        moduleHandler.EnterModule(newState);
     }
     public void SetOriginalAPH()
     {
@@ -45,14 +46,11 @@ public class Model : MonoBehaviour, IDamageController
     }
     public void SetAPH(ActionPointHandler handler, Action nextActionFromState = null)
     {
-        new ModelJob
-            (
-                aph: handler,
-                recycleAPHFunc: ReturnAPH,
-                starter: modelHandler as IJobStarter,
-                endAction: EndEachJob,
-                exceptionAction: ExceptionJob
-            ).StartJob();
+        if (jobManager == null) jobManager = new JobManager(GetNextAPH);
+        var job = new ModelJob(jobManager, handler, ReturnAPH);
+        job.jobAction = () => (modelHandler as IJobStarter).StartJob(job);
+        jobManager.AddJob(job);
+        jobManager.StartJob();
         if (nextActionFromState != null) this.nextActionFromState = nextActionFromState;
     }
 
@@ -77,9 +75,12 @@ public class Model : MonoBehaviour, IDamageController
             nextActionFromState.Invoke();
         }
     }
-    public virtual void Contected(Collider collider) { }
-    public virtual void Contecting(Collider collider) { }
-    public virtual void Removed(Collider collider) { }
+    public void OnContecting(ObjDetector detector, Collider collider) => OnContecting(collider);
+    public void OnDetected(ObjDetector detector, Collider collider) => OnDetected(collider);
+    public void OnRemoved(ObjDetector detector, Collider collider) => OnRemoved(collider);
+    public virtual void OnContecting(Collider collider) { }
+    public virtual void OnDetected(Collider collider) { }
+    public virtual void OnRemoved(Collider collider) { }
     protected virtual void ChangedState() { }
     protected virtual void DoDie() { }
 
@@ -105,12 +106,11 @@ public class Model : MonoBehaviour, IDamageController
     public class ModelJob : Job
     {
         public ActionPointHandler aph { private set; get; }
-        public Action<ActionPointHandler> recycleAPHFunc { private set; get; }
-        public ModelJob(ActionPointHandler aph, Action<ActionPointHandler> recycleAPHFunc, IJobStarter starter, Action endAction, Action exceptionAction)
-                : base(starter, endAction, exceptionAction)
+        public Action<ActionPointHandler> returnAPH { private set; get; }
+        public ModelJob(JobManager jobManager, ActionPointHandler aph, Action<ActionPointHandler> returnAPH) : base(jobManager)
         {
             this.aph = aph;
-            this.recycleAPHFunc = recycleAPHFunc;
+            this.returnAPH = returnAPH;
         }
     }
 }

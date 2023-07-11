@@ -9,7 +9,7 @@ public class ActionPoint : MonoBehaviour
     public AnimatorController animatorController;
     public virtual bool HasAction { get { return true; } }
     [HideInInspector]
-    public int state = 0;
+    public int state { protected set; get; } = 0;
     [HideInInspector]
     public float during = 0;
     [HideInInspector]
