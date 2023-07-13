@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Attack_PersonState : PersonState
@@ -17,7 +16,7 @@ public class Attack_PersonState : PersonState
 
         SetState(StateKinds.Attack);
     }
-    public override bool IsReadyForEnter()
+    protected override bool IsReadyForEnter()
     {
         return preparingData != null;
     }

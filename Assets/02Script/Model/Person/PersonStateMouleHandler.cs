@@ -1,7 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
 public class PersonStateMouleHandler : StateModuleHandler
 {
     public PersonStateMouleHandler(Person person)
@@ -9,5 +5,7 @@ public class PersonStateMouleHandler : StateModuleHandler
         modules = PersonState.GetStatesList(person);
     }
 
-    public PersonState GetModule(PersonState.StateKinds kinds) => GetModule((int)kinds) as PersonState;
+    public PersonState GetModule(PersonState.StateKinds kinds) => GetModule(ConvertStateKindToInt(kinds)) as PersonState;
+    public bool IsSameModule(PersonState.StateKinds kinds) => IsSameModule(ConvertStateKindToInt(kinds));
+    private int ConvertStateKindToInt(PersonState.StateKinds kinds) => (int)kinds;
 }

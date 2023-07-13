@@ -1,15 +1,10 @@
-using System.Collections.Generic;
-
 public abstract class StateModule
 {
     protected bool isStateRunning = false;
     public abstract bool IsReadyForEnter();
-    protected internal void Enter()
+    public void Enter()
     {
-        if (IsReadyForEnter())
-            DoEnter();
-        else
-            EnterToException();
+        DoEnter();
     }
     protected abstract void DoEnter();
     public abstract void EnterToException();

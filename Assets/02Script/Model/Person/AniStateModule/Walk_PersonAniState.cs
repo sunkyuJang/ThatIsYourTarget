@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 internal class Walk_PersonAniState : PersonAniState
@@ -11,7 +10,7 @@ internal class Walk_PersonAniState : PersonAniState
 
     }
 
-    public override bool IsReadyForEnter()
+    protected override bool IsReadyForEnter()
     {
         return Animator != null && state >= 0;
     }

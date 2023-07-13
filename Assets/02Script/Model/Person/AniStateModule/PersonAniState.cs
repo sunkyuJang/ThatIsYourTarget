@@ -22,7 +22,7 @@ public abstract class PersonAniState : StateModule
     }
     public static int ConverStateToInt(PersonAniState.StateKind stateKind) => (int)stateKind;
     public PersonAniState(Animator aniController) => this.Animator = aniController;
-    public override bool IsReadyForEnter() { return ap != null && Animator != null; }
+    protected override bool IsReadyForEnter() { return ap != null && Animator != null; }
     protected Animator Animator { set; get; }
     protected PersonActionPoint ap;
     public void SetAP(PersonActionPoint ap) => this.ap = ap;

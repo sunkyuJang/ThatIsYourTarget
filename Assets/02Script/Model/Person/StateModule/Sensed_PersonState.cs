@@ -9,9 +9,11 @@ public class Sensed_PersonState : PersonState
         preparingData = param as PreparingData;
     }
 
-    public override bool IsReadyForEnter()
+    protected override bool IsReadyForEnter()
     {
-        return preparingData != null && preparingData.target != null;
+        //var canEnteredStateList = new List<PersonState.StateKinds>() { StateKinds.Normal, };
+        var isAllowedState = person.moduleHandler.IsSameModule(StateKinds.Sensed);
+        return isAllowedState && preparingData != null && preparingData.target != null;
     }
     public override void EnterToException()
     {

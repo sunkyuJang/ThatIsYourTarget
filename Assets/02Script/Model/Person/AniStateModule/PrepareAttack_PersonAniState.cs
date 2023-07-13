@@ -1,5 +1,5 @@
-using UnityEngine;
 using UnityEditor.Animations;
+using UnityEngine;
 
 internal class PrepareAttack_PersonAniState : PersonAniState
 {
@@ -7,7 +7,7 @@ internal class PrepareAttack_PersonAniState : PersonAniState
     protected AttackLayer attackLayer = AttackLayer.Non;
     public PrepareAttack_PersonAniState(Animator ani) : base(ani) { }
     public void SetAttackLayer(AttackLayer attackLayer) => this.attackLayer = attackLayer;
-    public override bool IsReadyForEnter()
+    protected override bool IsReadyForEnter()
     {
         return base.IsReadyForEnter() && attackLayer != AttackLayer.Non;
     }

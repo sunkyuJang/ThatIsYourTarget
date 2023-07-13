@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,7 +10,7 @@ public class ActionPointHandler : MonoBehaviour
     public int GetActionCount { get { return actionPoints.Count; } }
     public int index = 0;
     public bool shouldLoop = true;
-    public bool isAPHDone { get { return !shouldLoop && index >= GetActionCount - 1; } }
+    public bool isAPHDone { get { return !shouldLoop && index >= GetActionCount; } }
     public void Awake()
     {
         SetAPs();

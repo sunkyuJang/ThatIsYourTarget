@@ -17,7 +17,7 @@ public partial class StateModuleHandler
 
         if (targetModule == null || targetModule == playingModule) return;
 
-        if (targetModule is IPrepareStateModule prepareStateModule && !prepareStateModule.IsPrepared()) return;
+        if (!targetModule.IsReadyForEnter()) return;
 
         if (shouldTurnOffOldModule)
             playingModule?.Exit();
@@ -42,16 +42,12 @@ public partial class StateModuleHandler
         }
     }
 
-    // public virtual bool SetPrepareData(int num, IPrepareModuleData data)
-    // {
-    //     var module = GetModule(num) as IPrepareStateModule;
-    //     if (module != null)
-    //     {
-    //         module.SetPrepare(data);
-    //         return true;
-    //     }
+    public bool IsSameModule(int num)
+    {
+        if (playingModule == null) return false;
 
-    //     return false;
-    // }
+        var targetModule = GetModule(num);
+        return targetModule != null && targetModule == playingModule;
+    }
 }
 

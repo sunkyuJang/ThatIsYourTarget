@@ -1,6 +1,4 @@
-using System.Linq;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Curiousity_PersonState : PersonState
@@ -27,7 +25,7 @@ public class Curiousity_PersonState : PersonState
 
         SetState(StateKinds.Curiousity);
     }
-    public override bool IsReadyForEnter()
+    protected override bool IsReadyForEnter()
     {
         return preparingData != null &&
                 preparingData.target != null &&

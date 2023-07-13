@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 public class JobManager
@@ -25,7 +24,9 @@ public class JobManager
     }
     public virtual void NextJob()
     {
-        if (shouldCancle || jobList.Count <= 0)
+        if (shouldCancle) { return; }
+
+        if (jobList.Count <= 0)
         {
             EndJob();
         }
