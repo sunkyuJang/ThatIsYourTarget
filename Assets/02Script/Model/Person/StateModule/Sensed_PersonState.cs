@@ -27,10 +27,11 @@ public class Sensed_PersonState : PersonState
         }
         else
         {
-            var state = GetState(StateKinds.Curiousity);
+            var state = person.moduleHandler.GetModule(StateKinds.Curiousity);
             if (state != null)
             {
-                (state as Curiousity_PersonState)?.PrepareState(preparingData);
+                var curiousity_PrepareData = new Curiousity_PersonState.PreparingData(preparingData.target, preparingData.isInSight);
+                (state as Curiousity_PersonState)?.PrepareState(curiousity_PrepareData);
             }
         }
         SetState(dist < Attack_PersonState.attackDist ? StateKinds.Attack : StateKinds.Curiousity);

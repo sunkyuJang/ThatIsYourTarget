@@ -7,13 +7,20 @@ public partial class StateModuleHandler
     public void EnterModule(int num, bool shouldTurnOffOldModule = true)
     {
         var targetModule = GetModule(num);
+        if (targetModule != null)
+            EnterModule(targetModule, shouldTurnOffOldModule);
+    }
+
+    protected void EnterModule(StateModule targetModule, bool shouldTurnOffOldModule = true)
+    {
+        if (!modules.Exists(x => x == targetModule)) return;
 
         if (targetModule == null || targetModule == playingModule) return;
 
         if (targetModule is IPrepareStateModule prepareStateModule && !prepareStateModule.IsPrepared()) return;
 
         if (shouldTurnOffOldModule)
-            playingModule.Exit();
+            playingModule?.Exit();
 
         playingModule = targetModule;
         playingModule.Enter();
@@ -24,18 +31,27 @@ public partial class StateModuleHandler
         playingModule.Exit();
     }
 
-    public StateModule GetModule(int num) { return modules[num]; }
-
-    public virtual bool SetPrepareData(int num, IPrepareModuleData data)
+    public StateModule GetModule(int num)
     {
-        var module = GetModule(num) as IPrepareStateModule;
-        if (module != null)
+        if (num < modules.Count)
+            return modules[num];
+        else
         {
-            module.SetPrepare(data);
-            return true;
+            UnityEngine.Debug.Log("Target Module Couldnt found");
+            return null;
         }
-
-        return false;
     }
+
+    // public virtual bool SetPrepareData(int num, IPrepareModuleData data)
+    // {
+    //     var module = GetModule(num) as IPrepareStateModule;
+    //     if (module != null)
+    //     {
+    //         module.SetPrepare(data);
+    //         return true;
+    //     }
+
+    //     return false;
+    // }
 }
 

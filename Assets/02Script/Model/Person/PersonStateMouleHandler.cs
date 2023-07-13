@@ -8,4 +8,6 @@ public class PersonStateMouleHandler : StateModuleHandler
     {
         modules = PersonState.GetStatesList(person);
     }
+
+    public PersonState GetModule(PersonState.StateKinds kinds) => GetModule((int)kinds) as PersonState;
 }

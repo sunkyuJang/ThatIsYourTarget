@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class Curiousity_PersonState : PersonState
 {
-    Sensed_PersonState.PreparingData preparingData;
+    PreparingData preparingData;
     int curiosityCnt = 0;
     const int MaxCuriosityCnt = 3;
     float warningTime = 0f;
@@ -14,11 +14,11 @@ public class Curiousity_PersonState : PersonState
     Coroutine procCountingTime = null;
     Coroutine procCountingIgnoreTime = null;
     public Curiousity_PersonState(Person person) : base(person) { }
-    public void PrepareState(Sensed_PersonState.PreparingData param)
+    public void PrepareState(PreparingData param)
     {
         if (preparingData == null)
         {
-            preparingData = param as Sensed_PersonState.PreparingData;
+            preparingData = param;
         }
         else if (preparingData.target.Equals(param.target))
         {
@@ -120,5 +120,17 @@ public class Curiousity_PersonState : PersonState
     {
         isAPHDone = true;
         SetNormalState();
+    }
+
+    public class PreparingData
+    {
+        public Transform target { private set; get; }
+        public bool isInSight { private set; get; }
+
+        public PreparingData(Transform target, bool isInSight)
+        {
+            this.target = target;
+            this.isInSight = isInSight;
+        }
     }
 }

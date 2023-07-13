@@ -9,7 +9,7 @@ public abstract class PersonAniState : StateModule
         Non,
         Reset,
         Walk,
-        Run,
+        //Run,
         Standing,
         LookAround,
         Sitting,
@@ -25,16 +25,16 @@ public abstract class PersonAniState : StateModule
     public override bool IsReadyForEnter() { return ap != null && Animator != null; }
     protected Animator Animator { set; get; }
     protected PersonActionPoint ap;
-    protected void SetAP(PersonActionPoint ap) => this.ap = ap;
+    public void SetAP(PersonActionPoint ap) => this.ap = ap;
 
     public static List<StateModule> GetStatesList(Animator animator)
     {
-        if (animator == null)
+        if (animator != null)
         {
             var stateList = new List<StateModule>();
 
             StateModule state = null;
-            for (StateKind stateKind = StateKind.Non; stateKind != StateKind.TurnAround; stateKind++)
+            for (StateKind stateKind = StateKind.Non; stateKind <= StateKind.TurnAround; stateKind++)
             {
                 switch (stateKind)
                 {
@@ -47,9 +47,10 @@ public abstract class PersonAniState : StateModule
                     case StateKind.Surprize: state = new Surprize_PersonAniState(animator); break;
                     case StateKind.TurnAround: state = new TurnAround_PersonAniState(animator); break;
                 }
+
+                stateList.Add(state);
             }
 
-            stateList.Add(state);
             return stateList;
         }
 

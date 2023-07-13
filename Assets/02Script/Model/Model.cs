@@ -14,7 +14,7 @@ public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConn
     float MaxAcceptableDmgTime { set; get; } = 2f;
     bool CanAcceptableDmg { set; get; } = true;
     JobManager jobManager { set; get; }
-    protected StateModuleHandler moduleHandler { set; get; }
+    public StateModuleHandler moduleHandler { protected set; get; }
     protected virtual void Awake()
     {
         modelHandler = GetComponentInChildren<ModelHandler>();

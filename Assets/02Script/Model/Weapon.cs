@@ -9,6 +9,7 @@ public class Weapon : MonoBehaviour, IObjCollisionDetectorConnector_OnCollisionE
     public bool IsMelee { get { return Range == 0; } }
     public bool IsSingleTarget { set; get; }
     public float hitPower { set; get; } = 1;
+
     public void Attack()
     {
         // 하는 중, 원거리와 근커리에 따른 콜라이더를 어떻게 처리할 것인가?
@@ -21,11 +22,12 @@ public class Weapon : MonoBehaviour, IObjCollisionDetectorConnector_OnCollisionE
 
         }
     }
+
     IEnumerator ActiveUsingCollider()
     {
-
         yield return null;
     }
+
     public void OnCollisionEnter(ObjCollisionDetector detector, Collision collision)
     {
         IDamageController damageController = collision.collider.GetComponent<IDamageController>();

@@ -9,7 +9,7 @@ public partial class Person : Model
     private Renderer modelRenderer;
     private PersonState currentState = null;
     internal object idmgController;
-
+    new public PersonStateMouleHandler moduleHandler => base.moduleHandler as PersonStateMouleHandler;
     public Weapon weapon { private set; get; } = null;
     protected override StateModuleHandler SetStateModuleHandler()
     {
@@ -59,7 +59,7 @@ public partial class Person : Model
         }
     }
 
-    public override void OnContecting(Collider collider)
+    public override void OnDetected(Collider collider)
     {
         SetSensedState(collider, true);
     }
@@ -71,14 +71,14 @@ public partial class Person : Model
 
     void SetSensedState(Collider collider, bool isContected)
     {
-        var sensedIndex = PersonState.ConvertStateKindToInt(PersonState.StateKinds.Sensed);
-        var state = moduleHandler.GetModule(sensedIndex);
+        var stateKind = PersonState.StateKinds.Sensed;
+        var state = moduleHandler.GetModule(stateKind);
         if (state != null)
         {
             if (state is Sensed_PersonState)
             {
                 (state as Sensed_PersonState)?.PrepareState(new Sensed_PersonState.PreparingData(collider.transform, isContected));
-                SetState(sensedIndex);
+                SetState((int)stateKind);
             }
         }
     }

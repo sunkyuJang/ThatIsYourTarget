@@ -29,12 +29,11 @@ public class PersonAniController : AniController
         if (actionPoint is PersonActionPoint)
         {
             var ap = actionPoint as PersonActionPoint;
-            var module = stateModuleHandler.GetModule(ap.state);
-            if (module != null && module is PersonAniState)
+            var module = moduleHandler.GetModule(ap.state);
+            if (module != null && module is PersonAniState aniModule)
             {
-                var aniModule = module as PersonAniState;
                 aniModule.SetAP(ap);
-                aniModule.Enter();
+                moduleHandler.EnterModule(ap.state);
 
                 // walk animation should stop for other animation
                 SetWalkModule(ActionPointHandler.WalkingState.Non);
@@ -46,7 +45,7 @@ public class PersonAniController : AniController
 
     void SetWalkModule(ActionPointHandler.WalkingState walkingState)
     {
-        var module = stateModuleHandler.GetModule(PersonAniState.ConverStateToInt(PersonAniState.StateKind.Walk));
+        var module = moduleHandler.GetModule(PersonAniState.StateKind.Walk);
 
         if (CanModuleRun(module) && module is Walk_PersonAniState)
         {

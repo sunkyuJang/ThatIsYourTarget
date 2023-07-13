@@ -8,4 +8,7 @@ public class PersonAniStateModuleHandler : StateModuleHandler
     {
         modules = PersonAniState.GetStatesList(animator);
     }
+
+    public PersonAniState GetModule(PersonAniState.StateKind state) => GetModule((int)state) as PersonAniState;
+
 }
