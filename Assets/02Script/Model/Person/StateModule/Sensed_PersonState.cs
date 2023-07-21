@@ -9,10 +9,10 @@ public class Sensed_PersonState : PersonState
         preparingData = param as PreparingData;
     }
 
-    protected override bool IsReadyForEnter()
+    public override bool IsReadyForEnter()
     {
         //var canEnteredStateList = new List<PersonState.StateKinds>() { StateKinds.Normal, };
-        var isAllowedState = person.moduleHandler.IsSameModule(StateKinds.Sensed);
+        var isAllowedState = person.moduleHandler.IsSameModule(StateKinds.Normal);
         return isAllowedState && preparingData != null && preparingData.target != null;
     }
     public override void EnterToException()
@@ -22,7 +22,7 @@ public class Sensed_PersonState : PersonState
     protected override void DoEnter()
     {
         var dist = person.modelHandler.GetDistTo(preparingData.target);
-        var shouldAttack = dist < Attack_PersonState.attackDist;
+        var shouldAttack = dist < PrepareAttack_PersonState.attackDist;
         if (shouldAttack)
         {
 
@@ -36,11 +36,9 @@ public class Sensed_PersonState : PersonState
                 (state as Curiousity_PersonState)?.PrepareState(curiousity_PrepareData);
             }
         }
-        SetState(dist < Attack_PersonState.attackDist ? StateKinds.Attack : StateKinds.Curiousity);
+        SetState(dist < PrepareAttack_PersonState.attackDist ? StateKinds.PrepareAttack : StateKinds.Curiousity);
     }
     public override void Exit() { preparingData = null; }
-
-    public override void AfterAPHDone() { }
 
     public class PreparingData
     {

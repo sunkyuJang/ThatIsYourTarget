@@ -14,15 +14,15 @@ public abstract class PersonAniState : StateModule
         LookAround,
         Sitting,
         Surprize,
-        // PrepareAttack,
-        // Fight,
+        PrepareAttack,
+        Hit,
         // Avoid,
         TurnAround,
         //TurnHead,
     }
     public static int ConverStateToInt(PersonAniState.StateKind stateKind) => (int)stateKind;
     public PersonAniState(Animator aniController) => this.Animator = aniController;
-    protected override bool IsReadyForEnter() { return ap != null && Animator != null; }
+    public override bool IsReadyForEnter() { return ap != null && Animator != null; }
     protected Animator Animator { set; get; }
     protected PersonActionPoint ap;
     public void SetAP(PersonActionPoint ap) => this.ap = ap;

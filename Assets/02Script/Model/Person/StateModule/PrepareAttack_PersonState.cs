@@ -1,22 +1,22 @@
 using System.Collections;
 using UnityEngine;
 
-public class Attack_PersonState : PersonState
+public class PrepareAttack_PersonState : PersonState
 {
-    Sensed_PersonState.PreparingData preparingData { set; get; }
+    public enum State { trace, hit, miss, non }
+    PrepareData preparingData { set; get; }
     public static float attackDist = 1f;
-    protected Weapon weapon { get { return person.weapon; } }
-    public Attack_PersonState(Person person) : base(person) { }
-    public void PrepareState(Sensed_PersonState.PreparingData param)
+    protected PersonWeapon weapon { get { return person.weapon; } }
+    public PrepareAttack_PersonState(Person person) : base(person) { }
+
+    public void PrepareState(PrepareData param)
     {
         if (preparingData == null)
         {
-            preparingData = param as Sensed_PersonState.PreparingData;
+            preparingData = param;
         }
-
-        SetState(StateKinds.Attack);
     }
-    protected override bool IsReadyForEnter()
+    public override bool IsReadyForEnter()
     {
         return preparingData != null;
     }
@@ -29,7 +29,7 @@ public class Attack_PersonState : PersonState
         SetState(StateKinds.Normal);
         Debug.Log("there have some problem");
     }
-    public override void AfterAPHDone() { }
+
     public override void Exit() { }
 
     void SetDmgToTarget(IDamageController target)
@@ -39,21 +39,26 @@ public class Attack_PersonState : PersonState
     public ActionPointHandler GetAttckHandler(Sensed_PersonState.PreparingData preparingData)
     {
         var target = preparingData.target;
-        var aph = person.GetNewAPH(4, ActionPointHandler.WalkingState.Run);
-        // person.SetAPs(aph.GetActionPoint(0), target, PersonAniState.StateKind.PrepareAttack, true, 0, false, true);
-        // person.SetAPs(aph.GetActionPoint(1), target, PersonAniController.StateKind.Run, false, 0, false, false);
-        // person.SetAPs(aph.GetActionPoint(2), target, PersonAniController.StateKind.Fight, false, 0, false, false);
-        // person.SetAPs(aph.GetActionPoint(3), target, PersonAniController.StateKind.LookAround, true, 0, false, false);
+        var aph = person.GetNewAPH(1, ActionPointHandler.WalkingState.Run);
+        (aph.GetActionPoint(0) as PersonActionPoint).Weapon = person.weapon;
+        person.SetAPs(aph.GetActionPoint(0), target, PersonAniState.StateKind.PrepareAttack, true, 0, false, true);
 
         return aph;
     }
 
-    IEnumerator TraceTarget(Sensed_PersonState.PreparingData preparingData, ActionPointHandler aph)
+    IEnumerator TraceTarget(PrepareData preparingData, ActionPointHandler aph)
     {
         var target = preparingData.target;
         var targetDmgController = target.GetComponent<IDamageController>();
+        var state = State.trace;
         while (!aph.isAPHDone)
         {
+            state = IsTargetInRange(target, weapon.Range) ? State.hit : State.trace;
+            if (state == State.trace)
+            {
+
+            }
+
             if (IsTargetInRange(target, weapon.Range))
             {
                 if (weapon.IsMelee)
@@ -72,8 +77,16 @@ public class Attack_PersonState : PersonState
         yield return null;
     }
 
+
+
     bool IsTargetInRange(Transform target, float range)
     {
         return Vector3.Distance(target.position, person.modelHandler.transform.position) <= range;
+    }
+
+    public class PrepareData
+    {
+        public Transform target;
+        public bool isInSight;
     }
 }

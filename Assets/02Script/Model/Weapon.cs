@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Weapon : MonoBehaviour, IObjCollisionDetectorConnector_OnCollisionEnter
@@ -9,10 +8,14 @@ public class Weapon : MonoBehaviour, IObjCollisionDetectorConnector_OnCollisionE
     public bool IsMelee { get { return Range == 0; } }
     public bool IsSingleTarget { set; get; }
     public float hitPower { set; get; } = 1;
+    public int HitPerCycle { set; get; } = 0;
+    public float coolPerHit { set; get; } = 0;
+    public float coolPerCycle { set; get; } = 0;
+    public int curHitCount { set; get; } = 0;
 
     public void Attack()
     {
-        // 하는 중, 원거리와 근커리에 따른 콜라이더를 어떻게 처리할 것인가?
+        // 하는 중, 원거리와 근거리에 따른 콜라이더를 어떻게 처리할 것인가?
         if (IsMelee)
         {
             StartCoroutine(ActiveUsingCollider());

@@ -1,8 +1,8 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using JMath;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 public class ModelHandler : MonoBehaviour, IJobStarter
 {
@@ -60,7 +60,7 @@ public class ModelHandler : MonoBehaviour, IJobStarter
     void ReadNextAP()
     {
         var ap = actionPointHandler.GetNextActionPoint();
-        if(ap != null || !jobManager.shouldCancle) 
+        if (ap != null && !jobManager.shouldCancle)
         {
             jobManager.AddJob(CreateJobs(modelJob, ap, actionPointHandler));
             jobManager.StartJob();
@@ -100,7 +100,7 @@ public class ModelHandler : MonoBehaviour, IJobStarter
                     };
                     break;
                 case jobState.done:
-                    action = ReadNextAP; 
+                    action = ReadNextAP;
                     break;
             }
 
@@ -129,7 +129,17 @@ public class ModelHandler : MonoBehaviour, IJobStarter
         var dir = Vector3Extentioner.GetDirection(from, to);
         var dist = Vector3.Distance(from, to);
 
-        return Physics.RaycastAll(from, dir, dist, 0, QueryTriggerInteraction.Ignore);
+        return Physics.RaycastAll(from, dir, dist, 0, QueryTriggerInteraction.Ignore).OrderBy(x => x.distance).ToArray();
+    }
+
+    public bool IsHitToTarget(Transform target)
+    {
+        var from = transform.position;
+        var to = target.position;
+        var dir = Vector3Extentioner.GetDirection(from, to);
+        var dist = Vector3.Distance(from, to);
+
+        return Physics.Raycast(from, dir, dist);
     }
 
     public void SetDead()

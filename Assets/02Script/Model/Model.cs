@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConnector_OnContecting, IObjDetectorConnector_OnDetected, IObjDetectorConnector_OnRemoved
@@ -20,7 +19,6 @@ public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConn
         modelHandler = GetComponentInChildren<ModelHandler>();
         APHGroup = transform.Find("APHGroup");
         originalAPH = APHGroup.Find("OriginalAPH").GetComponent<ActionPointHandler>();
-        originalAPH.originalOwener = gameObject;
         jobManager = new JobManager(GetNextAPH);
         moduleHandler = SetStateModuleHandler();
     }

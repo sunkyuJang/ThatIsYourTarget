@@ -3,16 +3,13 @@ using System.Collections.Generic;
 public partial class StateModuleHandler
 {
     protected List<StateModule> modules = new List<StateModule>();
-    private StateModule playingModule = null;
-    public void EnterModule(int num, bool shouldTurnOffOldModule = true)
+    protected int playingModuleIndex = -1;
+    //private StateModule playingModule = null;
+    public void EnterModule(int targetModuleIndex, bool shouldTurnOffOldModule = true)
     {
-        var targetModule = GetModule(num);
-        if (targetModule != null)
-            EnterModule(targetModule, shouldTurnOffOldModule);
-    }
+        var playingModule = GetModule(playingModuleIndex);
+        var targetModule = GetModule(targetModuleIndex);
 
-    protected void EnterModule(StateModule targetModule, bool shouldTurnOffOldModule = true)
-    {
         if (!modules.Exists(x => x == targetModule)) return;
 
         if (targetModule == null || targetModule == playingModule) return;
@@ -22,13 +19,13 @@ public partial class StateModuleHandler
         if (shouldTurnOffOldModule)
             playingModule?.Exit();
 
-        playingModule = targetModule;
+        playingModuleIndex = targetModuleIndex;
         playingModule.Enter();
     }
 
     public void StopPlayingModule()
     {
-        playingModule.Exit();
+        GetModule(playingModuleIndex).Exit();
     }
 
     public StateModule GetModule(int num)
@@ -44,10 +41,7 @@ public partial class StateModuleHandler
 
     public bool IsSameModule(int num)
     {
-        if (playingModule == null) return false;
-
-        var targetModule = GetModule(num);
-        return targetModule != null && targetModule == playingModule;
+        return num == playingModuleIndex;
     }
 }
 

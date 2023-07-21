@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using UnityEditor;
 using UnityEditor.Animations;
 
@@ -9,11 +6,11 @@ public class PersonActionPoint : ActionPoint
     public PersonAniState.StateKind State { set { base.state = (int)value; } get { return (PersonAniState.StateKind)state; } }
     public override bool HasAction { get { return state != (int)PersonAniState.StateKind.Non; } }
     public bool shouldReadyForBattle;
-    public int weaponLayer;
     public int subState_int = 0;
     public bool subState_bool = false;
     public float subState_float = 0f;
     public float GetLength() => GetLength(((PersonAniState.StateKind)state).ToString());
+    public PersonWeapon Weapon { get; set; }
 }
 
 [CustomEditor(typeof(PersonActionPoint))]
@@ -58,11 +55,11 @@ public class PersonActionPointEditor : Editor
     }
     void SetPrepareAttack(PersonActionPoint ap)
     {
-        ap.shouldReadyForBattle = EditorGUILayout.Toggle("shouldPrepare", ap);
-        if (ap.shouldReadyForBattle)
-        {
-            ap.weaponLayer = (int)EditorGUILayout.Slider("WeaponLayer", ap.weaponLayer, 1, 3);
-        }
+        //ap.shouldReadyForBattle = EditorGUILayout.Toggle("shouldPrepare", ap);
+        //if (ap.shouldReadyForBattle)
+        //{
+        //    ap.Weapon.weaponType = (int)EditorGUILayout.Slider("WeaponLayer", ap.weaponLayer, 1, 3);
+        //}
     }
 
     void SetSittingInspector(PersonActionPoint ap)

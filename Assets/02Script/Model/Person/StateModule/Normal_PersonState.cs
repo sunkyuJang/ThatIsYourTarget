@@ -4,7 +4,7 @@ public class Normal_PersonState : PersonState
     {
 
     }
-    protected override bool IsReadyForEnter()
+    public override bool IsReadyForEnter()
     {
         return true;
     }
@@ -14,5 +14,4 @@ public class Normal_PersonState : PersonState
         person.SetOriginalAPH();
     }
     public override void Exit() { }
-    public override void AfterAPHDone() { }
 }

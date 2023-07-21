@@ -1,37 +1,48 @@
-using UnityEditor.Animations;
 using UnityEngine;
 
 internal class PrepareAttack_PersonAniState : PersonAniState
 {
-    public enum AttackLayer { Pist, HandGun, AR, Reset, Non }
-    protected AttackLayer attackLayer = AttackLayer.Non;
     public PrepareAttack_PersonAniState(Animator ani) : base(ani) { }
-    public void SetAttackLayer(AttackLayer attackLayer) => this.attackLayer = attackLayer;
-    protected override bool IsReadyForEnter()
+    public override bool IsReadyForEnter()
     {
-        return base.IsReadyForEnter() && attackLayer != AttackLayer.Non;
+        return base.IsReadyForEnter();
     }
     protected override void DoEnter()
     {
         var layer = 0;
-        switch (attackLayer)
+        switch (ap.Weapon.weaponType)
         {
-            case AttackLayer.Pist: layer = Animator.GetLayerIndex("HoldingHandGun"); break;
-            case AttackLayer.HandGun: layer = Animator.GetLayerIndex("HoldingHandGun"); break;
-            case AttackLayer.AR: layer = Animator.GetLayerIndex("HoldingAR"); break;
+            case PersonWeapon.WeaponType.Non: layer = Animator.GetLayerIndex("Non"); break;
+            case PersonWeapon.WeaponType.HandGun: layer = Animator.GetLayerIndex("HoldingHandGun"); break;
+            case PersonWeapon.WeaponType.AR: layer = Animator.GetLayerIndex("HoldingAR"); break;
         }
 
-        Animator.SetLayerWeight(layer, 1);
+        if (ap.Weapon == null)
+        {
+
+        }
+        else
+        {
+            Animator.SetLayerWeight(layer, 1);
+            SetHandsIK();
+        }
     }
 
-    void SetPrepareAttackLayer(AttackLayer attackLayer)
+    void SetHandsIK()
     {
-        RuntimeAnimatorController runtimeController = Animator.runtimeAnimatorController as AnimatorController;
-        //var layerCount = runtimeController.
+        for (int i = 0; i < 2; i++)
+        {
+            var hands = i == 0 ? AvatarIKGoal.LeftHand : AvatarIKGoal.RightHand;
+            var position = i == 0 ? ap.Weapon.LGrab : ap.Weapon.RGrab;
+
+            Animator.SetIKPositionWeight(hands, 1);
+            Animator.SetIKPosition(hands, position.transform.position);
+        }
     }
 
     public override void EnterToException()
     {
+
     }
 
     public override void Exit()

@@ -1,7 +1,5 @@
-using System;
-using System.Collections;
-using UnityEngine;
 using UnityEditor.Animations;
+using UnityEngine;
 
 [System.Serializable]
 public class ActionPoint : MonoBehaviour
@@ -60,24 +58,24 @@ public class ActionPoint : MonoBehaviour
     }
     public void ChangePosition(Vector3 position) => transform.position = position;
     public void MakeLookAtTo(Vector3 to) => transform.LookAt(to - Vector3.up * to.y);
-    public void SetPositionForTracking(Transform from, Transform to, bool shouldChangePosition = false, bool shouldChangeRotation = false)
+    public void SetPositionForTracking(Transform from, Transform to, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
     {
         ChangePosition(from.position);
-        MakeLookAtTo(shouldChangeRotation ? to.position : from.forward);
-        if (shouldChangePosition)
+        MakeLookAtTo(shouldLookAtTarget ? to.position : from.forward);
+        if (shouldReachTargetPosition)
             ChangePosition(to.position);
     }
 
-    public void SetAPWithDuring(Transform from, Transform to, int state, float time, bool shouldChangePosition = false, bool shouldChangeRotation = false)
+    public void SetAPWithDuring(Transform from, Transform to, int state, float time, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
     {
         this.state = state;
         during = time;
-        SetPositionForTracking(from, to, shouldChangePosition, shouldChangeRotation);
+        SetPositionForTracking(from, to, shouldReachTargetPosition, shouldLookAtTarget);
     }
 
-    public void SetAPWithFixedDuring(Transform from, Transform to, int state, string kind, bool shouldChangePosition = false, bool shouldChangeRotation = false)
+    public void SetAPWithFixedDuring(Transform from, Transform to, int state, string kind, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
     {
-        SetAPWithDuring(from, to, state, GetLength(kind), shouldChangePosition, shouldChangeRotation);
+        SetAPWithDuring(from, to, state, GetLength(kind), shouldReachTargetPosition, shouldLookAtTarget);
     }
 }
 

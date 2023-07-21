@@ -25,7 +25,7 @@ public class Curiousity_PersonState : PersonState
 
         SetState(StateKinds.Curiousity);
     }
-    protected override bool IsReadyForEnter()
+    public override bool IsReadyForEnter()
     {
         return preparingData != null &&
                 preparingData.target != null &&
@@ -39,7 +39,7 @@ public class Curiousity_PersonState : PersonState
         }
         else
         {
-            SetState(StateKinds.Attack);
+            SetState(StateKinds.PrepareAttack);
         }
     }
     protected override void DoEnter()
@@ -76,7 +76,7 @@ public class Curiousity_PersonState : PersonState
                 if (hit.transform.CompareTag(Player.playerTag))
                 {
                     var dist = person.modelHandler.GetDistTo(hit.transform);
-                    if (dist < Attack_PersonState.attackDist)
+                    if (dist < PrepareAttack_PersonState.attackDist)
                     {
                         warningTime += maxWarningTime;
                     }
@@ -87,7 +87,7 @@ public class Curiousity_PersonState : PersonState
 
             if (warningTime > maxWarningTime)
             {
-                SetState(StateKinds.Attack);
+                SetState(StateKinds.PrepareAttack);
                 break;
             }
 
@@ -101,8 +101,8 @@ public class Curiousity_PersonState : PersonState
     private ActionPointHandler GetCuriousityAPH(Transform target)
     {
         var aph = person.GetNewAPH(2);
-        person.SetAPs(aph.actionPoints[0], target, PersonAniState.StateKind.Surprize, true);
-        person.SetAPs(aph.actionPoints[1], target, PersonAniState.StateKind.LookAround, true, 0, false, false);
+        person.SetAPs(aph.actionPoints[0], target, PersonAniState.StateKind.Surprize, true, 0, false, true);
+        person.SetAPs(aph.actionPoints[1], target, PersonAniState.StateKind.LookAround, true, 0, true, false);
 
         return aph;
     }
@@ -114,10 +114,10 @@ public class Curiousity_PersonState : PersonState
         procCountingTime = null;
         curiosityCnt = 0;
     }
-    public override void AfterAPHDone()
+    protected override StateKinds DoAfterDone()
     {
         isAPHDone = true;
-        SetNormalState();
+        return StateKinds.Normal;
     }
 
     public class PreparingData

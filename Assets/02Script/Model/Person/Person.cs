@@ -7,10 +7,11 @@ public partial class Person : Model
     enum StateByDist { Notice = 3, Attack = 1 }
     [SerializeField]
     private Renderer modelRenderer;
-    private PersonState currentState = null;
     internal object idmgController;
     new public PersonStateMouleHandler moduleHandler => base.moduleHandler as PersonStateMouleHandler;
-    public Weapon weapon { private set; get; } = null;
+    public PersonWeapon weapon { private set; get; } = null;
+
+    public PersonInfoUI personInfoUI;
     protected override StateModuleHandler SetStateModuleHandler()
     {
         return new PersonStateMouleHandler(this);
@@ -19,7 +20,9 @@ public partial class Person : Model
     {
         yield return StartCoroutine(base.Start());
         SetState(PersonState.ConvertStateKindToInt(PersonState.StateKinds.Normal));
-        yield return null;
+
+        personInfoUI.person = this;
+        yield break;
     }
     public Material belongTo
     {
@@ -47,15 +50,15 @@ public partial class Person : Model
         return aph;
     }
 
-    public void SetAPs(ActionPoint ap, Transform target, PersonAniState.StateKind kind, bool isTimeFixed = false, float time = 0, bool shouldChangePosition = false, bool shouldChangeRotation = false)
+    public void SetAPs(ActionPoint ap, Transform target, PersonAniState.StateKind kind, bool isTimeFixed = false, float time = 0, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
     {
         if (isTimeFixed)
         {
-            ap.SetAPWithFixedDuring(modelHandler.transform, target, (int)kind, kind.ToString(), shouldChangePosition, shouldChangeRotation);
+            ap.SetAPWithFixedDuring(modelHandler.transform, target, (int)kind, kind.ToString(), shouldReachTargetPosition, shouldLookAtTarget);
         }
         else
         {
-            ap.SetAPWithDuring(modelHandler.transform, target, (int)kind, time, shouldChangePosition, shouldChangeRotation);
+            ap.SetAPWithDuring(modelHandler.transform, target, (int)kind, time, shouldReachTargetPosition, shouldLookAtTarget);
         }
     }
 

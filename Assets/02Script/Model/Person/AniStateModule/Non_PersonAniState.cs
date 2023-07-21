@@ -7,7 +7,7 @@ public class Non_PersonAniState : PersonAniState
     }
     protected override void DoEnter()
     {
-
+        Debug.Log("isIn");
     }
 
     public override void EnterToException()

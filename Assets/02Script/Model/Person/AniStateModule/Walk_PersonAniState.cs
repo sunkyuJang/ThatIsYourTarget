@@ -10,7 +10,7 @@ internal class Walk_PersonAniState : PersonAniState
 
     }
 
-    protected override bool IsReadyForEnter()
+    public override bool IsReadyForEnter()
     {
         return Animator != null && state >= 0;
     }

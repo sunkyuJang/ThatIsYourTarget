@@ -1,8 +1,7 @@
+using JMath;
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using JMath;
 
 public abstract class AniController : MonoBehaviour, IJobStarter
 {
@@ -109,7 +108,7 @@ public abstract class AniController : MonoBehaviour, IJobStarter
         var rotationCorrect = StartCoroutine(DoRotationCorrectly(ap.transform.forward, () => { isRotationDone = true; }));
 
         yield return new WaitUntil(() => isPositionDone && isRotationDone);
-        yield return new WaitUntil(() => IsWalkState());
+        yield return new WaitUntil(() => IsWalkState() || IsAPReserved);
 
         if (!IsAPReserved)
             StartAni(ap);
@@ -181,7 +180,7 @@ public abstract class AniController : MonoBehaviour, IJobStarter
     {
         PlayingAni = StartCoroutine(DoAnimationTimeCount(ap, shouldReturnAP, stateModule));
     }
-    protected IEnumerator DoAnimationTimeCount(ActionPoint ap, bool shouldReturnAP = false, StateModule stateModule = null)
+    protected IEnumerator DoAnimationTimeCount(ActionPoint ap, bool shouldReturnAP, StateModule stateModule)
     {
         if (ap.during < -1) yield return null;
         var maxTime = Mathf.Lerp(0, ap.during, animationPlayLimit);
@@ -195,7 +194,7 @@ public abstract class AniController : MonoBehaviour, IJobStarter
         if (shouldReturnAP)
             APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP).ReturnTargetObj(ap.gameObject);
     }
-    protected void MakeResetAni(bool shouldReadNextAction = true, StateModule stateModule = null)
+    protected void MakeResetAni(bool shouldReadNextAction, StateModule stateModule)
     {
         StartCoroutine(DoResetAni(shouldReadNextAction, stateModule));
     }
