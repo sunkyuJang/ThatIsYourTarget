@@ -5,7 +5,6 @@ public class JobManager
 {
     private Action endJob;
     private Queue<Job> jobList = new Queue<Job>();
-    public bool shouldCancle { private set; get; } = false;
     private object section = null;
     public bool IsSameSection(object section) => this.section.Equals(section);
     public JobManager(object section, Action endJob)
@@ -24,8 +23,6 @@ public class JobManager
     }
     public virtual void NextJob()
     {
-        if (shouldCancle) { return; }
-
         if (jobList.Count <= 0)
         {
             EndJob();
@@ -41,7 +38,7 @@ public class JobManager
     }
     public virtual void CancleJob()
     {
-        shouldCancle = true;
+        jobList.Clear();
     }
     public virtual void AddJob(Job job)
     {

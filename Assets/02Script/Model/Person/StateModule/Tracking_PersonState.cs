@@ -32,10 +32,13 @@ public class Tracking_PersonState : PersonState
             var ap = aph.GetActionPoint(0);
             person.SetAPs(ap, prepareData.target, PersonAniState.StateKind.Non, false, 0, true, true);
             person.SetAPH(aph, AfterAPHDone);
+            var shouldFixAPLookAt = false;
+            isAphDone = false;
 
             while (!isAphDone)
             {
                 var isInSight = person.modelHandler.IsHitToTarget(prepareData.target);
+
                 if (isInSight)
                 {
                     var dist = Vector3.Distance(prepareData.target.position, person.modelHandler.transform.position);
@@ -48,8 +51,19 @@ public class Tracking_PersonState : PersonState
                     {
                         person.SetAPs(ap, prepareData.target, PersonAniState.StateKind.LookAround, false, 0, true, true);
                     }
-                }
 
+                    shouldFixAPLookAt = true;
+                }
+                else
+                {
+                    // have to look this again.
+                    // the point of this is, the ap rotation should be look at to last way that player go.
+                    if (shouldFixAPLookAt)
+                    {
+                        ap.transform.LookAt(ap.transform.position);
+                        shouldFixAPLookAt = false;
+                    }
+                }
                 yield return new WaitForFixedUpdate();
             }
         }
@@ -73,7 +87,7 @@ public class Tracking_PersonState : PersonState
         }
         else
         {
-            stateKinds = StateKinds.Normal;
+            stateKinds = StateKinds.Patrol;
         }
 
         return stateKinds;

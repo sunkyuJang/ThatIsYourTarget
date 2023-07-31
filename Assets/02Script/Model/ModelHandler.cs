@@ -7,6 +7,8 @@ using UnityEngine;
 public class ModelHandler : MonoBehaviour, IJobStarter
 {
     ActionPointHandler actionPointHandler { set; get; }
+    NaviController naviController { set; get; }
+    AniController aniController { set; get; }
     IJobStarter naviJobStarter { set; get; }
     IJobStarter aniJobstarter { set; get; }
     RagDollHandler ragDollHandler { set; get; }
@@ -16,8 +18,8 @@ public class ModelHandler : MonoBehaviour, IJobStarter
     private void Awake()
     {
         ragDollHandler = GetComponent<RagDollHandler>();
-        var naviController = GetComponent<NaviController>();
-        var aniController = GetComponent<AniController>();
+        naviController = GetComponent<NaviController>();
+        aniController = GetComponent<AniController>();
 
         naviJobStarter = CastingAsIJobStarter<NaviController>(naviController);
         aniJobstarter = CastingAsIJobStarter<AniController>(aniController);
@@ -60,7 +62,7 @@ public class ModelHandler : MonoBehaviour, IJobStarter
     void ReadNextAP()
     {
         var ap = actionPointHandler.GetNextActionPoint();
-        if (ap != null && !jobManager.shouldCancle)
+        if (ap != null)
         {
             jobManager.AddJob(CreateJobs(modelJob, ap, actionPointHandler));
             jobManager.StartJob();
@@ -126,7 +128,7 @@ public class ModelHandler : MonoBehaviour, IJobStarter
     {
         var from = transform.position;
         var to = target.position;
-        var dir = Vector3Extentioner.GetDirection(from, to);
+        var dir = from.GetDirection(to);
         var dist = Vector3.Distance(from, to);
 
         return Physics.RaycastAll(from, dir, dist, 0, QueryTriggerInteraction.Ignore).OrderBy(x => x.distance).ToArray();
@@ -136,7 +138,7 @@ public class ModelHandler : MonoBehaviour, IJobStarter
     {
         var from = transform.position;
         var to = target.position;
-        var dir = Vector3Extentioner.GetDirection(from, to);
+        var dir = from.GetDirection(to);
         var dist = Vector3.Distance(from, to);
 
         return Physics.Raycast(from, dir, dist);

@@ -4,9 +4,9 @@ public class Sensed_PersonState : PersonState
 {
     private PreparingData preparingData;
     public Sensed_PersonState(Person person) : base(person) { }
-    public void PrepareState(PreparingData param)
+    public void SetPrepareData(PreparingData param)
     {
-        preparingData = param as PreparingData;
+        preparingData = param;
     }
 
     public override bool IsReadyForEnter()

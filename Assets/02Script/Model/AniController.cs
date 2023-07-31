@@ -127,7 +127,7 @@ public abstract class AniController : MonoBehaviour, IJobStarter
             yield return new WaitForFixedUpdate();
             t += Time.fixedDeltaTime;
             var ratio = Mathf.InverseLerp(0, maxT, t);
-            transform.position = Vector3.Lerp(beforePosition, Vector3Extentioner.GetOverrideY(worldPosition, beforePosition.y), ratio);
+            transform.position = Vector3.Lerp(beforePosition, worldPosition.GetOverrideY(beforePosition.y), ratio);
         }
 
         done?.Invoke();
@@ -138,7 +138,7 @@ public abstract class AniController : MonoBehaviour, IJobStarter
         var cross = Vector3.Cross(Vector3.up, startForward);
         var dot = Vector3.Dot(cross, dir);
         var isLeft = dot < 0;
-        var rotateDir = Vector3Extentioner.GetRotationDir(transform.forward, dir);
+        var rotateDir = transform.forward.GetRotationDir(dir);
 
         var shouldBodyTurnWithAnimation = rotateDir >= bodyThreshold;
 

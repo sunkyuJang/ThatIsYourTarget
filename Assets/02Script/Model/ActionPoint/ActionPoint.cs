@@ -58,22 +58,22 @@ public class ActionPoint : MonoBehaviour
     }
     public void ChangePosition(Vector3 position) => transform.position = position;
     public void MakeLookAtTo(Vector3 to) => transform.LookAt(to - Vector3.up * to.y);
-    public void SetPositionForTracking(Transform from, Transform to, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
+    public void SetPositionForTracking(Vector3 from, Vector3 to, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
     {
-        ChangePosition(from.position);
-        MakeLookAtTo(shouldLookAtTarget ? to.position : from.forward);
+        ChangePosition(from);
+        MakeLookAtTo(shouldLookAtTarget ? to : from);
         if (shouldReachTargetPosition)
-            ChangePosition(to.position);
+            ChangePosition(to);
     }
 
-    public void SetAPWithDuring(Transform from, Transform to, int state, float time, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
+    public void SetAPWithDuring(Vector3 from, Vector3 to, int state, float time, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
     {
         this.state = state;
         during = time;
         SetPositionForTracking(from, to, shouldReachTargetPosition, shouldLookAtTarget);
     }
 
-    public void SetAPWithFixedDuring(Transform from, Transform to, int state, string kind, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
+    public void SetAPWithFixedDuring(Vector3 from, Vector3 to, int state, string kind, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
     {
         SetAPWithDuring(from, to, state, GetLength(kind), shouldReachTargetPosition, shouldLookAtTarget);
     }

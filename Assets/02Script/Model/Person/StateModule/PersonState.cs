@@ -13,6 +13,7 @@ public abstract class PersonState : StateModule
         Wait,
         PrepareAttack,
         Tracking,
+        Patrol,
         Hit,
         Avoid,
         Dead,
@@ -52,6 +53,7 @@ public abstract class PersonState : StateModule
                     case StateKinds.Curiousity: list.Add(new Curiousity_PersonState(person)); break;
                     case StateKinds.PrepareAttack: list.Add(new PrepareAttack_PersonState(person)); break;
                     case StateKinds.Tracking: list.Add(new Tracking_PersonState(person)); break;
+                    case StateKinds.Patrol: list.Add(new Patrol_PersonState(person)); break;
                     case StateKinds.Hit: list.Add(new Hit_PersonState(person)); break;
                     case StateKinds.Dead: list.Add(new Dead_PersonState(person)); break;
                     default: list.Add(null); break;
