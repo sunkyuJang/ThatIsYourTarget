@@ -11,7 +11,6 @@ public class Sensed_PersonState : PersonState
 
     public override bool IsReadyForEnter()
     {
-        //var canEnteredStateList = new List<PersonState.StateKinds>() { StateKinds.Normal, };
         var isAllowedState = person.moduleHandler.IsSameModule(StateKinds.Normal);
         return isAllowedState && preparingData != null && preparingData.target != null;
     }

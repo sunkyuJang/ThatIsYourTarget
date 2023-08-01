@@ -37,7 +37,7 @@ public class Tracking_PersonState : PersonState
 
             while (!isAphDone)
             {
-                var isInSight = person.modelHandler.IsHitToTarget(prepareData.target);
+                var isInSight = person.modelHandler.IsInSight(prepareData.target);
 
                 if (isInSight)
                 {

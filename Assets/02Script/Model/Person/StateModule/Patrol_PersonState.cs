@@ -1,4 +1,5 @@
 using JMath;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -46,10 +47,10 @@ public class Patrol_PersonState : PersonState
             switch (i)
             {
                 case State.tracingTarget:
-                    job.jobAction = TracingTarget;
+                    job.jobAction = () => { TracingTarget(job); };
                     break;
                 case State.lookAround:
-                    job.jobAction = LookAroundNearBy;
+                    job.jobAction = () => { LookAroundNearBy(job); };
                     break;
             }
         }
@@ -63,17 +64,47 @@ public class Patrol_PersonState : PersonState
         SetState(StateKinds.Normal);
     }
 
-    void TracingTarget()
+    void TracingTarget(Job job)
     {
         var position = GetForwardPosition();
         var aph = GetAPHByPositions(new List<Vector3>() { position });
         person.SetAPH(aph, AfterAPHDone);
+
+        person.StartCoroutine(DoTracingTarget(job, aph));
     }
-    void LookAroundNearBy()
+    void LookAroundNearBy(Job job)
     {
         var positions = GetRoundPositions();
         var aph = GetAPHByPositions(positions);
         person.SetAPH(aph);
+        person.StartCoroutine(DoTracingTarget(job, aph));
+    }
+
+    IEnumerator DoTracingTarget(Job job, ActionPointHandler aph)
+    {
+        var shouldReadNextJob = true;
+        while (!aph.isAPHDone)
+        {
+            var isInSight = person.modelHandler.IsInSight(prepareData.target);
+            if (isInSight)
+            {
+                var trackingPrepareData = new Tracking_PersonState.PrepareData();
+                trackingPrepareData.walkingState = ActionPointHandler.WalkingState.Run;
+                trackingPrepareData.target = prepareData.target;
+
+                var trackingModule = person.moduleHandler.GetModule<Tracking_PersonState>(StateKinds.Tracking);
+                trackingModule.PrepareState(trackingPrepareData);
+                shouldReadNextJob = false;
+                SetState(StateKinds.Tracking);
+            }
+
+            yield return new WaitForFixedUpdate();
+        }
+
+        if (shouldReadNextJob)
+            job.EndJob();
+
+        yield break;
     }
 
     ActionPointHandler GetAPHByPositions(List<Vector3> positions)
@@ -93,7 +124,6 @@ public class Patrol_PersonState : PersonState
 
     Vector3 GetForwardPosition()
     {
-        var eachAngle = 360 / castCount;
         var hitList = new List<Vector3>();
         for (float angle = -30f; angle < 60; angle += 30f)
         {
@@ -157,8 +187,6 @@ public class Patrol_PersonState : PersonState
     {
         jobManager.CancleJob();
         jobManager = null;
-
-
     }
     public class PrepareData
     {

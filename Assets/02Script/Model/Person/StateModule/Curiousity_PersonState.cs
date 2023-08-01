@@ -69,13 +69,12 @@ public class Curiousity_PersonState : PersonState
     {
         while (!isAPHDone)
         {
-            var hits = person.modelHandler.GetAllRayHIts(target);
-            if (hits.Length == 1)
+            var isHit = person.modelHandler.IsInSight(target);
+            if (isHit)
             {
-                var hit = hits[0];
-                if (hit.transform.CompareTag(Player.playerTag))
+                if (target.CompareTag(Player.playerTag))
                 {
-                    var dist = person.modelHandler.GetDistTo(hit.transform);
+                    var dist = person.modelHandler.GetDistTo(target);
                     if (dist < PrepareAttack_PersonState.attackDist)
                     {
                         warningTime += maxWarningTime;
@@ -84,6 +83,7 @@ public class Curiousity_PersonState : PersonState
                     warningTime += Time.fixedDeltaTime;
                 }
             }
+
 
             if (warningTime > maxWarningTime)
             {

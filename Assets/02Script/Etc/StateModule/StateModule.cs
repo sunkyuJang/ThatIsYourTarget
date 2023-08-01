@@ -9,4 +9,6 @@ public abstract class StateModule
     protected abstract void DoEnter();
     public abstract void EnterToException();
     public abstract void Exit();
+
+    public abstract class PrepareData { }
 }

@@ -7,9 +7,10 @@ public partial class Person : Model
     enum StateByDist { Notice = 3, Attack = 1 }
     [SerializeField]
     private Renderer modelRenderer;
-    internal object idmgController;
+
+    object idmgController;
     new public PersonStateMouleHandler moduleHandler => base.moduleHandler as PersonStateMouleHandler;
-    public PersonWeapon weapon { private set; get; } = null;
+    public PersonWeapon weapon;
 
     public PersonInfoUI personInfoUI;
     protected override StateModuleHandler SetStateModuleHandler()

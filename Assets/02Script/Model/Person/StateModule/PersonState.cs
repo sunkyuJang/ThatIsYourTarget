@@ -8,14 +8,14 @@ public abstract class PersonState : StateModule
         Normal,
         Sensed,
         Curiousity,
-        Warn,
-        Follow,
-        Wait,
+        //Warn,
+        //Follow,
+        //Wait,
         PrepareAttack,
         Tracking,
         Patrol,
         Hit,
-        Avoid,
+        //Avoid,
         Dead,
         Non
     }
@@ -64,5 +64,10 @@ public abstract class PersonState : StateModule
         }
 
         return null;
+    }
+
+    public class PersonPrepareData : PrepareData
+    {
+
     }
 }

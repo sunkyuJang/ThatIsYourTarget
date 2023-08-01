@@ -1,4 +1,5 @@
 using JMath;
+using SensorToolkit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,9 @@ public class ModelHandler : MonoBehaviour, IJobStarter
     RagDollHandler ragDollHandler { set; get; }
     Model.ModelJob modelJob { set; get; }
     JobManager jobManager { set; get; }
+    [SerializeField]
+    FOVCollider FOVCollider { set; get; }
+    float SightLength { get { return FOVCollider.Length * FOVCollider.transform.lossyScale.x; } }
     enum jobState { navi, ani, done, non }
     private void Awake()
     {
@@ -21,8 +25,10 @@ public class ModelHandler : MonoBehaviour, IJobStarter
         naviController = GetComponent<NaviController>();
         aniController = GetComponent<AniController>();
 
-        naviJobStarter = CastingAsIJobStarter<NaviController>(naviController);
-        aniJobstarter = CastingAsIJobStarter<AniController>(aniController);
+        naviJobStarter = CastingAsIJobStarter(naviController);
+        aniJobstarter = CastingAsIJobStarter(aniController);
+
+        FOVCollider = transform.Find("Head").GetComponent<FOVCollider>();
     }
 
     private IJobStarter CastingAsIJobStarter<T>(T target)
@@ -124,24 +130,35 @@ public class ModelHandler : MonoBehaviour, IJobStarter
         return Vector3.Distance(transform.position, target.transform.position);
     }
 
-    public RaycastHit[] GetAllRayHIts(Transform target)
+    public RaycastHit[] GetAllRayHIts(Transform target, float dist = 0f)
     {
         var from = transform.position;
         var to = target.position;
         var dir = from.GetDirection(to);
-        var dist = Vector3.Distance(from, to);
+        dist = dist == 0f ? Vector3.Distance(from, to) : dist;
 
         return Physics.RaycastAll(from, dir, dist, 0, QueryTriggerInteraction.Ignore).OrderBy(x => x.distance).ToArray();
     }
 
-    public bool IsHitToTarget(Transform target)
+    bool IsHitToTarget(Transform target, float dist = 0f)
     {
         var from = transform.position;
         var to = target.position;
         var dir = from.GetDirection(to);
-        var dist = Vector3.Distance(from, to);
+        dist = dist == 0f ? Vector3.Distance(from, to) : dist;
 
-        return Physics.Raycast(from, dir, dist);
+        Physics.Raycast(from, dir, out RaycastHit hit, dist);
+        return hit.transform == target;
+    }
+
+    public bool IsInSight(Transform target)
+    {
+        return IsHitToTarget(target, SightLength);
+    }
+
+    public RaycastHit[] GetAllHitInSight(Transform target)
+    {
+        return GetAllRayHIts(target, SightLength);
     }
 
     public void SetDead()
