@@ -1,14 +1,11 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(NavMeshObstacle))]
-public class NaviController : MonoBehaviour, IJobStarter
+public class NaviController : MonoBehaviour, IJobStarter<ModelHandler.ModelHandlerJob>
 {
-    ModelHandler modelPhysicsController;
     public NavMeshAgent navMeshAgent { private set; get; }
     NavMeshObstacle navMeshObstacle { set; get; }
     public float permissibleRangeToDestination = 0.01f;
@@ -16,29 +13,24 @@ public class NaviController : MonoBehaviour, IJobStarter
     public Coroutine CheckingUntilArrive;
     void Awake()
     {
-        modelPhysicsController = GetComponent<ModelHandler>();
         navMeshAgent = GetComponent<NavMeshAgent>();
         navMeshObstacle = GetComponent<NavMeshObstacle>();
         navMeshObstacle.enabled = false;
     }
-    public void StartJob(Job jobOption)
+    public void StartJob(ModelHandler.ModelHandlerJob job)
     {
-        if (jobOption is ModelHandler.ModelHandlerJob)
+        if (job.ap != null)
         {
-            var job = jobOption as ModelHandler.ModelHandlerJob;
-            if (job.ap != null)
+            var ap = job.ap;
+            TurnOnNavi(true);
+            navMeshAgent.SetDestination(ap.transform.position);
+
+            if (CheckingUntilArrive != null)
             {
-                var ap = job.ap;
-                TurnOnNavi(true);
-                navMeshAgent.SetDestination(ap.transform.position);
-
-                if (CheckingUntilArrive != null)
-                {
-                    StopCoroutine(CheckingUntilArrive);
-                }
-
-                CheckingUntilArrive = StartCoroutine(DoCheckUntilArrive(job));
+                StopCoroutine(CheckingUntilArrive);
             }
+
+            CheckingUntilArrive = StartCoroutine(DoCheckUntilArrive(job));
         }
     }
     IEnumerator DoCheckUntilArrive(ModelHandler.ModelHandlerJob job)

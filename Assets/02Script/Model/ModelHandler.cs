@@ -5,80 +5,50 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class ModelHandler : MonoBehaviour, IJobStarter
+public class ModelHandler : MonoBehaviour, IJobStarter<Model.ModelJob>, IDamageController
 {
+    public Model Model { private set; get; }
     ActionPointHandler actionPointHandler { set; get; }
     NaviController naviController { set; get; }
     AniController aniController { set; get; }
-    IJobStarter naviJobStarter { set; get; }
-    IJobStarter aniJobstarter { set; get; }
     RagDollHandler ragDollHandler { set; get; }
     Model.ModelJob modelJob { set; get; }
-    JobManager jobManager { set; get; }
+    ModelJobManager jobManager { set; get; }
     [SerializeField]
     FOVCollider FOVCollider { set; get; }
     float SightLength { get { return FOVCollider.Length * FOVCollider.transform.lossyScale.x; } }
     enum jobState { navi, ani, done, non }
     private void Awake()
     {
+        Model = transform.parent.GetComponent<Model>();
+
         ragDollHandler = GetComponent<RagDollHandler>();
         naviController = GetComponent<NaviController>();
         aniController = GetComponent<AniController>();
 
-        naviJobStarter = CastingAsIJobStarter(naviController);
-        aniJobstarter = CastingAsIJobStarter(aniController);
-
         FOVCollider = transform.Find("Head").GetComponent<FOVCollider>();
     }
 
-    private IJobStarter CastingAsIJobStarter<T>(T target)
+    public void StartJob(Model.ModelJob job)
     {
-        if (target != null)
+        if (actionPointHandler != null)
         {
-            return target as IJobStarter;
+            modelJob.returnAPH(actionPointHandler);
         }
 
-        return null;
+        if (jobManager != null)
+            jobManager.CancleJob();
+
+        StopJob();
+
+        actionPointHandler = modelJob.aph;
+        jobManager = new ModelJobManager(
+                        endJob: EndJob,
+                        modelJob: modelJob,
+                        naviJobStarter: naviController,
+                        aniJobstarter: aniController);
+        jobManager.StartJob();
     }
-
-    public void StartJob(Job job)
-    {
-        if (job is Model.ModelJob)
-        {
-            modelJob = job as Model.ModelJob;
-
-            if (actionPointHandler != null)
-            {
-                modelJob.returnAPH(actionPointHandler);
-            }
-
-            if (jobManager != null)
-                jobManager.CancleJob();
-
-            StopJob();
-
-            actionPointHandler = modelJob.aph;
-            jobManager = new JobManager(job, EndJob);
-            var ap = actionPointHandler.GetNowActionPoint();
-            jobManager.AddJob(CreateJobs(modelJob, ap, actionPointHandler));
-            jobManager.StartJob();
-        }
-    }
-
-    void ReadNextAP()
-    {
-        var ap = actionPointHandler.GetNextActionPoint();
-        if (ap != null)
-        {
-            jobManager.AddJob(CreateJobs(modelJob, ap, actionPointHandler));
-            jobManager.StartJob();
-        }
-        else
-        {
-            jobManager.EndJob();
-        }
-    }
-
     void EndJob()
     {
         modelJob?.EndJob();
@@ -86,43 +56,10 @@ public class ModelHandler : MonoBehaviour, IJobStarter
         jobManager = null;
     }
 
-    private Queue<Job> CreateJobs(object section, ActionPoint ap, ActionPointHandler handler)
-    {
-        var queue = new Queue<Job>();
-        for (jobState i = jobState.navi; i < jobState.non; i++)
-        {
-            var job = new ModelHandlerJob(jobManager, ap, handler.walkingState);
-            Action action = null;
-            switch (i)
-            {
-                case jobState.navi:
-                    action = () =>
-                    {
-                        naviJobStarter.StartJob(job);
-                    };
-                    break;
-                case jobState.ani:
-                    action = () =>
-                    {
-                        aniJobstarter.StartJob(job);
-                    };
-                    break;
-                case jobState.done:
-                    action = ReadNextAP;
-                    break;
-            }
-
-            job.jobAction = action;
-            queue.Enqueue(job);
-        }
-
-        return queue;
-    }
-
     public void StopJob()
     {
-        naviJobStarter.StopJob();
-        aniJobstarter.StopJob();
+        aniController.StopJob();
+        naviController.StopJob();
     }
 
     public float GetDistTo(Transform target)
@@ -167,6 +104,11 @@ public class ModelHandler : MonoBehaviour, IJobStarter
         ragDollHandler.TrunOnRigid(true);
     }
 
+    public bool SetDamage(float damege)
+    {
+        return ((IDamageController)Model).SetDamage(damege);
+    }
+
     public class ModelHandlerJob : Job
     {
         public ActionPoint ap { private set; get; }
@@ -175,6 +117,78 @@ public class ModelHandler : MonoBehaviour, IJobStarter
         {
             this.ap = ap;
             this.walkingState = walkingState;
+        }
+    }
+
+    public class ModelJobManager : JobManager
+    {
+        private Model.ModelJob modelJob;
+        private IJobStarter<ModelHandlerJob> naviJobStarter;
+        private IJobStarter<ModelHandlerJob> aniJobstarter;
+
+        public ModelJobManager(
+                Action endJob,
+                Model.ModelJob modelJob,
+                NaviController naviJobStarter,
+                AniController aniJobstarter)
+            : base(modelJob, endJob)
+        {
+            this.naviJobStarter = naviJobStarter;
+            this.aniJobstarter = aniJobstarter;
+        }
+
+        public override void StartJob()
+        {
+            var firstAP = modelJob.aph.GetNowActionPoint();
+            AddJob(CreateJobs(firstAP, modelJob.aph));
+            base.StartJob();
+        }
+
+        public Queue<Job> CreateJobs(ActionPoint ap, ActionPointHandler aph)
+        {
+            var queue = new Queue<Job>();
+            for (jobState i = jobState.navi; i < jobState.non; i++)
+            {
+                var job = new ModelHandlerJob(this, ap, aph.walkingState);
+                Action action = null;
+                switch (i)
+                {
+                    case jobState.navi:
+                        action = () =>
+                        {
+                            naviJobStarter.StartJob(job);
+                        };
+                        break;
+                    case jobState.ani:
+                        action = () =>
+                        {
+                            aniJobstarter.StartJob(job);
+                        };
+                        break;
+                    case jobState.done:
+                        action = ReadNextAP;
+                        break;
+                }
+
+                job.jobAction = action;
+                queue.Enqueue(job);
+            }
+
+            return queue;
+        }
+
+        void ReadNextAP()
+        {
+            var ap = modelJob.aph.GetNextActionPoint();
+            if (ap != null)
+            {
+                AddJob(CreateJobs(ap, modelJob.aph));
+                StartJob();
+            }
+            else
+            {
+                EndJob();
+            }
         }
     }
 }

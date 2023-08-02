@@ -1,10 +1,5 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public interface IJobStarter
+public interface IJobStarter<T> where T : Job
 {
-    void StartJob(Job jobOption);
+    void StartJob(T jobOption);
     void StopJob();
 }

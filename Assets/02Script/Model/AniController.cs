@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-public abstract class AniController : MonoBehaviour, IJobStarter
+public abstract class AniController : MonoBehaviour, IJobStarter<ModelHandler.ModelHandlerJob>
 {
     protected RagDollHandler ragDollHandler { set; get; }
     protected NaviController naviController;
@@ -77,16 +77,13 @@ public abstract class AniController : MonoBehaviour, IJobStarter
             }
         }
     }
-    public void StartJob(Job job)
+    public void StartJob(ModelHandler.ModelHandlerJob job)
     {
-        if (job is ModelHandler.ModelHandlerJob)
-        {
-            modelHandlerJob = job as ModelHandler.ModelHandlerJob;
-            walkingState = modelHandlerJob.walkingState;
-            var ap = modelHandlerJob.ap;
+        modelHandlerJob = job as ModelHandler.ModelHandlerJob;
+        walkingState = modelHandlerJob.walkingState;
+        var ap = modelHandlerJob.ap;
 
-            MakeCorrectTransform(ap);
-        }
+        MakeCorrectTransform(ap);
     }
     void MakeCorrectTransform(ActionPoint ap)
     {

@@ -21,6 +21,7 @@ public abstract class PersonState : StateModule
     }
 
     protected Person person;
+    protected Model targetModel;
     public PersonState(Person person) => this.person = person;
     public static int ConvertStateKindToInt(StateKinds kinds) => (int)kinds;
     protected void SetState(StateKinds kinds)
@@ -29,6 +30,11 @@ public abstract class PersonState : StateModule
         person.SetState(ConvertStateKindToInt(kinds));
     }
     protected void SetNormalState() => SetState(StateKinds.Normal);
+    public void SetPrepareData(PrepareData data)
+    {
+        targetModel = data.target;
+    }
+
     public void AfterAPHDone()
     {
         var state = DoAfterDone();
@@ -66,8 +72,9 @@ public abstract class PersonState : StateModule
         return null;
     }
 
-    public class PersonPrepareData : PrepareData
+    public class PrepareData
     {
-
+        public Model target { private set; get; }
+        public PrepareData(Model target) { this.target = target; }
     }
 }

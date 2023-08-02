@@ -1,18 +1,11 @@
-using UnityEngine;
-
 public class Sensed_PersonState : PersonState
 {
-    private PreparingData preparingData;
     public Sensed_PersonState(Person person) : base(person) { }
-    public void SetPrepareData(PreparingData param)
-    {
-        preparingData = param;
-    }
 
     public override bool IsReadyForEnter()
     {
         var isAllowedState = person.moduleHandler.IsSameModule(StateKinds.Normal);
-        return isAllowedState && preparingData != null && preparingData.target != null;
+        return isAllowedState && targetModel != null;
     }
     public override void EnterToException()
     {
@@ -20,7 +13,7 @@ public class Sensed_PersonState : PersonState
     }
     protected override void DoEnter()
     {
-        var dist = person.modelHandler.GetDistTo(preparingData.target);
+        var dist = person.modelHandler.GetDistTo(targetModel.transform);
         var shouldAttack = dist < PrepareAttack_PersonState.attackDist;
         if (shouldAttack)
         {
@@ -31,23 +24,10 @@ public class Sensed_PersonState : PersonState
             var state = person.moduleHandler.GetModule(StateKinds.Curiousity);
             if (state != null)
             {
-                var curiousity_PrepareData = new Curiousity_PersonState.PreparingData(preparingData.target, preparingData.isInSight);
-                (state as Curiousity_PersonState)?.PrepareState(curiousity_PrepareData);
+                (state as Curiousity_PersonState)?.SetPrepareData(new PrepareData(targetModel));
             }
         }
         SetState(dist < PrepareAttack_PersonState.attackDist ? StateKinds.PrepareAttack : StateKinds.Curiousity);
     }
-    public override void Exit() { preparingData = null; }
-
-    public class PreparingData
-    {
-        public Transform target { private set; get; }
-        public bool isInSight { private set; get; }
-
-        public PreparingData(Transform target, bool isInSight)
-        {
-            this.target = target;
-            this.isInSight = isInSight;
-        }
-    }
+    public override void Exit() { targetModel = null; }
 }

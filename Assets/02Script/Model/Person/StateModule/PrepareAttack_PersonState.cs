@@ -4,21 +4,13 @@ using UnityEngine;
 public class PrepareAttack_PersonState : PersonState
 {
     public enum State { trace, hit, miss, non }
-    PrepareData preparingData { set; get; }
     public static float attackDist = 1f;
     protected PersonWeapon weapon { get { return person.weapon; } }
     public PrepareAttack_PersonState(Person person) : base(person) { }
 
-    public void PrepareState(PrepareData param)
-    {
-        if (preparingData == null)
-        {
-            preparingData = param;
-        }
-    }
     public override bool IsReadyForEnter()
     {
-        return preparingData != null;
+        return targetModel != null;
     }
     protected override void DoEnter()
     {
@@ -36,39 +28,38 @@ public class PrepareAttack_PersonState : PersonState
     {
         //var isDead = target.SetDamage(weapon.dmg);
     }
-    public ActionPointHandler GetAttckHandler(Sensed_PersonState.PreparingData preparingData)
+    public ActionPointHandler GetAttckAPHHandler()
     {
-        var target = preparingData.target;
         var aph = person.GetNewAPH(1, ActionPointHandler.WalkingState.Run);
         (aph.GetActionPoint(0) as PersonActionPoint).Weapon = person.weapon;
-        person.SetAPs(aph.GetActionPoint(0), target, PersonAniState.StateKind.PrepareAttack, true, 0, false, true);
+        person.SetAPs(aph.GetActionPoint(0), targetModel.transform, PersonAniState.StateKind.PrepareAttack, true, 0, false, true);
 
         return aph;
     }
 
-    IEnumerator TraceTarget(PrepareData preparingData, ActionPointHandler aph)
+    IEnumerator TraceTarget(ActionPointHandler aph)
     {
-        var target = preparingData.target;
-        var targetDmgController = target.GetComponent<IDamageController>();
+        var targetDmgController = targetModel.GetComponent<IDamageController>();
         var state = State.trace;
         while (!aph.isAPHDone)
         {
-            state = IsTargetInRange(target, weapon.Range) ? State.hit : State.trace;
-            if (state == State.trace)
+            state = IsTargetInHitRange(targetModel.transform, weapon.Range) ? State.hit : State.trace;
+
+            switch (state)
             {
+                case State.trace:
 
-            }
+                    break;
+                case State.hit:
+                    if (weapon.IsMelee)
+                    {
 
-            if (IsTargetInRange(target, weapon.Range))
-            {
-                if (weapon.IsMelee)
-                {
-
-                }
-                else
-                {
-                    weapon.Attack();
-                }
+                    }
+                    else
+                    {
+                        weapon.Attack();
+                    }
+                    break;
             }
 
             yield return new WaitForFixedUpdate();
@@ -77,16 +68,8 @@ public class PrepareAttack_PersonState : PersonState
         yield return null;
     }
 
-
-
-    bool IsTargetInRange(Transform target, float range)
+    bool IsTargetInHitRange(Transform target, float range)
     {
         return Vector3.Distance(target.position, person.modelHandler.transform.position) <= range;
-    }
-
-    public class PrepareData
-    {
-        public Transform target;
-        public bool isInSight;
     }
 }

@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class Curiousity_PersonState : PersonState
 {
-    PreparingData preparingData;
     int curiosityCnt = 0;
     const int MaxCuriosityCnt = 3;
     float warningTime = 0f;
@@ -12,23 +11,9 @@ public class Curiousity_PersonState : PersonState
     Coroutine procCountingTime = null;
     Coroutine procCountingIgnoreTime = null;
     public Curiousity_PersonState(Person person) : base(person) { }
-    public void PrepareState(PreparingData param)
-    {
-        if (preparingData == null)
-        {
-            preparingData = param;
-        }
-        else if (preparingData.target.Equals(param.target))
-        {
-            curiosityCnt++;
-        }
-
-        SetState(StateKinds.Curiousity);
-    }
     public override bool IsReadyForEnter()
     {
-        return preparingData != null &&
-                preparingData.target != null &&
+        return targetModel != null &&
                 curiosityCnt < MaxCuriosityCnt;
     }
     public override void EnterToException()
@@ -44,7 +29,7 @@ public class Curiousity_PersonState : PersonState
     }
     protected override void DoEnter()
     {
-        var aph = GetCuriousityAPH(preparingData.target);
+        var aph = GetCuriousityAPH(targetModel.transform);
         // 하는 중. 
         //첫 애니메이션 작동시 model이 움직이면서 콜라이터의 connect 및 remove가 지속적으로 발생하는 것을 막기위해
         //척 애니메이션이 동작하는 동안 만큼은 connect 및 remove를 통해 입력된 값을 무시하도록 한다.
@@ -57,7 +42,7 @@ public class Curiousity_PersonState : PersonState
             person.StopCoroutine(procCountingTime);
         }
 
-        procCountingTime = person.StartCoroutine(CountingTime(preparingData.target));
+        procCountingTime = person.StartCoroutine(CountingTime(targetModel.transform));
     }
     IEnumerator IgnoreTime(ActionPointHandler aph)
     {
@@ -118,17 +103,5 @@ public class Curiousity_PersonState : PersonState
     {
         isAPHDone = true;
         return StateKinds.Normal;
-    }
-
-    public class PreparingData
-    {
-        public Transform target { private set; get; }
-        public bool isInSight { private set; get; }
-
-        public PreparingData(Transform target, bool isInSight)
-        {
-            this.target = target;
-            this.isInSight = isInSight;
-        }
     }
 }

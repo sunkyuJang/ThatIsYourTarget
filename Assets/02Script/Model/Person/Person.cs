@@ -69,10 +69,10 @@ public partial class Person : Model
         SetSensedState(collider, true);
     }
 
-    public override void OnRemoved(Collider collider)
-    {
-        SetSensedState(collider, false);
-    }
+    //public override void OnRemoved(Collider collider)
+    //{
+    //    SetSensedState(collider, false);
+    //}
 
     void SetSensedState(Collider collider, bool isContected)
     {
@@ -82,7 +82,7 @@ public partial class Person : Model
         {
             if (state is Sensed_PersonState)
             {
-                (state as Sensed_PersonState)?.SetPrepareData(new Sensed_PersonState.PreparingData(collider.transform, isContected));
+                (state as Sensed_PersonState)?.SetPrepareData(new PersonState.PrepareData(collider.GetComponent<ModelHandler>().Model));
                 SetState((int)stateKind);
             }
         }

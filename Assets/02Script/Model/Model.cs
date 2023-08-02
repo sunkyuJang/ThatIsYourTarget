@@ -46,7 +46,7 @@ public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConn
     {
         if (jobManager == null) jobManager = new JobManager(GetNextAPH);
         var job = new ModelJob(jobManager, handler, ReturnAPH);
-        job.jobAction = () => (modelHandler as IJobStarter).StartJob(job);
+        job.jobAction = () => (modelHandler as IJobStarter<ModelJob>).StartJob(job);
         jobManager.AddJob(job);
         jobManager.StartJob();
         if (nextActionFromState != null) this.nextActionFromState = nextActionFromState;
