@@ -7,7 +7,7 @@ internal class Surprize_PersonAniState : PersonAniState
     {
     }
 
-    protected override void DoEnter()
+    protected override void StartModule()
     {
         Animator.SetBool(Surprize, true);
     }

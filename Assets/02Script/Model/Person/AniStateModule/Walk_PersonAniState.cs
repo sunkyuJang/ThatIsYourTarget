@@ -10,12 +10,12 @@ internal class Walk_PersonAniState : PersonAniState
 
     }
 
-    public override bool IsReadyForEnter()
+    public override bool IsReady()
     {
         return Animator != null && state >= 0;
     }
 
-    protected override void DoEnter()
+    protected override void StartModule()
     {
         Animator.SetInteger(walkLevel, (int)state);
     }

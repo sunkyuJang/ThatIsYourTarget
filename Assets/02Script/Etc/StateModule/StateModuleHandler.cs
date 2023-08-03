@@ -4,8 +4,7 @@ public partial class StateModuleHandler
 {
     protected List<StateModule> modules = new List<StateModule>();
     protected int playingModuleIndex = -1;
-    //private StateModule playingModule = null;
-    public void EnterModule(int targetModuleIndex, bool shouldTurnOffOldModule = true)
+    public virtual void EnterModule(int targetModuleIndex, StateModule.PrepareData prepareData = null)
     {
         var playingModule = GetModule(playingModuleIndex);
         var targetModule = GetModule(targetModuleIndex);
@@ -14,13 +13,12 @@ public partial class StateModuleHandler
 
         if (targetModule == null || targetModule == playingModule) return;
 
-        if (!targetModule.IsReadyForEnter()) return;
+        if (!targetModule.IsReady()) return;
 
-        if (shouldTurnOffOldModule)
-            playingModule?.Exit();
+        playingModule?.Exit();
 
         playingModuleIndex = targetModuleIndex;
-        playingModule.Enter();
+        playingModule.Enter(prepareData);
     }
 
     public void StopPlayingModule()

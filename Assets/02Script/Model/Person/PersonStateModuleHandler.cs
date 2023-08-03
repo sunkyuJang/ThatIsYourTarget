@@ -1,6 +1,6 @@
-public class PersonStateMouleHandler : StateModuleHandler
+public class PersonStateModuleHandler : StateModuleHandler
 {
-    public PersonStateMouleHandler(Person person)
+    public PersonStateModuleHandler(Person person)
     {
         modules = PersonState.GetStatesList(person);
     }
@@ -10,4 +10,5 @@ public class PersonStateMouleHandler : StateModuleHandler
     public bool IsSameModule(PersonState.StateKinds kinds) => IsSameModule(ConvertStateKindToInt(kinds));
     private int ConvertStateKindToInt(PersonState.StateKinds kinds) => (int)kinds;
     public int GetPlayingModuleIndex() => playingModuleIndex;
+    public PersonState GetPlayingModule() => GetModule((PersonState.StateKinds)GetPlayingModuleIndex());
 }

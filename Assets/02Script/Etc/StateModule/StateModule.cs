@@ -1,12 +1,19 @@
 public abstract class StateModule
 {
     protected bool isStateRunning = false;
-    public abstract bool IsReadyForEnter();
-    public void Enter()
+    public abstract bool IsReady();
+    public bool Enter<T>(T t = null) where T : PrepareData
     {
-        DoEnter();
+        if (IsReady())
+        {
+            StartModule();
+            return true;
+        }
+        return false;
     }
-    protected abstract void DoEnter();
+    protected abstract void StartModule();
     public abstract void EnterToException();
     public abstract void Exit();
+
+    public abstract class PrepareData { }
 }

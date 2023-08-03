@@ -9,7 +9,6 @@ public class Patrol_PersonState : PersonState
 {
     enum State { tracingTarget, lookAround, done }
     State state = State.tracingTarget;
-    private PrepareData prepareData;
     const int castCount = 6;
     const float castDist = 3.0f;
     JobManager jobManager;
@@ -19,12 +18,12 @@ public class Patrol_PersonState : PersonState
     {
         this.prepareData = prepareData;
     }
-    public override bool IsReadyForEnter()
+    public override bool IsReady()
     {
         return prepareData != null;
     }
     public override void EnterToException() { }
-    protected override void DoEnter()
+    protected override void StartModule()
     {
         state = State.tracingTarget;
         var objForSection = new object();
@@ -61,7 +60,7 @@ public class Patrol_PersonState : PersonState
         // if job manager come here means like,
         // in the patrol state, the person didnt find anything.
         // so, it should go to normal state.
-        SetState(StateKinds.Normal);
+        SetNormalState();
     }
 
     void TracingTarget(Job job)
@@ -85,7 +84,7 @@ public class Patrol_PersonState : PersonState
         var shouldReadNextJob = true;
         while (!aph.isAPHDone)
         {
-            var isInSight = person.modelHandler.IsInSight(prepareData.target);
+            var isInSight = person.modelHandler.IsInSight(prepareData.target.transform);
             if (isInSight)
             {
                 var trackingPrepareData = new Tracking_PersonState.PrepareData();
@@ -95,7 +94,7 @@ public class Patrol_PersonState : PersonState
                 var trackingModule = person.moduleHandler.GetModule<Tracking_PersonState>(StateKinds.Tracking);
                 trackingModule.PrepareState(trackingPrepareData);
                 shouldReadNextJob = false;
-                SetState(StateKinds.Tracking);
+                SetState(StateKinds.Tracking, new PersonPrepareData(prepareData.target));
             }
 
             yield return new WaitForFixedUpdate();
@@ -187,9 +186,5 @@ public class Patrol_PersonState : PersonState
     {
         jobManager.CancleJob();
         jobManager = null;
-    }
-    public class PrepareData
-    {
-        public Transform target;
     }
 }

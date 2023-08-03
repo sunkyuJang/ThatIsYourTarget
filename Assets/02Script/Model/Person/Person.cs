@@ -9,13 +9,13 @@ public partial class Person : Model
     private Renderer modelRenderer;
 
     object idmgController;
-    new public PersonStateMouleHandler moduleHandler => base.moduleHandler as PersonStateMouleHandler;
+    new public PersonStateModuleHandler moduleHandler => base.moduleHandler as PersonStateModuleHandler;
     public PersonWeapon weapon;
 
     public PersonInfoUI personInfoUI;
     protected override StateModuleHandler SetStateModuleHandler()
     {
-        return new PersonStateMouleHandler(this);
+        return new PersonStateModuleHandler(this);
     }
     protected override IEnumerator Start()
     {
@@ -48,6 +48,10 @@ public partial class Person : Model
         aph.shouldLoop = false;
         aph.walkingState = walkingState;
         return aph;
+    }
+    public void SetState(int newState, PersonState.PersonPrepareData personPrepareData)
+    {
+        base.SetState(newState, personPrepareData);
     }
     public void SetAPs(ActionPoint ap, Transform target, PersonAniState.StateKind kind, bool isTimeFixed = false, float time = 0, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
         => SetAPs(ap, target.transform.position, kind, isTimeFixed, time, shouldReachTargetPosition, shouldLookAtTarget);
@@ -82,8 +86,8 @@ public partial class Person : Model
         {
             if (state is Sensed_PersonState)
             {
-                (state as Sensed_PersonState)?.SetPrepareData(new PersonState.PrepareData(collider.GetComponent<ModelHandler>().Model));
-                SetState((int)stateKind);
+                var prepareData = new PersonState.PersonPrepareData(collider.GetComponent<ModelHandler>().Model);
+                SetState((int)stateKind, prepareData);
             }
         }
     }

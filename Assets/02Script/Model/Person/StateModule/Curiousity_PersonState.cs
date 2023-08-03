@@ -11,9 +11,9 @@ public class Curiousity_PersonState : PersonState
     Coroutine procCountingTime = null;
     Coroutine procCountingIgnoreTime = null;
     public Curiousity_PersonState(Person person) : base(person) { }
-    public override bool IsReadyForEnter()
+    public override bool IsReady()
     {
-        return targetModel != null &&
+        return prepareData != null &&
                 curiosityCnt < MaxCuriosityCnt;
     }
     public override void EnterToException()
@@ -24,12 +24,12 @@ public class Curiousity_PersonState : PersonState
         }
         else
         {
-            SetState(StateKinds.PrepareAttack);
+            SetState(StateKinds.PrepareAttack, new PersonPrepareData(prepareData.target));
         }
     }
-    protected override void DoEnter()
+    protected override void StartModule()
     {
-        var aph = GetCuriousityAPH(targetModel.transform);
+        var aph = GetCuriousityAPH(prepareData.target.transform);
         // 하는 중. 
         //첫 애니메이션 작동시 model이 움직이면서 콜라이터의 connect 및 remove가 지속적으로 발생하는 것을 막기위해
         //척 애니메이션이 동작하는 동안 만큼은 connect 및 remove를 통해 입력된 값을 무시하도록 한다.
@@ -42,7 +42,7 @@ public class Curiousity_PersonState : PersonState
             person.StopCoroutine(procCountingTime);
         }
 
-        procCountingTime = person.StartCoroutine(CountingTime(targetModel.transform));
+        procCountingTime = person.StartCoroutine(CountingTime(prepareData.target.transform));
     }
     IEnumerator IgnoreTime(ActionPointHandler aph)
     {
@@ -72,7 +72,7 @@ public class Curiousity_PersonState : PersonState
 
             if (warningTime > maxWarningTime)
             {
-                SetState(StateKinds.PrepareAttack);
+                SetState(StateKinds.PrepareAttack, new PersonPrepareData(prepareData.target));
                 break;
             }
 
@@ -99,8 +99,9 @@ public class Curiousity_PersonState : PersonState
         procCountingTime = null;
         curiosityCnt = 0;
     }
-    protected override StateKinds DoAfterDone()
+    protected override StateKinds DoAfterDone(out PersonPrepareData prepareData)
     {
+        prepareData = null;
         isAPHDone = true;
         return StateKinds.Normal;
     }

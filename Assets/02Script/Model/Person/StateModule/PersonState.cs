@@ -21,29 +21,39 @@ public abstract class PersonState : StateModule
     }
 
     protected Person person;
-    protected Model targetModel;
-    public PersonState(Person person) => this.person = person;
-    public static int ConvertStateKindToInt(StateKinds kinds) => (int)kinds;
-    protected void SetState(StateKinds kinds)
+    public PersonPrepareData prepareData { protected set; get; } = null;
+    public PersonState(Person person)
     {
-        person.personInfoUI.StateModule.text = kinds.ToString();
-        person.SetState(ConvertStateKindToInt(kinds));
+        this.person = person;
     }
-    protected void SetNormalState() => SetState(StateKinds.Normal);
-    public void SetPrepareData(PrepareData data)
-    {
-        targetModel = data.target;
-    }
-
     public void AfterAPHDone()
     {
-        var state = DoAfterDone();
-        SetState(state);
+        var state = DoAfterDone(out PersonPrepareData prepareData);
+        SetState(state, prepareData);
     }
-    protected virtual StateKinds DoAfterDone()
+    public override void Exit()
     {
+        prepareData = null;
+    }
+    protected virtual StateKinds DoAfterDone(out PersonPrepareData prepareData)
+    {
+        prepareData = null;
         return StateKinds.Normal;
     }
+    protected bool IsTargetModelSame(PersonState stateModule)
+    {
+        return prepareData.target == stateModule.prepareData.target;
+    }
+    public static int ConvertStateKindToInt(StateKinds kinds)
+    {
+        return (int)kinds;
+    }
+    protected void SetState(StateKinds kinds, PersonPrepareData prepareData)
+    {
+        person.personInfoUI.StateModule.text = kinds.ToString();
+        person.SetState(ConvertStateKindToInt(kinds), prepareData);
+    }
+    protected void SetNormalState() => SetState(StateKinds.Normal, null);
     public static int GetStateCount() => Enum.GetValues(typeof(StateKinds)).Length;
     public static List<StateModule> GetStatesList(Person person)
     {
@@ -72,9 +82,9 @@ public abstract class PersonState : StateModule
         return null;
     }
 
-    public class PrepareData
+    public class PersonPrepareData : PrepareData
     {
         public Model target { private set; get; }
-        public PrepareData(Model target) { this.target = target; }
+        public PersonPrepareData(Model target) { this.target = target; }
     }
 }

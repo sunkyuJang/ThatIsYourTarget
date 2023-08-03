@@ -8,7 +8,7 @@ internal class TurnAround_PersonAniState : PersonAniState
     {
     }
 
-    protected override void DoEnter()
+    protected override void StartModule()
     {
         Animator.SetFloat(TurnDegree, ap.targetDegree);
     }

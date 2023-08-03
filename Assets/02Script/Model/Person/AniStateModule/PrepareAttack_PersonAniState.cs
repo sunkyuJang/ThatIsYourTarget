@@ -3,11 +3,11 @@ using UnityEngine;
 internal class PrepareAttack_PersonAniState : PersonAniState
 {
     public PrepareAttack_PersonAniState(Animator ani) : base(ani) { }
-    public override bool IsReadyForEnter()
+    public override bool IsReady()
     {
-        return base.IsReadyForEnter();
+        return base.IsReady();
     }
-    protected override void DoEnter()
+    protected override void StartModule()
     {
         var layer = 0;
         switch (ap.Weapon.weaponType)

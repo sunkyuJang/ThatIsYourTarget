@@ -4,12 +4,12 @@ public class Normal_PersonState : PersonState
     {
 
     }
-    public override bool IsReadyForEnter()
+    public override bool IsReady()
     {
         return true;
     }
     public override void EnterToException() { }
-    protected override void DoEnter()
+    protected override void StartModule()
     {
         person.SetOriginalAPH();
     }

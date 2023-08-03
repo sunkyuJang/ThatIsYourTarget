@@ -4,7 +4,7 @@ public class Reset_PersonAniState : PersonAniState
     public Reset_PersonAniState(Animator ani) : base(ani)
     {
     }
-    protected override void DoEnter()
+    protected override void StartModule()
     {
         // for (int i = 1; i < ani.layerCount; i++)
         //     ani.SetLayerWeight(i, 0);

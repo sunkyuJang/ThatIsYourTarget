@@ -5,7 +5,7 @@ public class Non_PersonAniState : PersonAniState
     {
 
     }
-    protected override void DoEnter()
+    protected override void StartModule()
     {
         Debug.Log("isIn");
     }

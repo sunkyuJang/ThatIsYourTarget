@@ -3,21 +3,15 @@ using UnityEngine;
 
 public class Tracking_PersonState : PersonState
 {
-    PrepareData prepareData;
     bool isAphDone = false;
     StateKinds stateKinds;
     public Tracking_PersonState(Person person) : base(person) { }
-
-    public void PrepareState(PrepareData data)
-    {
-        prepareData = data;
-    }
-    public override bool IsReadyForEnter()
+    public override bool IsReady()
     {
         return prepareData != null;
     }
     public override void EnterToException() { }
-    protected override void DoEnter()
+    protected override void StartModule()
     {
         person.StartCoroutine(DoTrackingPoint());
     }
@@ -28,20 +22,20 @@ public class Tracking_PersonState : PersonState
 
         if (weapon != null)
         {
-            var aph = person.GetNewAPH(1, prepareData.walkingState);
+            var aph = person.GetNewAPH(1, ActionPointHandler.WalkingState.Run);
             var ap = aph.GetActionPoint(0);
-            person.SetAPs(ap, prepareData.target, PersonAniState.StateKind.Non, false, 0, true, true);
+            person.SetAPs(ap, prepareData.target.transform, PersonAniState.StateKind.Non, false, 0, true, true);
             person.SetAPH(aph, AfterAPHDone);
             var shouldFixAPLookAt = false;
             isAphDone = false;
 
             while (!isAphDone)
             {
-                var isInSight = person.modelHandler.IsInSight(prepareData.target);
+                var isInSight = person.modelHandler.IsInSight(prepareData.target.transform);
 
                 if (isInSight)
                 {
-                    var dist = Vector3.Distance(prepareData.target.position, person.modelHandler.transform.position);
+                    var dist = Vector3.Distance(prepareData.target.transform.position, person.modelHandler.transform.position);
                     if (dist < weapon.Range)
                     {
                         stateKinds = StateKinds.Hit;
@@ -49,7 +43,7 @@ public class Tracking_PersonState : PersonState
                     }
                     else
                     {
-                        person.SetAPs(ap, prepareData.target, PersonAniState.StateKind.LookAround, false, 0, true, true);
+                        person.SetAPs(ap, prepareData.target.transform, PersonAniState.StateKind.LookAround, false, 0, true, true);
                     }
 
                     shouldFixAPLookAt = true;
@@ -74,28 +68,10 @@ public class Tracking_PersonState : PersonState
     {
         isAphDone = false;
     }
-    protected override StateKinds DoAfterDone()
+    protected override StateKinds DoAfterDone(out PersonPrepareData prepareData)
     {
+        prepareData = new PersonPrepareData(this.prepareData.target);
         isAphDone = true;
-
-        if (stateKinds == StateKinds.Hit)
-        {
-            var hitModule = person.moduleHandler.GetModule(StateKinds.Hit);
-            var hitPrepareData = new Hit_PersonState.PrepareData();
-            hitPrepareData.target = prepareData.target;
-            (hitModule as Hit_PersonState).SetPrepareData(hitPrepareData);
-        }
-        else
-        {
-            stateKinds = StateKinds.Patrol;
-        }
-
         return stateKinds;
-    }
-
-    public class PrepareData
-    {
-        public Transform target { set; get; }
-        public ActionPointHandler.WalkingState walkingState { set; get; }
     }
 }

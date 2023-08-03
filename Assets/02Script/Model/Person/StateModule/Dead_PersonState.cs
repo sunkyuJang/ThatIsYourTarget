@@ -4,12 +4,12 @@ public class Dead_PersonState : PersonState
     {
 
     }
-    public override bool IsReadyForEnter()
+    public override bool IsReady()
     {
         return true;
     }
     public override void EnterToException() { }
-    protected override void DoEnter()
+    protected override void StartModule()
     {
         person.modelHandler.SetDead();
     }

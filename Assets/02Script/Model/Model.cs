@@ -28,9 +28,9 @@ public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConn
         yield return new WaitUntil(() => APHManager.Instance.IsReady);
         SetOriginalAPH();
     }
-    public void SetState(int newState)
+    protected virtual void SetState(int newState, StateModule.PrepareData prepareData = null)
     {
-        moduleHandler.EnterModule(newState);
+        moduleHandler.EnterModule(newState, prepareData);
     }
     public void SetOriginalAPH()
     {

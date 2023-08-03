@@ -8,42 +8,36 @@ public class PrepareAttack_PersonState : PersonState
     protected PersonWeapon weapon { get { return person.weapon; } }
     public PrepareAttack_PersonState(Person person) : base(person) { }
 
-    public override bool IsReadyForEnter()
+    public override bool IsReady()
     {
-        return targetModel != null;
+        return prepareData != null;
     }
-    protected override void DoEnter()
+    protected override void StartModule()
     {
 
     }
     public override void EnterToException()
     {
-        SetState(StateKinds.Normal);
+        SetNormalState();
         Debug.Log("there have some problem");
     }
 
-    public override void Exit() { }
-
-    void SetDmgToTarget(IDamageController target)
-    {
-        //var isDead = target.SetDamage(weapon.dmg);
-    }
     public ActionPointHandler GetAttckAPHHandler()
     {
         var aph = person.GetNewAPH(1, ActionPointHandler.WalkingState.Run);
         (aph.GetActionPoint(0) as PersonActionPoint).Weapon = person.weapon;
-        person.SetAPs(aph.GetActionPoint(0), targetModel.transform, PersonAniState.StateKind.PrepareAttack, true, 0, false, true);
+        person.SetAPs(aph.GetActionPoint(0), prepareData.target.transform, PersonAniState.StateKind.PrepareAttack, true, 0, false, true);
 
         return aph;
     }
 
     IEnumerator TraceTarget(ActionPointHandler aph)
     {
-        var targetDmgController = targetModel.GetComponent<IDamageController>();
+        var targetDmgController = prepareData.target.GetComponent<IDamageController>();
         var state = State.trace;
         while (!aph.isAPHDone)
         {
-            state = IsTargetInHitRange(targetModel.transform, weapon.Range) ? State.hit : State.trace;
+            state = IsTargetInHitRange(prepareData.target.transform, weapon.Range) ? State.hit : State.trace;
 
             switch (state)
             {
@@ -51,14 +45,7 @@ public class PrepareAttack_PersonState : PersonState
 
                     break;
                 case State.hit:
-                    if (weapon.IsMelee)
-                    {
 
-                    }
-                    else
-                    {
-                        weapon.Attack();
-                    }
                     break;
             }
 
