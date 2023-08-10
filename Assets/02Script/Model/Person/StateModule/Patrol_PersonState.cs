@@ -14,10 +14,6 @@ public class Patrol_PersonState : PersonState
     JobManager jobManager;
     public Patrol_PersonState(Person person) : base(person) { }
 
-    public void SetPrepareData(PrepareData prepareData)
-    {
-        this.prepareData = prepareData;
-    }
     public override bool IsReady()
     {
         return prepareData != null;
@@ -32,8 +28,9 @@ public class Patrol_PersonState : PersonState
         jobManager.StartJob();
     }
 
-    protected override StateKinds DoAfterDone()
+    protected override StateKinds DoAfterDone(out PersonPrepareData prepareData)
     {
+        prepareData = this.prepareData;
         jobManager.NextJob();
         return StateKinds.Patrol; // enter to same state will be ignored.
     }
@@ -84,16 +81,9 @@ public class Patrol_PersonState : PersonState
         var shouldReadNextJob = true;
         while (!aph.isAPHDone)
         {
-            var isInSight = person.modelHandler.IsInSight(prepareData.target.transform);
+            var isInSight = person.modelHandler.IsInSight(prepareData.target.modelHandler.transform);
             if (isInSight)
             {
-                var trackingPrepareData = new Tracking_PersonState.PrepareData();
-                trackingPrepareData.walkingState = ActionPointHandler.WalkingState.Run;
-                trackingPrepareData.target = prepareData.target;
-
-                var trackingModule = person.moduleHandler.GetModule<Tracking_PersonState>(StateKinds.Tracking);
-                trackingModule.PrepareState(trackingPrepareData);
-                shouldReadNextJob = false;
                 SetState(StateKinds.Tracking, new PersonPrepareData(prepareData.target));
             }
 
@@ -180,7 +170,7 @@ public class Patrol_PersonState : PersonState
     {
         var rad = angle * Mathf.Deg2Rad;
         var dir = new Vector3(Mathf.Cos(rad), 0, Mathf.Sign(rad));
-        return new Ray(prepareData.target.position, dir);
+        return new Ray(prepareData.target.modelHandler.transform.position, dir);
     }
     public override void Exit()
     {

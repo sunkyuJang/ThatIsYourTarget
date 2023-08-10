@@ -21,7 +21,7 @@ public abstract class PersonState : StateModule
     }
 
     protected Person person;
-    public PersonPrepareData prepareData { protected set; get; } = null;
+    new public PersonPrepareData prepareData { set { base.prepareData = value; } get { return base.prepareData as PersonPrepareData; } }
     public PersonState(Person person)
     {
         this.person = person;
@@ -31,15 +31,16 @@ public abstract class PersonState : StateModule
         var state = DoAfterDone(out PersonPrepareData prepareData);
         SetState(state, prepareData);
     }
-    public override void Exit()
-    {
-        prepareData = null;
-    }
     protected virtual StateKinds DoAfterDone(out PersonPrepareData prepareData)
     {
         prepareData = null;
         return StateKinds.Normal;
     }
+    public override void Exit()
+    {
+        prepareData = null;
+    }
+
     protected bool IsTargetModelSame(PersonState stateModule)
     {
         return prepareData.target == stateModule.prepareData.target;
@@ -50,7 +51,7 @@ public abstract class PersonState : StateModule
     }
     protected void SetState(StateKinds kinds, PersonPrepareData prepareData)
     {
-        person.personInfoUI.StateModule.text = kinds.ToString();
+        person.personInfoUI.StateModule.text = "before : " + person.moduleHandler.GetPlayingModuleStateKind().ToString() + "\nNow :" + kinds.ToString();
         person.SetState(ConvertStateKindToInt(kinds), prepareData);
     }
     protected void SetNormalState() => SetState(StateKinds.Normal, null);

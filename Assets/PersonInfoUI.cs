@@ -4,12 +4,12 @@ using UnityEngine;
 public class PersonInfoUI : MonoBehaviour
 {
     public Person person;
-    public TextMeshPro StateModule;
+    public TextMeshProUGUI StateModule;
     private void Update()
     {
         if (person != null)
         {
-            StateModule.text = ((PersonState.StateKinds)person.moduleHandler.GetPlayingModuleIndex()).ToString();
+            //StateModule.text = ((PersonState.StateKinds)person.moduleHandler.GetPlayingModuleIndex()).ToString();
         }
     }
 }

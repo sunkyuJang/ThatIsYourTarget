@@ -84,11 +84,7 @@ public partial class Person : Model
         var state = moduleHandler.GetModule(stateKind);
         if (state != null)
         {
-            if (state is Sensed_PersonState)
-            {
-                var prepareData = new PersonState.PersonPrepareData(collider.GetComponent<ModelHandler>().Model);
-                SetState((int)stateKind, prepareData);
-            }
+            state.TryEnter(new Sensed_PersonState.SensedPrepareData(collider.GetComponent<ModelHandler>().Model, isContected));
         }
     }
 

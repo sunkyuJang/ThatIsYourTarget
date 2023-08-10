@@ -4,7 +4,7 @@ using UnityEngine;
 public class PrepareAttack_PersonState : PersonState
 {
     public enum State { trace, hit, miss, non }
-    public static float attackDist = 1f;
+    public static float prepareAttackDist = 1f;
     protected PersonWeapon weapon { get { return person.weapon; } }
     public PrepareAttack_PersonState(Person person) : base(person) { }
 
@@ -26,7 +26,7 @@ public class PrepareAttack_PersonState : PersonState
     {
         var aph = person.GetNewAPH(1, ActionPointHandler.WalkingState.Run);
         (aph.GetActionPoint(0) as PersonActionPoint).Weapon = person.weapon;
-        person.SetAPs(aph.GetActionPoint(0), prepareData.target.transform, PersonAniState.StateKind.PrepareAttack, true, 0, false, true);
+        person.SetAPs(aph.GetActionPoint(0), prepareData.target.modelHandler.transform, PersonAniState.StateKind.PrepareAttack, true, 0, false, true);
 
         return aph;
     }
@@ -37,7 +37,7 @@ public class PrepareAttack_PersonState : PersonState
         var state = State.trace;
         while (!aph.isAPHDone)
         {
-            state = IsTargetInHitRange(prepareData.target.transform, weapon.Range) ? State.hit : State.trace;
+            state = IsTargetInHitRange(prepareData.target.modelHandler.transform, weapon.Range) ? State.hit : State.trace;
 
             switch (state)
             {

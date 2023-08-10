@@ -1,8 +1,5 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using JMath;
 
 public class PersonAniController : AniController
 {
@@ -51,7 +48,7 @@ public class PersonAniController : AniController
         {
             var walkingModule = module as Walk_PersonAniState;
             walkingModule.SetWalkState(walkingState);
-            module.Enter();
+            module.TryEnter<StateModule.PrepareData>(null);
         }
         else
         {

@@ -24,18 +24,18 @@ public class Tracking_PersonState : PersonState
         {
             var aph = person.GetNewAPH(1, ActionPointHandler.WalkingState.Run);
             var ap = aph.GetActionPoint(0);
-            person.SetAPs(ap, prepareData.target.transform, PersonAniState.StateKind.Non, false, 0, true, true);
+            person.SetAPs(ap, prepareData.target.modelHandler.transform, PersonAniState.StateKind.Non, false, 0, true, true);
             person.SetAPH(aph, AfterAPHDone);
             var shouldFixAPLookAt = false;
             isAphDone = false;
 
             while (!isAphDone)
             {
-                var isInSight = person.modelHandler.IsInSight(prepareData.target.transform);
+                var isInSight = person.modelHandler.IsInSight(prepareData.target.modelHandler.transform);
 
                 if (isInSight)
                 {
-                    var dist = Vector3.Distance(prepareData.target.transform.position, person.modelHandler.transform.position);
+                    var dist = Vector3.Distance(prepareData.target.modelHandler.transform.position, person.modelHandler.transform.position);
                     if (dist < weapon.Range)
                     {
                         stateKinds = StateKinds.Hit;
@@ -43,7 +43,7 @@ public class Tracking_PersonState : PersonState
                     }
                     else
                     {
-                        person.SetAPs(ap, prepareData.target.transform, PersonAniState.StateKind.LookAround, false, 0, true, true);
+                        person.SetAPs(ap, prepareData.target.modelHandler.transform, PersonAniState.StateKind.LookAround, false, 0, true, true);
                     }
 
                     shouldFixAPLookAt = true;

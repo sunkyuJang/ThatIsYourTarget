@@ -15,7 +15,7 @@ public class ModelHandler : MonoBehaviour, IJobStarter<Model.ModelJob>, IDamageC
     Model.ModelJob modelJob { set; get; }
     ModelJobManager jobManager { set; get; }
     [SerializeField]
-    FOVCollider FOVCollider { set; get; }
+    private FOVCollider FOVCollider;
     float SightLength { get { return FOVCollider.Length * FOVCollider.transform.lossyScale.x; } }
     enum jobState { navi, ani, done, non }
     private void Awake()
@@ -25,8 +25,6 @@ public class ModelHandler : MonoBehaviour, IJobStarter<Model.ModelJob>, IDamageC
         ragDollHandler = GetComponent<RagDollHandler>();
         naviController = GetComponent<NaviController>();
         aniController = GetComponent<AniController>();
-
-        FOVCollider = transform.Find("Head").GetComponent<FOVCollider>();
     }
 
     public void StartJob(Model.ModelJob job)
@@ -41,6 +39,7 @@ public class ModelHandler : MonoBehaviour, IJobStarter<Model.ModelJob>, IDamageC
 
         StopJob();
 
+        modelJob = job;
         actionPointHandler = modelJob.aph;
         jobManager = new ModelJobManager(
                         endJob: EndJob,
@@ -133,6 +132,7 @@ public class ModelHandler : MonoBehaviour, IJobStarter<Model.ModelJob>, IDamageC
                 AniController aniJobstarter)
             : base(modelJob, endJob)
         {
+            this.modelJob = modelJob;
             this.naviJobStarter = naviJobStarter;
             this.aniJobstarter = aniJobstarter;
         }

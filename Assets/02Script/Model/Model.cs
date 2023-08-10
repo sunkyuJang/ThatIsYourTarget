@@ -6,7 +6,7 @@ public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConn
 {
     public float HP { set { HP -= value; HP = HP < 0 ? 0 : HP; } get { return HP; } }
     public int state { private set; get; } = 0;
-    public ModelHandler modelHandler { private set; get; }
+    public ModelHandler modelHandler { protected set; get; }
     Transform APHGroup;
     ActionPointHandler originalAPH;
     Action nextActionFromState = null;

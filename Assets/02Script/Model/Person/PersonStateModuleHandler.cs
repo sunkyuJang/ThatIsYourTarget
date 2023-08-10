@@ -4,11 +4,35 @@ public class PersonStateModuleHandler : StateModuleHandler
     {
         modules = PersonState.GetStatesList(person);
     }
-
+    public T GetModule<T>(PersonState.StateKinds kinds) where T : PersonState => GetModule(ConvertStateKindToInt(kinds)) as T;
     public PersonState GetModule(PersonState.StateKinds kinds) => GetModule(ConvertStateKindToInt(kinds)) as PersonState;
-    public T GetModule<T>(PersonState.StateKinds kinds) where T : PersonState => GetModule(kinds) as T;
     public bool IsSameModule(PersonState.StateKinds kinds) => IsSameModule(ConvertStateKindToInt(kinds));
     private int ConvertStateKindToInt(PersonState.StateKinds kinds) => (int)kinds;
-    public int GetPlayingModuleIndex() => playingModuleIndex;
-    public PersonState GetPlayingModule() => GetModule((PersonState.StateKinds)GetPlayingModuleIndex());
+    public PersonState.StateKinds GetPlayingModuleStateKind() => (PersonState.StateKinds)GetPlayingModuleIndex();
+    new public PersonState GetPlayingModule() => base.GetPlayingModule() as PersonState;
+    public bool isPlayingModuleHasTarget()
+    {
+        var prepareData = GetPlayingModule<PersonState>().prepareData;
+        return prepareData != null && prepareData.target != null;
+    }
+
+    public Model GetPlayingModuleTarget()
+    {
+        if (isPlayingModuleHasTarget())
+        {
+            return GetPlayingModule().prepareData.target;
+        }
+        return null;
+    }
+
+    public Model GetPlayingModuleTarget(PersonState.StateKinds exclusiveKinds)
+    {
+        var isStateKindDifferent = ConvertStateKindToInt(exclusiveKinds) != playingModuleIndex;
+        if (isStateKindDifferent)
+        {
+            return GetPlayingModuleTarget();
+        }
+
+        return null;
+    }
 }
