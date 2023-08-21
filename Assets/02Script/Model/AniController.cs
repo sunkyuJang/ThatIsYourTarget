@@ -1,9 +1,9 @@
-using JMath;
+using JExtentioner;
 using System;
 using System.Collections;
 using UnityEngine;
 
-public abstract class AniController : MonoBehaviour, IJobStarter<ModelHandler.ModelHandlerJob>
+public abstract class AniController : MonoBehaviour, IJobStarter<ModelHandlerJobManager.ModelHandlerJob>
 {
     protected RagDollHandler ragDollHandler { set; get; }
     protected NaviController naviController;
@@ -11,12 +11,12 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelHandler.Mo
     protected Transform headFollowTarget { set; get; } = null;
     float lookAtWeight = 0f;
     protected float animationPlayLimit = 0.85f;
-    protected ActionPoint reservedAP { set; get; }
+    protected AnimationPoint reservedAP { set; get; }
     protected bool IsAPReserved { get { return reservedAP != null; } }
     Coroutine PlayingAni { set; get; }
     protected bool IsPlayingAni { get { return PlayingAni != null; } }
-    private ModelHandler.ModelHandlerJob modelHandlerJob { set; get; }
-    protected ActionPointHandler.WalkingState walkingState { set; get; }
+    private ModelHandlerJobManager.ModelHandlerJob modelHandlerJob { set; get; }
+    protected AnimationPointHandler.WalkingState walkingState { set; get; }
     protected float bodyThreshold = 0f;
     protected StateModuleHandler stateModuleHandler { set; get; }
     protected virtual void Awake()
@@ -77,15 +77,15 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelHandler.Mo
             }
         }
     }
-    public void StartJob(ModelHandler.ModelHandlerJob job)
+    public void StartJob(ModelHandlerJobManager.ModelHandlerJob job)
     {
-        modelHandlerJob = job as ModelHandler.ModelHandlerJob;
+        modelHandlerJob = job;
         walkingState = modelHandlerJob.walkingState;
         var ap = modelHandlerJob.ap;
 
         MakeCorrectTransform(ap);
     }
-    void MakeCorrectTransform(ActionPoint ap)
+    void MakeCorrectTransform(AnimationPoint ap)
     {
         if (!IsPlayingAni)
         {
@@ -97,7 +97,7 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelHandler.Mo
             print("reservatiedAP");
         }
     }
-    protected virtual IEnumerator DoMakeCorrectTransform(ActionPoint ap)
+    protected virtual IEnumerator DoMakeCorrectTransform(AnimationPoint ap)
     {
         var isPositionDone = false;
         var isRotationDone = false;
@@ -172,12 +172,12 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelHandler.Mo
     }
 
     protected virtual float GetMakeTurnDuring(float degree) { return 0; }
-    protected abstract void StartAni(ActionPoint actionPoint, bool shouldReturnAP = false);
-    protected void StartAniTimeCount(ActionPoint ap, bool shouldReturnAP, StateModule stateModule)
+    protected abstract void StartAni(AnimationPoint actionPoint, bool shouldReturnAP = false);
+    protected void StartAniTimeCount(AnimationPoint ap, bool shouldReturnAP, StateModule stateModule)
     {
         PlayingAni = StartCoroutine(DoAnimationTimeCount(ap, shouldReturnAP, stateModule));
     }
-    protected IEnumerator DoAnimationTimeCount(ActionPoint ap, bool shouldReturnAP, StateModule stateModule)
+    protected IEnumerator DoAnimationTimeCount(AnimationPoint ap, bool shouldReturnAP, StateModule stateModule)
     {
         if (ap.during < -1) yield return null;
         var maxTime = Mathf.Lerp(0, ap.during, animationPlayLimit);

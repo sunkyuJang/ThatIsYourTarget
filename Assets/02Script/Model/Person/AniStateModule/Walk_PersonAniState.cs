@@ -3,8 +3,8 @@ using UnityEngine;
 internal class Walk_PersonAniState : PersonAniState
 {
     string walkLevel { get { return "WalkAroundLevel"; } }
-    ActionPointHandler.WalkingState state = ActionPointHandler.WalkingState.Walk;
-    public void SetWalkState(ActionPointHandler.WalkingState state) => this.state = state;
+    AnimationPointHandler.WalkingState state = AnimationPointHandler.WalkingState.Walk;
+    public void SetWalkState(AnimationPointHandler.WalkingState state) => this.state = state;
     public Walk_PersonAniState(Animator ani) : base(ani)
     {
 

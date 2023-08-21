@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace JMath
+namespace JExtentioner
 {
     public static class ListExtentioner
     {

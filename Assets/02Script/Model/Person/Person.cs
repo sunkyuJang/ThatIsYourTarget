@@ -33,17 +33,17 @@ public partial class Person : Model
 
     bool ShouldRecongnize(Transform target) => target.GetComponent<Player>()?.belongTo == belongTo;
 
-    public ActionPointHandler GetNewAPH(int APCounts, ActionPointHandler.WalkingState walkingState = ActionPointHandler.WalkingState.Walk, PersonAniState.StateKind kind = PersonAniState.StateKind.Non)
+    public AnimationPointHandler GetNewAPH(int APCounts, AnimationPointHandler.WalkingState walkingState = AnimationPointHandler.WalkingState.Walk, PersonAniState.StateKind kind = PersonAniState.StateKind.Non)
     {
         var requireAPCount = APCounts;
         var apPooler = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP);
-        var APs = new List<ActionPoint>();
+        var APs = new List<AnimationPoint>();
         APs.Capacity = requireAPCount;
 
         for (int i = 0; i < requireAPCount; i++)
             APs.Add(apPooler.GetNewOne<PersonActionPoint>());
 
-        var aph = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.APH).GetNewOne<ActionPointHandler>();
+        var aph = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.APH).GetNewOne<AnimationPointHandler>();
         aph.SetAPs(APs);
         aph.shouldLoop = false;
         aph.walkingState = walkingState;
@@ -53,18 +53,18 @@ public partial class Person : Model
     {
         base.SetState(newState, personPrepareData);
     }
-    public void SetAPs(ActionPoint ap, Transform target, PersonAniState.StateKind kind, bool isTimeFixed = false, float time = 0, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
+    public void SetAPs(AnimationPoint ap, Transform target, PersonAniState.StateKind kind, bool isTimeFixed = false, float time = 0, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
         => SetAPs(ap, target.transform.position, kind, isTimeFixed, time, shouldReachTargetPosition, shouldLookAtTarget);
 
-    public void SetAPs(ActionPoint ap, Vector3 target, PersonAniState.StateKind kind, bool isTimeFixed = false, float time = 0, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
+    public void SetAPs(AnimationPoint ap, Vector3 target, PersonAniState.StateKind kind, bool isTimeFixed = false, float time = 0, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
     {
         if (isTimeFixed)
         {
-            ap.SetAPWithFixedDuring(modelHandler.transform.position, target, (int)kind, kind.ToString(), shouldReachTargetPosition, shouldLookAtTarget);
+            ap.SetAPWithFixedDuring(modelPhysicsHandler.transform.position, target, (int)kind, kind.ToString(), shouldReachTargetPosition, shouldLookAtTarget);
         }
         else
         {
-            ap.SetAPWithDuring(modelHandler.transform.position, target, (int)kind, time, shouldReachTargetPosition, shouldLookAtTarget);
+            ap.SetAPWithDuring(modelPhysicsHandler.transform.position, target, (int)kind, time, shouldReachTargetPosition, shouldLookAtTarget);
         }
     }
 
@@ -84,7 +84,7 @@ public partial class Person : Model
         var state = moduleHandler.GetModule(stateKind);
         if (state != null)
         {
-            state.TryEnter(new Sensed_PersonState.SensedPrepareData(collider.GetComponent<ModelHandler>().Model, isContected));
+            state.TryEnter(new Sensed_PersonState.SensedPrepareData(collider.GetComponent<ModelPhysicsHandler>().Model, isContected));
         }
     }
 

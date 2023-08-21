@@ -1,23 +1,22 @@
-using JMath;
+using JExtentioner;
 using SensorToolkit;
 using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using UnityEngine;
 
-public class ModelHandler : MonoBehaviour, IJobStarter<Model.ModelJob>, IDamageController
+public class ModelPhysicsHandler : MonoBehaviour, IJobStarter<Model.ModelJob>, IDamageController
 {
     public Model Model { private set; get; }
-    ActionPointHandler actionPointHandler { set; get; }
+    AnimationPointHandler actionPointHandler { set; get; }
     NaviController naviController { set; get; }
     AniController aniController { set; get; }
     RagDollHandler ragDollHandler { set; get; }
     Model.ModelJob modelJob { set; get; }
-    ModelJobManager jobManager { set; get; }
+    ModelHandlerJobManager jobManager { set; get; }
     [SerializeField]
     private FOVCollider FOVCollider;
     float SightLength { get { return FOVCollider.Length * FOVCollider.transform.lossyScale.x; } }
-    enum jobState { navi, ani, done, non }
     private void Awake()
     {
         Model = transform.parent.GetComponent<Model>();
@@ -25,6 +24,11 @@ public class ModelHandler : MonoBehaviour, IJobStarter<Model.ModelJob>, IDamageC
         ragDollHandler = GetComponent<RagDollHandler>();
         naviController = GetComponent<NaviController>();
         aniController = GetComponent<AniController>();
+
+        if (FOVCollider != null)
+        {
+            Debug.Log("FovCollider is Missing");
+        }
     }
 
     public void StartJob(Model.ModelJob job)
@@ -41,7 +45,7 @@ public class ModelHandler : MonoBehaviour, IJobStarter<Model.ModelJob>, IDamageC
 
         modelJob = job;
         actionPointHandler = modelJob.aph;
-        jobManager = new ModelJobManager(
+        jobManager = new ModelHandlerJobManager(
                         endJob: EndJob,
                         modelJob: modelJob,
                         naviJobStarter: naviController,
@@ -108,87 +112,30 @@ public class ModelHandler : MonoBehaviour, IJobStarter<Model.ModelJob>, IDamageC
         return ((IDamageController)Model).SetDamage(damege);
     }
 
-    public class ModelHandlerJob : Job
+    public Coroutine TracingTargetInSight(Transform target, Func<bool> conditionOfEndLoop, Action<bool> whenHit)
     {
-        public ActionPoint ap { private set; get; }
-        public ActionPointHandler.WalkingState walkingState { private set; get; }
-        public ModelHandlerJob(JobManager jobManager, ActionPoint ap, ActionPointHandler.WalkingState walkingState) : base(jobManager)
-        {
-            this.ap = ap;
-            this.walkingState = walkingState;
-        }
+        return StartCoroutine(DoTracingTargetInSight(target, conditionOfEndLoop, whenHit));
     }
 
-    public class ModelJobManager : JobManager
+    protected IEnumerator DoTracingTargetInSight(Transform target, Func<bool> conditionOfEndLoop, Action<bool> whenHit)
     {
-        private Model.ModelJob modelJob;
-        private IJobStarter<ModelHandlerJob> naviJobStarter;
-        private IJobStarter<ModelHandlerJob> aniJobstarter;
-
-        public ModelJobManager(
-                Action endJob,
-                Model.ModelJob modelJob,
-                NaviController naviJobStarter,
-                AniController aniJobstarter)
-            : base(modelJob, endJob)
+        var maxTime = 360f;
+        var time = 0f;
+        while (time < maxTime && !conditionOfEndLoop())
         {
-            this.modelJob = modelJob;
-            this.naviJobStarter = naviJobStarter;
-            this.aniJobstarter = aniJobstarter;
-        }
-
-        public override void StartJob()
-        {
-            var firstAP = modelJob.aph.GetNowActionPoint();
-            AddJob(CreateJobs(firstAP, modelJob.aph));
-            base.StartJob();
-        }
-
-        public Queue<Job> CreateJobs(ActionPoint ap, ActionPointHandler aph)
-        {
-            var queue = new Queue<Job>();
-            for (jobState i = jobState.navi; i < jobState.non; i++)
+            var isHit = IsInSight(target);
+            if (isHit)
             {
-                var job = new ModelHandlerJob(this, ap, aph.walkingState);
-                Action action = null;
-                switch (i)
-                {
-                    case jobState.navi:
-                        action = () =>
-                        {
-                            naviJobStarter.StartJob(job);
-                        };
-                        break;
-                    case jobState.ani:
-                        action = () =>
-                        {
-                            aniJobstarter.StartJob(job);
-                        };
-                        break;
-                    case jobState.done:
-                        action = ReadNextAP;
-                        break;
-                }
-
-                job.jobAction = action;
-                queue.Enqueue(job);
+                whenHit?.Invoke(true);
+                yield break;
             }
 
-            return queue;
+            time += Time.fixedDeltaTime;
+            yield return new WaitForFixedUpdate();
         }
 
-        void ReadNextAP()
-        {
-            var ap = modelJob.aph.GetNextActionPoint();
-            if (ap != null)
-            {
-                AddJob(CreateJobs(ap, modelJob.aph));
-                StartJob();
-            }
-            else
-            {
-                EndJob();
-            }
-        }
+        whenHit?.Invoke(false);
+        Debug.Log("DoTracingTargetInSight closed by force : its over than " + maxTime + "sec.\n" + "instanceID : " + transform.GetInstanceID());
+        yield break;
     }
 }

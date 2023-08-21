@@ -14,7 +14,7 @@ public class PrepareAttack_PersonState : PersonState
     }
     protected override void StartModule()
     {
-
+        SetNormalState();
     }
     public override void EnterToException()
     {
@@ -22,22 +22,22 @@ public class PrepareAttack_PersonState : PersonState
         Debug.Log("there have some problem");
     }
 
-    public ActionPointHandler GetAttckAPHHandler()
+    public AnimationPointHandler GetAttckAPHHandler()
     {
-        var aph = person.GetNewAPH(1, ActionPointHandler.WalkingState.Run);
+        var aph = person.GetNewAPH(1, AnimationPointHandler.WalkingState.Run);
         (aph.GetActionPoint(0) as PersonActionPoint).Weapon = person.weapon;
-        person.SetAPs(aph.GetActionPoint(0), prepareData.target.modelHandler.transform, PersonAniState.StateKind.PrepareAttack, true, 0, false, true);
+        person.SetAPs(aph.GetActionPoint(0), prepareData.target.modelPhysicsHandler.transform, PersonAniState.StateKind.PrepareAttack, true, 0, false, true);
 
         return aph;
     }
 
-    IEnumerator TraceTarget(ActionPointHandler aph)
+    IEnumerator TraceTarget(AnimationPointHandler aph)
     {
         var targetDmgController = prepareData.target.GetComponent<IDamageController>();
         var state = State.trace;
         while (!aph.isAPHDone)
         {
-            state = IsTargetInHitRange(prepareData.target.modelHandler.transform, weapon.Range) ? State.hit : State.trace;
+            state = IsTargetInHitRange(prepareData.target.modelPhysicsHandler.transform, weapon.Range) ? State.hit : State.trace;
 
             switch (state)
             {
@@ -57,6 +57,6 @@ public class PrepareAttack_PersonState : PersonState
 
     bool IsTargetInHitRange(Transform target, float range)
     {
-        return Vector3.Distance(target.position, person.modelHandler.transform.position) <= range;
+        return Vector3.Distance(target.position, person.modelPhysicsHandler.transform.position) <= range;
     }
 }

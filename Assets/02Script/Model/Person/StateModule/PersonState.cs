@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public abstract class PersonState : StateModule
 {
@@ -56,6 +57,8 @@ public abstract class PersonState : StateModule
     }
     protected void SetNormalState() => SetState(StateKinds.Normal, null);
     public static int GetStateCount() => Enum.GetValues(typeof(StateKinds)).Length;
+    protected Coroutine GetTracingTargetInSightProcess(Transform target, Func<bool> conditionOfEndLoop) => person.modelPhysicsHandler.TracingTargetInSight(target, conditionOfEndLoop, WhenTargetInSight);
+    protected virtual void WhenTargetInSight(bool isHit) { }
     public static List<StateModule> GetStatesList(Person person)
     {
         if (person is Person)

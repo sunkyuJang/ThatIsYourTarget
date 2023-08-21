@@ -25,7 +25,7 @@
 
 //     // private void Start()
 //     // {
-//     //     APHList.ForEach(x => x.WaitForStartToNext(x.actionPoints.Count - 1, true));
+//     //     APHList.ForEach(x => x.WaitForStartToNext(x.animationPoints.Count - 1, true));
 //     // }
 //     private void OnTriggerEnter(Collider other)
 //     {

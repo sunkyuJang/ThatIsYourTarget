@@ -6,9 +6,9 @@ public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConn
 {
     public float HP { set { HP -= value; HP = HP < 0 ? 0 : HP; } get { return HP; } }
     public int state { private set; get; } = 0;
-    public ModelHandler modelHandler { protected set; get; }
+    public ModelPhysicsHandler modelPhysicsHandler { protected set; get; }
     Transform APHGroup;
-    ActionPointHandler originalAPH;
+    AnimationPointHandler originalAPH;
     Action nextActionFromState = null;
     float MaxAcceptableDmgTime { set; get; } = 2f;
     bool CanAcceptableDmg { set; get; } = true;
@@ -16,9 +16,9 @@ public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConn
     public StateModuleHandler moduleHandler { protected set; get; }
     protected virtual void Awake()
     {
-        modelHandler = GetComponentInChildren<ModelHandler>();
+        modelPhysicsHandler = GetComponentInChildren<ModelPhysicsHandler>();
         APHGroup = transform.Find("APHGroup");
-        originalAPH = APHGroup.Find("OriginalAPH").GetComponent<ActionPointHandler>();
+        originalAPH = APHGroup.Find("OriginalAPH").GetComponent<AnimationPointHandler>();
         jobManager = new JobManager(GetNextAPH);
         moduleHandler = SetStateModuleHandler();
     }
@@ -37,16 +37,16 @@ public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConn
         SetAPH(originalAPH);
     }
 
-    public void ReturnAPH(ActionPointHandler APH)
+    public void ReturnAPH(AnimationPointHandler APH)
     {
         if (APH != originalAPH)
             APHManager.Instance.ReturnAPH(APH);
     }
-    public void SetAPH(ActionPointHandler handler, Action nextActionFromState = null)
+    public void SetAPH(AnimationPointHandler handler, Action nextActionFromState = null)
     {
         if (jobManager == null) jobManager = new JobManager(GetNextAPH);
         var job = new ModelJob(jobManager, handler, ReturnAPH);
-        job.jobAction = () => (modelHandler as IJobStarter<ModelJob>).StartJob(job);
+        job.jobAction = () => (modelPhysicsHandler as IJobStarter<ModelJob>).StartJob(job);
         jobManager.AddJob(job);
         jobManager.StartJob();
         if (nextActionFromState != null) this.nextActionFromState = nextActionFromState;
@@ -103,9 +103,9 @@ public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConn
 
     public class ModelJob : Job
     {
-        public ActionPointHandler aph { private set; get; }
-        public Action<ActionPointHandler> returnAPH { private set; get; }
-        public ModelJob(JobManager jobManager, ActionPointHandler aph, Action<ActionPointHandler> returnAPH) : base(jobManager)
+        public AnimationPointHandler aph { private set; get; }
+        public Action<AnimationPointHandler> returnAPH { private set; get; }
+        public ModelJob(JobManager jobManager, AnimationPointHandler aph, Action<AnimationPointHandler> returnAPH) : base(jobManager)
         {
             this.aph = aph;
             this.returnAPH = returnAPH;

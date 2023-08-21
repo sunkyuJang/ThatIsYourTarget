@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEditor.Animations;
 
-public class PersonActionPoint : ActionPoint
+public class PersonActionPoint : AnimationPoint
 {
     public PersonAniState.StateKind State { set { base.state = (int)value; } get { return (PersonAniState.StateKind)state; } }
     public override bool HasAction { get { return state != (int)PersonAniState.StateKind.Non; } }
@@ -72,9 +72,9 @@ public class PersonActionPointEditor : Editor
     {
         ExpresseFixedDuring(ap, ap.GetLength());
     }
-    void SetWaitingInspector(ActionPoint ap) => ExpresseDuring(ap);
-    void SetPrepareAttack(ActionPoint ap) => ExpresseDuring(ap);
+    void SetWaitingInspector(AnimationPoint ap) => ExpresseDuring(ap);
+    void SetPrepareAttack(AnimationPoint ap) => ExpresseDuring(ap);
     void SetSurprize(PersonActionPoint ap) => ExpresseFixedDuring(ap, ap.GetLength());
-    void ExpresseDuring(ActionPoint ap) => ap.during = (float)EditorGUILayout.FloatField("during", ap.during);
-    void ExpresseFixedDuring(ActionPoint ap, float fixedTime) => ap.during = (float)EditorGUILayout.DelayedFloatField("FixedDuring", fixedTime);
+    void ExpresseDuring(AnimationPoint ap) => ap.during = (float)EditorGUILayout.FloatField("during", ap.during);
+    void ExpresseFixedDuring(AnimationPoint ap, float fixedTime) => ap.during = (float)EditorGUILayout.DelayedFloatField("FixedDuring", fixedTime);
 }

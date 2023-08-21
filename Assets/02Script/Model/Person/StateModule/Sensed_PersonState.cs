@@ -49,7 +49,7 @@ public class Sensed_PersonState : PersonState
                 var prepareData = sensedPrepareDatas[i];
                 if (prepareData.isInSight)
                 {
-                    var canSeeTarget = person.modelHandler.IsInSight(prepareData.target.modelHandler.transform);
+                    var canSeeTarget = person.modelPhysicsHandler.IsInSight(prepareData.target.modelPhysicsHandler.transform);
                     if (canSeeTarget)
                     {
                         trackingList.Add(prepareData.target);
@@ -63,17 +63,21 @@ public class Sensed_PersonState : PersonState
                 var selectedModel = SelectModel(trackingList, playingTargetModel);
                 if (selectedModel != playingTargetModel)
                 {
-                    var dist = Vector3.Distance(person.modelHandler.transform.position, selectedModel.modelHandler.transform.position);
+                    var dist = Vector3.Distance(person.modelPhysicsHandler.transform.position, selectedModel.modelPhysicsHandler.transform.position);
                     var shouldAttack = dist < PrepareAttack_PersonState.prepareAttackDist;
                     SetState(shouldAttack ? StateKinds.PrepareAttack : StateKinds.Curiousity, new PersonPrepareData(selectedModel));
                     var selectedModelIndex = sensedPrepareDatas.FindIndex(x => x.target == selectedModel);
                     sensedPrepareDatas.RemoveAt(selectedModelIndex);
                 }
+
+                trackingList.Clear();
             }
 
             sensedPrepareDatas.RemoveAll(x => !x.isInSight);
             yield return new WaitForFixedUpdate();
         }
+
+        trackingBySensedPrepareData = null;
         yield break;
     }
 
@@ -103,7 +107,7 @@ public class Sensed_PersonState : PersonState
 
     (Model model, int priolity, float dist) GetPriolityTuple(Model model, int priolity = 0)
     {
-        var dist = Vector3.Distance(person.modelHandler.transform.position, model.modelHandler.transform.position);
+        var dist = Vector3.Distance(person.modelPhysicsHandler.transform.position, model.modelPhysicsHandler.transform.position);
         var shouldAttack = dist <= PrepareAttack_PersonState.prepareAttackDist;
         priolity += priolity == 0 ?
                         PriolityList.IndexOf(shouldAttack ? StateKinds.PrepareAttack : StateKinds.Curiousity) :

@@ -2,12 +2,12 @@ using UnityEditor.Animations;
 using UnityEngine;
 
 [System.Serializable]
-public class ActionPoint : MonoBehaviour
+public class AnimationPoint : MonoBehaviour
 {
     public AnimatorController animatorController;
     public virtual bool HasAction { get { return true; } }
     [HideInInspector]
-    public int state { protected set; get; } = 0;
+    protected int state { set; get; } = 0;
     [HideInInspector]
     public float during = 0;
     [HideInInspector]

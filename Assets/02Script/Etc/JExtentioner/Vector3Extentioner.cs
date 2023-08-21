@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace JMath
+namespace JExtentioner
 {
     public static class Vector3Extentioner
     {

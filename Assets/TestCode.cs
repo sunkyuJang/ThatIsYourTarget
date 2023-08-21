@@ -7,7 +7,7 @@ public class TestCode : MonoBehaviour
     private IEnumerator Start()
     {
         var aa = new GameObject();
-        var originalAPH = GetComponent<ActionPointHandler>();
+        var originalAPH = GetComponent<AnimationPointHandler>();
         aa.transform.position = originalAPH.transform.position;
         Debug.Log(originalAPH.transform.position);
         yield return new WaitForSeconds(3f);

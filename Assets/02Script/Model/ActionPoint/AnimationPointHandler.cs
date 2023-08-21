@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ActionPointHandler : MonoBehaviour
+public class AnimationPointHandler : MonoBehaviour
 {
     public enum WalkingState { Non, Walk, Run }
     public WalkingState walkingState = WalkingState.Walk;
-    public List<ActionPoint> actionPoints { set; get; } = new List<ActionPoint>();
-    public int GetActionCount { get { return actionPoints.Count; } }
+    public List<AnimationPoint> animationPoints { set; get; } = new List<AnimationPoint>();
+    public int GetActionCount { get { return animationPoints.Count; } }
     public int index = 0;
     public bool shouldLoop = true;
     public bool isAPHDone { get { return !shouldLoop && index >= GetActionCount; } }
@@ -15,7 +15,7 @@ public class ActionPointHandler : MonoBehaviour
         SetAPs();
     }
 
-    public void SetAPs(List<ActionPoint> list = null)
+    public void SetAPs(List<AnimationPoint> list = null)
     {
         if (list != null)
         {
@@ -26,18 +26,18 @@ public class ActionPointHandler : MonoBehaviour
 
     void SetActionPoint()
     {
-        actionPoints.Clear();
+        animationPoints.Clear();
 
         for (int i = 0; i < transform.childCount; i++)
         {
-            actionPoints.Add(transform.GetChild(i).GetComponent<ActionPoint>());
+            animationPoints.Add(transform.GetChild(i).GetComponent<AnimationPoint>());
         }
         ResetIndex();
     }
 
-    public ActionPoint GetNowActionPoint() { return isAPHDone ? null : actionPoints[index]; }
+    public AnimationPoint GetNowActionPoint() { return isAPHDone ? null : animationPoints[index]; }
 
-    public ActionPoint GetNextActionPoint()
+    public AnimationPoint GetNextActionPoint()
     {
         ++index;
         if (shouldLoop)
@@ -48,22 +48,22 @@ public class ActionPointHandler : MonoBehaviour
         return GetActionPoint(index);
     }
 
-    public ActionPoint GetActionPoint(int index)
+    public AnimationPoint GetActionPoint(int index)
     {
-        var ap = actionPoints[index];
+        var ap = animationPoints[index];
         return ap;
     }
 
-    public ActionPoint GetEndActionPoint
+    public AnimationPoint GetEndActionPoint
     {
-        get { return actionPoints[actionPoints.Count - 1]; }
+        get { return animationPoints[animationPoints.Count - 1]; }
     }
 
     public void ResetIndex() => index = 0;
 
     public void ChangeAPPositionAndLookAt(int index, Vector3 from, Vector3 to)
     {
-        actionPoints[index].ChangePosition(to);
-        actionPoints[index].MakeLookAtTo(to);
+        animationPoints[index].ChangePosition(to);
+        animationPoints[index].MakeLookAtTo(to);
     }
 }

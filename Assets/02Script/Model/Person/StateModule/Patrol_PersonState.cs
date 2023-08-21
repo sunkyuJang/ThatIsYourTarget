@@ -1,4 +1,4 @@
-using JMath;
+using JExtentioner;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -76,12 +76,12 @@ public class Patrol_PersonState : PersonState
         person.StartCoroutine(DoTracingTarget(job, aph));
     }
 
-    IEnumerator DoTracingTarget(Job job, ActionPointHandler aph)
+    IEnumerator DoTracingTarget(Job job, AnimationPointHandler aph)
     {
         var shouldReadNextJob = true;
         while (!aph.isAPHDone)
         {
-            var isInSight = person.modelHandler.IsInSight(prepareData.target.modelHandler.transform);
+            var isInSight = person.modelPhysicsHandler.IsInSight(prepareData.target.modelPhysicsHandler.transform);
             if (isInSight)
             {
                 SetState(StateKinds.Tracking, new PersonPrepareData(prepareData.target));
@@ -96,11 +96,11 @@ public class Patrol_PersonState : PersonState
         yield break;
     }
 
-    ActionPointHandler GetAPHByPositions(List<Vector3> positions)
+    AnimationPointHandler GetAPHByPositions(List<Vector3> positions)
     {
         if (positions.Count <= 0) return null;
 
-        var aph = person.GetNewAPH(positions.Count, ActionPointHandler.WalkingState.Walk);
+        var aph = person.GetNewAPH(positions.Count, AnimationPointHandler.WalkingState.Walk);
         var count = 0;
         positions.ForEach(x =>
         {
@@ -132,9 +132,9 @@ public class Patrol_PersonState : PersonState
         var farDist = 0f;
         hitList.ForEach(x =>
         {
-            if (NavMesh.CalculatePath(person.modelHandler.transform.position, x, 1, path))
+            if (NavMesh.CalculatePath(person.modelPhysicsHandler.transform.position, x, 1, path))
             {
-                var dist = Vector3.Distance(person.modelHandler.transform.position, x);
+                var dist = Vector3.Distance(person.modelPhysicsHandler.transform.position, x);
                 if (dist > farDist)
                 {
                     farDist = dist;
@@ -152,7 +152,7 @@ public class Patrol_PersonState : PersonState
         List<Vector3> castList = new List<Vector3>();
         for (int i = 0; i < samplingCount; i++)
         {
-            if (NavMesh.SamplePosition(person.modelHandler.transform.position, out NavMeshHit hit, castDist, 1))
+            if (NavMesh.SamplePosition(person.modelPhysicsHandler.transform.position, out NavMeshHit hit, castDist, 1))
             {
                 castList.Add(hit.position);
             }
@@ -170,7 +170,7 @@ public class Patrol_PersonState : PersonState
     {
         var rad = angle * Mathf.Deg2Rad;
         var dir = new Vector3(Mathf.Cos(rad), 0, Mathf.Sign(rad));
-        return new Ray(prepareData.target.modelHandler.transform.position, dir);
+        return new Ray(prepareData.target.modelPhysicsHandler.transform.position, dir);
     }
     public override void Exit()
     {

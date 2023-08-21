@@ -4,7 +4,7 @@ public partial class StateModuleHandler
 {
     protected List<StateModule> modules = new List<StateModule>();
     protected int playingModuleIndex = -1;
-    public virtual void EnterModule(int targetModuleIndex, StateModule.PrepareData prepareData = null)
+    public void EnterModule(int targetModuleIndex, StateModule.PrepareData prepareData = null)
     {
         var playingModule = GetModule(playingModuleIndex);
         var targetModule = GetModule(targetModuleIndex);

@@ -1,3 +1,4 @@
+using JExtentioner;
 using System.Collections;
 using UnityEngine;
 
@@ -10,6 +11,7 @@ public class Curiousity_PersonState : PersonState
     bool isAPHDone = false;
     Coroutine procCountingTime = null;
     Coroutine procCountingIgnoreTime = null;
+    AnimationPointHandler PlayingAPH { set; get; }
     public Curiousity_PersonState(Person person) : base(person) { }
     public override bool IsReady()
     {
@@ -29,62 +31,61 @@ public class Curiousity_PersonState : PersonState
     }
     protected override void StartModule()
     {
-        var aph = GetCuriousityAPH(prepareData.target.modelHandler.transform);
+        if (PlayingAPH != null) return;
+
+        PlayingAPH = GetCuriousityAPH(prepareData.target.modelPhysicsHandler.transform);
         // 하는 중. 
         //첫 애니메이션 작동시 model이 움직이면서 콜라이터의 connect 및 remove가 지속적으로 발생하는 것을 막기위해
         //척 애니메이션이 동작하는 동안 만큼은 connect 및 remove를 통해 입력된 값을 무시하도록 한다.
         if (procCountingIgnoreTime != null) return;
 
-        procCountingIgnoreTime = person.StartCoroutine(IgnoreTime(aph));
-        person.SetAPH(aph, AfterAPHDone);
+        procCountingIgnoreTime = person.StartCoroutine(IgnoreTime(PlayingAPH));
+        person.SetAPH(PlayingAPH, AfterAPHDone);
         if (procCountingTime != null)
         {
             person.StopCoroutine(procCountingTime);
         }
 
-        procCountingTime = person.StartCoroutine(CountingTime(prepareData.target.modelHandler.transform));
+        procCountingTime = person.StartCoroutine(CountingTime(prepareData.target.modelPhysicsHandler.transform));
     }
-    IEnumerator IgnoreTime(ActionPointHandler aph)
+    IEnumerator IgnoreTime(AnimationPointHandler aph)
     {
         yield return new WaitUntil(() => aph.index > 0);
         procCountingIgnoreTime = null;
     }
 
+    void StartTracing(Transform target, APHManager aph)
+    {
+        var trackingProcess = GetTracingTargetInSightProcess(target.transform, () => isAPHDone);
+    }
     IEnumerator CountingTime(Transform target)
     {
-        while (!isAPHDone)
-        {
-            var isHit = person.modelHandler.IsInSight(target);
-            if (isHit)
-            {
-                var dist = person.modelHandler.GetDistTo(target);
-                if (dist < PrepareAttack_PersonState.prepareAttackDist)
-                {
-                    warningTime += maxWarningTime;
-                }
+        var trackingProcess = GetTracingTargetInSightProcess(target.transform, () => isAPHDone);
+        yield return WaitUntilExtentioner.WaitUntilWithFixedTime(() => isAPHDone);
 
-                warningTime += Time.fixedDeltaTime;
-            }
-
-
-            if (warningTime > maxWarningTime)
-            {
-                SetState(StateKinds.PrepareAttack, new PersonPrepareData(prepareData.target));
-                break;
-            }
-
-            yield return new WaitForFixedUpdate();
-        }
-
+        person.StopCoroutine(trackingProcess);
         procCountingTime = null;
-        yield return null;
+
+        yield break;
     }
 
-    private ActionPointHandler GetCuriousityAPH(Transform target)
+    protected override void WhenTargetInSight(bool isHit)
+    {
+        if (isHit)
+        {
+
+        }
+        else
+        {
+
+        }
+    }
+
+    private AnimationPointHandler GetCuriousityAPH(Transform target)
     {
         var aph = person.GetNewAPH(2);
-        person.SetAPs(aph.actionPoints[0], target, PersonAniState.StateKind.Surprize, true, 0, false, true);
-        person.SetAPs(aph.actionPoints[1], target, PersonAniState.StateKind.LookAround, true, 0, true, false);
+        person.SetAPs(aph.animationPoints[0], target, PersonAniState.StateKind.Surprize, true, 0, false, true);
+        person.SetAPs(aph.animationPoints[1], target, PersonAniState.StateKind.LookAround, true, 0, true, false);
 
         return aph;
     }

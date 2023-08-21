@@ -21,26 +21,26 @@ public class PersonAniController : AniController
             animator.GetCurrentAnimatorStateInfo(0).IsName("RunningAround");
     }
 
-    protected override void StartAni(ActionPoint actionPoint, bool shouldReturnAP = false)
+    protected override void StartAni(AnimationPoint actionPoint, bool shouldReturnAP = false)
     {
         if (actionPoint is PersonActionPoint)
         {
             var ap = actionPoint as PersonActionPoint;
-            var module = moduleHandler.GetModule(ap.state);
+            var module = moduleHandler.GetModule(ap.State);
             if (module != null && module is PersonAniState aniModule)
             {
                 aniModule.SetAP(ap);
-                moduleHandler.EnterModule(ap.state);
+                moduleHandler.EnterModule(ap.State);
 
                 // walk animation should stop for other animation
-                SetWalkModule(ActionPointHandler.WalkingState.Non);
+                SetWalkModule(AnimationPointHandler.WalkingState.Non);
 
                 StartAniTimeCount(ap, shouldReturnAP, module);
             }
         }
     }
 
-    void SetWalkModule(ActionPointHandler.WalkingState walkingState)
+    void SetWalkModule(AnimationPointHandler.WalkingState walkingState)
     {
         var module = moduleHandler.GetModule(PersonAniState.StateKind.Walk);
 
@@ -56,7 +56,7 @@ public class PersonAniController : AniController
         }
     }
 
-    public void SetTurnHead(ActionPoint ap)
+    public void SetTurnHead(AnimationPoint ap)
     {
         headFollowTarget = ap.transform;
     }

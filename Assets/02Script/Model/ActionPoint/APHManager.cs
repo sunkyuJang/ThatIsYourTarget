@@ -37,31 +37,31 @@ public class APHManager : MonoBehaviour
         IsReady = true;
     }
 
-    public ActionPointHandler GetCopyAPH(ActionPointHandler originalAPH)
+    public AnimationPointHandler GetCopyAPH(AnimationPointHandler originalAPH)
     {
         var aph = GetCoiedAPH(originalAPH);
-        var copiedAPs = GetCopiedAPs(aph, originalAPH.actionPoints);
-        aph.actionPoints = copiedAPs;
+        var copiedAPs = GetCopiedAPs(aph, originalAPH.animationPoints);
+        aph.animationPoints = copiedAPs;
 
         return aph;
     }
 
-    ActionPointHandler GetCoiedAPH(ActionPointHandler originalAPH)
+    AnimationPointHandler GetCoiedAPH(AnimationPointHandler originalAPH)
     {
-        var coiedAPH = GetObjPooler(PoolerKinds.APH).GetNewOne<ActionPointHandler>();
+        var coiedAPH = GetObjPooler(PoolerKinds.APH).GetNewOne<AnimationPointHandler>();
         ObjPooler.CopyComponentValue(originalAPH.transform, coiedAPH.transform);
         //ObjPooler.CopyComponentValue(originalAPH, coiedAPH);
         return coiedAPH;
     }
 
-    List<ActionPoint> GetCopiedAPs(ActionPointHandler copiedAPH, List<ActionPoint> originalAPs)
+    List<AnimationPoint> GetCopiedAPs(AnimationPointHandler copiedAPH, List<AnimationPoint> originalAPs)
     {
-        var copiedAPs = new List<ActionPoint>();
+        var copiedAPs = new List<AnimationPoint>();
 
         for (int i = 0; i < originalAPs.Count; i++)
         {
             var originalAP = originalAPs[i];
-            var ap = GetObjPooler(PoolerKinds.PersonAP).GetNewOne<ActionPoint>();
+            var ap = GetObjPooler(PoolerKinds.PersonAP).GetNewOne<AnimationPoint>();
             ap.transform.SetParent(copiedAPH.transform);
 
             ObjPooler.CopyComponentValue(originalAP.transform, ap.transform);
@@ -76,9 +76,9 @@ public class APHManager : MonoBehaviour
         return copiedAPs;
     }
 
-    public void ReturnAPH(ActionPointHandler handler)
+    public void ReturnAPH(AnimationPointHandler handler)
     {
-        handler.actionPoints.ForEach(x => GetObjPooler(PoolerKinds.PersonAP).ReturnTargetObj(x.gameObject));
+        handler.animationPoints.ForEach(x => GetObjPooler(PoolerKinds.PersonAP).ReturnTargetObj(x.gameObject));
         GetObjPooler(PoolerKinds.APH).ReturnTargetObj(handler.gameObject);
     }
 }

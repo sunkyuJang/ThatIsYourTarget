@@ -15,7 +15,7 @@ public class Player : Model
 
     protected override void Awake()
     {
-        modelHandler = GetComponentInChildren<ModelHandler>();
+        modelPhysicsHandler = GetComponentInChildren<ModelPhysicsHandler>();
         return;
     }
 
