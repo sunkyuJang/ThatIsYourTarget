@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEditor.Animations;
 
-public class PersonActionPoint : AnimationPoint
+public class PersonAnimationPoint : AnimationPoint
 {
     public PersonAniState.StateKind State { set { base.state = (int)value; } get { return (PersonAniState.StateKind)state; } }
     public override bool HasAction { get { return state != (int)PersonAniState.StateKind.Non; } }
@@ -13,14 +13,14 @@ public class PersonActionPoint : AnimationPoint
     public PersonWeapon Weapon { get; set; }
 }
 
-[CustomEditor(typeof(PersonActionPoint))]
+[CustomEditor(typeof(PersonAnimationPoint))]
 public class PersonActionPointEditor : Editor
 {
-    PersonActionPoint ap;
+    PersonAnimationPoint ap;
     public PersonAniState.StateKind kind;
     private void OnEnable()
     {
-        ap = target as PersonActionPoint;
+        ap = target as PersonAnimationPoint;
     }
     public override void OnInspectorGUI()
     {
@@ -53,7 +53,7 @@ public class PersonActionPointEditor : Editor
         ap.animatorController = animatorController;
         EditorUtility.SetDirty(ap);
     }
-    void SetPrepareAttack(PersonActionPoint ap)
+    void SetPrepareAttack(PersonAnimationPoint ap)
     {
         //ap.shouldReadyForBattle = EditorGUILayout.Toggle("shouldPrepare", ap);
         //if (ap.shouldReadyForBattle)
@@ -62,19 +62,19 @@ public class PersonActionPointEditor : Editor
         //}
     }
 
-    void SetSittingInspector(PersonActionPoint ap)
+    void SetSittingInspector(PersonAnimationPoint ap)
     {
         ExpresseDuring(ap);
         ap.subState_int = (int)EditorGUILayout.Slider(Sitting_PersonAniState.SittingLevel, ap.subState_int, (int)Sitting_PersonAniState.SittingState.Ground, (int)Sitting_PersonAniState.SittingState.High);
     }
 
-    void SetLookAround(PersonActionPoint ap)
+    void SetLookAround(PersonAnimationPoint ap)
     {
         ExpresseFixedDuring(ap, ap.GetLength());
     }
     void SetWaitingInspector(AnimationPoint ap) => ExpresseDuring(ap);
     void SetPrepareAttack(AnimationPoint ap) => ExpresseDuring(ap);
-    void SetSurprize(PersonActionPoint ap) => ExpresseFixedDuring(ap, ap.GetLength());
+    void SetSurprize(PersonAnimationPoint ap) => ExpresseFixedDuring(ap, ap.GetLength());
     void ExpresseDuring(AnimationPoint ap) => ap.during = (float)EditorGUILayout.FloatField("during", ap.during);
     void ExpresseFixedDuring(AnimationPoint ap, float fixedTime) => ap.during = (float)EditorGUILayout.DelayedFloatField("FixedDuring", fixedTime);
 }

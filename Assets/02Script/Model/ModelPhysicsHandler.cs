@@ -35,7 +35,7 @@ public class ModelPhysicsHandler : MonoBehaviour, IJobStarter<Model.ModelJob>, I
     {
         if (actionPointHandler != null)
         {
-            modelJob.returnAPH(actionPointHandler);
+            modelJob?.returnAPH(actionPointHandler);
         }
 
         if (jobManager != null)
@@ -80,20 +80,30 @@ public class ModelPhysicsHandler : MonoBehaviour, IJobStarter<Model.ModelJob>, I
         return Physics.RaycastAll(from, dir, dist, 0, QueryTriggerInteraction.Ignore).OrderBy(x => x.distance).ToArray();
     }
 
-    bool IsHitToTarget(Transform target, float dist = 0f)
+    bool IsHitToTarget(Transform target, float dist, out float distFromTarget)
     {
+        distFromTarget = 0f;
         var from = transform.position;
         var to = target.position;
         var dir = from.GetDirection(to);
         dist = dist == 0f ? Vector3.Distance(from, to) : dist;
 
         Physics.Raycast(from, dir, out RaycastHit hit, dist);
-        return hit.transform == target;
+        if (hit.transform == target)
+        {
+            distFromTarget = hit.distance;
+            return true;
+        }
+        else return false;
     }
 
     public bool IsInSight(Transform target)
     {
-        return IsHitToTarget(target, SightLength);
+        return IsHitToTarget(target, SightLength, out float distFrom);
+    }
+    public bool IsInSight(Transform target, out float distFromTarget)
+    {
+        return IsHitToTarget(target, SightLength, out distFromTarget);
     }
 
     public RaycastHit[] GetAllHitInSight(Transform target)
@@ -116,10 +126,9 @@ public class ModelPhysicsHandler : MonoBehaviour, IJobStarter<Model.ModelJob>, I
     {
         return StartCoroutine(DoTracingTargetInSight(target, conditionOfEndLoop, whenHit));
     }
-
     protected IEnumerator DoTracingTargetInSight(Transform target, Func<bool> conditionOfEndLoop, Action<bool> whenHit)
     {
-        var maxTime = 360f;
+        var maxTime = 600f;
         var time = 0f;
         while (time < maxTime && !conditionOfEndLoop())
         {
@@ -127,7 +136,6 @@ public class ModelPhysicsHandler : MonoBehaviour, IJobStarter<Model.ModelJob>, I
             if (isHit)
             {
                 whenHit?.Invoke(true);
-                yield break;
             }
 
             time += Time.fixedDeltaTime;

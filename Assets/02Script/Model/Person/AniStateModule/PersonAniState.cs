@@ -24,8 +24,8 @@ public abstract class PersonAniState : StateModule
     public PersonAniState(Animator aniController) => this.Animator = aniController;
     public override bool IsReady() { return ap != null && Animator != null; }
     protected Animator Animator { set; get; }
-    protected PersonActionPoint ap;
-    public void SetAP(PersonActionPoint ap) => this.ap = ap;
+    protected PersonAnimationPoint ap;
+    public void SetAP(PersonAnimationPoint ap) => this.ap = ap;
 
     public static List<StateModule> GetStatesList(Animator animator)
     {

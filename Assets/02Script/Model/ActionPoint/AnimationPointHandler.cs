@@ -14,7 +14,6 @@ public class AnimationPointHandler : MonoBehaviour
     {
         SetAPs();
     }
-
     public void SetAPs(List<AnimationPoint> list = null)
     {
         if (list != null)
@@ -65,5 +64,12 @@ public class AnimationPointHandler : MonoBehaviour
     {
         animationPoints[index].ChangePosition(to);
         animationPoints[index].MakeLookAtTo(to);
+    }
+
+    public void ResetData()
+    {
+        ResetIndex();
+        shouldLoop = true;
+
     }
 }

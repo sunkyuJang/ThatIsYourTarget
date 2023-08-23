@@ -23,9 +23,9 @@ public class PersonAniController : AniController
 
     protected override void StartAni(AnimationPoint actionPoint, bool shouldReturnAP = false)
     {
-        if (actionPoint is PersonActionPoint)
+        if (actionPoint is PersonAnimationPoint)
         {
-            var ap = actionPoint as PersonActionPoint;
+            var ap = actionPoint as PersonAnimationPoint;
             var module = moduleHandler.GetModule(ap.State);
             if (module != null && module is PersonAniState aniModule)
             {
@@ -82,7 +82,7 @@ public class PersonAniController : AniController
 
     protected override float GetMakeTurnDuring(float degree)
     {
-        var ap = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP).GetNewOne<PersonActionPoint>();
+        var ap = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP).GetNewOne<PersonAnimationPoint>();
         ap.State = PersonAniState.StateKind.TurnAround;
         ap.targetDegree = degree;
         ap.during = ap.GetLength(GetStateNameByDegree(ap.targetDegree));

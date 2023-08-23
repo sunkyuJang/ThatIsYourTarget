@@ -1,26 +1,23 @@
-using JExtentioner;
 using System.Collections;
 using UnityEngine;
 
 public class Curiousity_PersonState : PersonState
 {
-    int curiosityCnt = 0;
-    const int MaxCuriosityCnt = 3;
-    float warningTime = 0f;
-    const float maxWarningTime = 3f;
+    float curiosityTime = 0;
+    const float MaxCuriosityTime = 3;
+    bool IsCuriousState { get { return curiosityTime < MaxCuriosityTime; } }
     bool isAPHDone = false;
-    Coroutine procCountingTime = null;
     Coroutine procCountingIgnoreTime = null;
     AnimationPointHandler PlayingAPH { set; get; }
     public Curiousity_PersonState(Person person) : base(person) { }
     public override bool IsReady()
     {
         return prepareData != null &&
-                curiosityCnt < MaxCuriosityCnt;
+                IsCuriousState;
     }
     public override void EnterToException()
     {
-        if (curiosityCnt < MaxCuriosityCnt)
+        if (IsCuriousState)
         {
             SetNormalState();
         }
@@ -31,53 +28,34 @@ public class Curiousity_PersonState : PersonState
     }
     protected override void StartModule()
     {
-        if (PlayingAPH != null) return;
-
-        PlayingAPH = GetCuriousityAPH(prepareData.target.modelPhysicsHandler.transform);
-        // 하는 중. 
-        //첫 애니메이션 작동시 model이 움직이면서 콜라이터의 connect 및 remove가 지속적으로 발생하는 것을 막기위해
-        //척 애니메이션이 동작하는 동안 만큼은 connect 및 remove를 통해 입력된 값을 무시하도록 한다.
         if (procCountingIgnoreTime != null) return;
 
-        procCountingIgnoreTime = person.StartCoroutine(IgnoreTime(PlayingAPH));
+        PlayingAPH = GetCuriousityAPH(prepareData.target.modelPhysicsHandler.transform);
+        procCountingIgnoreTime = person.StartCoroutine(IgnoreTimeByAnimation(PlayingAPH));
         person.SetAPH(PlayingAPH, AfterAPHDone);
-        if (procCountingTime != null)
-        {
-            person.StopCoroutine(procCountingTime);
-        }
-
-        procCountingTime = person.StartCoroutine(CountingTime(prepareData.target.modelPhysicsHandler.transform));
+        TracingTargetInSightProcess(prepareData.target.transform, () => isAPHDone);
     }
-    IEnumerator IgnoreTime(AnimationPointHandler aph)
+    IEnumerator IgnoreTimeByAnimation(AnimationPointHandler aph)
     {
         yield return new WaitUntil(() => aph.index > 0);
         procCountingIgnoreTime = null;
     }
 
-    void StartTracing(Transform target, APHManager aph)
-    {
-        var trackingProcess = GetTracingTargetInSightProcess(target.transform, () => isAPHDone);
-    }
-    IEnumerator CountingTime(Transform target)
-    {
-        var trackingProcess = GetTracingTargetInSightProcess(target.transform, () => isAPHDone);
-        yield return WaitUntilExtentioner.WaitUntilWithFixedTime(() => isAPHDone);
-
-        person.StopCoroutine(trackingProcess);
-        procCountingTime = null;
-
-        yield break;
-    }
-
     protected override void WhenTargetInSight(bool isHit)
     {
+        // target find when aph running.
         if (isHit)
         {
-
-        }
-        else
-        {
-
+            var dist = person.modelPhysicsHandler.GetDistTo(prepareData.target.modelPhysicsHandler.transform);
+            if (dist > PrepareAttack_PersonState.prepareAttackDist
+                && IsCuriousState)
+            {
+                curiosityTime += Time.fixedTime;
+            }
+            else
+            {
+                SetState(StateKinds.PrepareAttack, new PersonPrepareData(prepareData.target));
+            }
         }
     }
 
@@ -93,11 +71,10 @@ public class Curiousity_PersonState : PersonState
     public override void Exit()
     {
         isAPHDone = false;
-        warningTime = 0;
-        procCountingTime = null;
-        curiosityCnt = 0;
+        curiosityTime = 0f;
+        procCountingIgnoreTime = null;
     }
-    protected override StateKinds DoAfterDone(out PersonPrepareData prepareData)
+    protected override StateKinds DoAfterAPHDone(out PersonPrepareData prepareData)
     {
         prepareData = null;
         isAPHDone = true;

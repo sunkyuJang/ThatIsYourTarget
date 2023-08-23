@@ -41,7 +41,7 @@ public partial class Person : Model
         APs.Capacity = requireAPCount;
 
         for (int i = 0; i < requireAPCount; i++)
-            APs.Add(apPooler.GetNewOne<PersonActionPoint>());
+            APs.Add(apPooler.GetNewOne<PersonAnimationPoint>());
 
         var aph = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.APH).GetNewOne<AnimationPointHandler>();
         aph.SetAPs(APs);

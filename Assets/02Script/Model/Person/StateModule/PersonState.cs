@@ -29,10 +29,10 @@ public abstract class PersonState : StateModule
     }
     public void AfterAPHDone()
     {
-        var state = DoAfterDone(out PersonPrepareData prepareData);
+        var state = DoAfterAPHDone(out PersonPrepareData prepareData);
         SetState(state, prepareData);
     }
-    protected virtual StateKinds DoAfterDone(out PersonPrepareData prepareData)
+    protected virtual StateKinds DoAfterAPHDone(out PersonPrepareData prepareData)
     {
         prepareData = null;
         return StateKinds.Normal;
@@ -57,7 +57,7 @@ public abstract class PersonState : StateModule
     }
     protected void SetNormalState() => SetState(StateKinds.Normal, null);
     public static int GetStateCount() => Enum.GetValues(typeof(StateKinds)).Length;
-    protected Coroutine GetTracingTargetInSightProcess(Transform target, Func<bool> conditionOfEndLoop) => person.modelPhysicsHandler.TracingTargetInSight(target, conditionOfEndLoop, WhenTargetInSight);
+    protected Coroutine TracingTargetInSightProcess(Transform target, Func<bool> conditionOfEndLoop) => person.modelPhysicsHandler.TracingTargetInSight(target, conditionOfEndLoop, WhenTargetInSight);
     protected virtual void WhenTargetInSight(bool isHit) { }
     public static List<StateModule> GetStatesList(Person person)
     {

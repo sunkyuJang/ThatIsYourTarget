@@ -28,7 +28,7 @@ public class Patrol_PersonState : PersonState
         jobManager.StartJob();
     }
 
-    protected override StateKinds DoAfterDone(out PersonPrepareData prepareData)
+    protected override StateKinds DoAfterAPHDone(out PersonPrepareData prepareData)
     {
         prepareData = this.prepareData;
         jobManager.NextJob();

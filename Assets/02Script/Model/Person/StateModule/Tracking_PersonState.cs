@@ -68,7 +68,7 @@ public class Tracking_PersonState : PersonState
     {
         isAphDone = false;
     }
-    protected override StateKinds DoAfterDone(out PersonPrepareData prepareData)
+    protected override StateKinds DoAfterAPHDone(out PersonPrepareData prepareData)
     {
         prepareData = new PersonPrepareData(this.prepareData.target);
         isAphDone = true;

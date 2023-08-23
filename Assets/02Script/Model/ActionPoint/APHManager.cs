@@ -66,9 +66,9 @@ public class APHManager : MonoBehaviour
 
             ObjPooler.CopyComponentValue(originalAP.transform, ap.transform);
 
-            if (originalAP is PersonActionPoint)
+            if (originalAP is PersonAnimationPoint)
             {
-                ObjPooler.CopyComponentValue(originalAP as PersonActionPoint, ap as PersonActionPoint);
+                ObjPooler.CopyComponentValue(originalAP as PersonAnimationPoint, ap as PersonAnimationPoint);
             }
 
             copiedAPs.Add(ap);
