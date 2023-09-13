@@ -4,7 +4,7 @@ using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(NavMeshObstacle))]
-public class NaviController : MonoBehaviour, IJobStarter<ModelHandlerJobManager.ModelHandlerJob>
+public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJobManager.ModelHandlerJob>
 {
     public NavMeshAgent navMeshAgent { private set; get; }
     NavMeshObstacle navMeshObstacle { set; get; }
@@ -17,7 +17,7 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelHandlerJobManager.
         navMeshObstacle = GetComponent<NavMeshObstacle>();
         navMeshObstacle.enabled = false;
     }
-    public void StartJob(ModelHandlerJobManager.ModelHandlerJob job)
+    public void StartJob(ModelAnimationPlayerJobManager.ModelHandlerJob job)
     {
         if (job.ap != null)
         {
@@ -33,7 +33,7 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelHandlerJobManager.
             CheckingUntilArrive = StartCoroutine(DoCheckUntilArrive(job));
         }
     }
-    IEnumerator DoCheckUntilArrive(ModelHandlerJobManager.ModelHandlerJob job)
+    IEnumerator DoCheckUntilArrive(ModelAnimationPlayerJobManager.ModelHandlerJob job)
     {
         var ap = job.ap;
         TurnOnNavi(true);

@@ -1,16 +1,16 @@
 using System;
 using System.Collections.Generic;
 
-public class ModelHandlerJobManager : JobManager
+public class ModelAnimationPlayerJobManager : JobManager
 {
     enum jobState { navi, ani, done, non }
-    private Model.ModelJob modelJob;
+    private ModelAPHJobManger.ModelJob modelJob;
     private IJobStarter<ModelHandlerJob> naviJobStarter;
     private IJobStarter<ModelHandlerJob> aniJobstarter;
 
-    public ModelHandlerJobManager(
+    public ModelAnimationPlayerJobManager(
             Action endJob,
-            Model.ModelJob modelJob,
+            ModelAPHJobManger.ModelJob modelJob,
             NaviController naviJobStarter,
             AniController aniJobstarter)
         : base(modelJob, endJob)

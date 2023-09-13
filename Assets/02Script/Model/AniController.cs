@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-public abstract class AniController : MonoBehaviour, IJobStarter<ModelHandlerJobManager.ModelHandlerJob>
+public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJobManager.ModelHandlerJob>
 {
     protected RagDollHandler ragDollHandler { set; get; }
     protected NaviController naviController;
@@ -15,7 +15,7 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelHandlerJob
     protected bool IsAPReserved { get { return reservedAP != null; } }
     Coroutine PlayingAni { set; get; }
     protected bool IsPlayingAni { get { return PlayingAni != null; } }
-    private ModelHandlerJobManager.ModelHandlerJob modelHandlerJob { set; get; }
+    private ModelAnimationPlayerJobManager.ModelHandlerJob modelHandlerJob { set; get; }
     protected AnimationPointHandler.WalkingState walkingState { set; get; }
     protected float bodyThreshold = 0f;
     protected StateModuleHandler stateModuleHandler { set; get; }
@@ -77,7 +77,7 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelHandlerJob
             }
         }
     }
-    public void StartJob(ModelHandlerJobManager.ModelHandlerJob job)
+    public void StartJob(ModelAnimationPlayerJobManager.ModelHandlerJob job)
     {
         modelHandlerJob = job;
         walkingState = modelHandlerJob.walkingState;

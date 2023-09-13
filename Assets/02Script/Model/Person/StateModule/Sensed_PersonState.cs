@@ -37,11 +37,11 @@ public class Sensed_PersonState : PersonState
         }
 
         if (trackingBySensedPrepareData == null)
-            trackingBySensedPrepareData = person.StartCoroutine(DoSelectTrackingModel());
+            trackingBySensedPrepareData = StartCoroutine(DoSelectTrackingModel());
     }
     IEnumerator DoSelectTrackingModel()
     {
-        var trackingList = new List<Model>();
+        var trackingList = new List<Transform>();
         while (sensedPrepareDatas.Any())
         {
             for (int i = 0; i < sensedPrepareDatas.Count; i++)
@@ -49,7 +49,7 @@ public class Sensed_PersonState : PersonState
                 var prepareData = sensedPrepareDatas[i];
                 if (prepareData.isInSight)
                 {
-                    var canSeeTarget = person.modelPhysicsHandler.IsInSight(prepareData.target.modelPhysicsHandler.transform);
+                    var canSeeTarget = IsInSight(prepareData.target);
                     if (canSeeTarget)
                     {
                         trackingList.Add(prepareData.target);
@@ -59,11 +59,11 @@ public class Sensed_PersonState : PersonState
 
             if (trackingList.Any())
             {
-                var playingTargetModel = person.moduleHandler.GetPlayingModuleTarget(StateKinds.Sensed);
+                var playingTargetModel = ModuleHandler.GetPlayingModuleTarget(StateKinds.Sensed);
                 var selectedModel = SelectModel(trackingList, playingTargetModel);
                 if (selectedModel != playingTargetModel)
                 {
-                    var dist = Vector3.Distance(person.modelPhysicsHandler.transform.position, selectedModel.modelPhysicsHandler.transform.position);
+                    var dist = Vector3.Distance(ActorTransform.transform.position, selectedModel.position);
                     var shouldAttack = dist < PrepareAttack_PersonState.prepareAttackDist;
                     SetState(shouldAttack ? StateKinds.PrepareAttack : StateKinds.Curiousity, new PersonPrepareData(selectedModel));
                     var selectedModelIndex = sensedPrepareDatas.FindIndex(x => x.target == selectedModel);
@@ -81,10 +81,10 @@ public class Sensed_PersonState : PersonState
         yield break;
     }
 
-    Model SelectModel(List<Model> targets, Model playingTarget)
+    Transform SelectModel(List<Transform> targets, Transform playingTarget)
     {
-        List<(Model model, int priolity, float dist)> eachModelPriolity = new List<(Model model, int priolity, float dist)>();
-        var playingModuleHandler = person.moduleHandler;
+        List<(Transform target, int priolity, float dist)> eachModelPriolity = new List<(Transform target, int priolity, float dist)>();
+        var playingModuleHandler = ModuleHandler;
         if (playingTarget != null)
         {
             var isContained = PriolityList.Contains(playingModuleHandler.GetPlayingModuleStateKind());
@@ -102,20 +102,20 @@ public class Sensed_PersonState : PersonState
         eachModelPriolity.RemoveAll(x => x.priolity < highestPriolity);
         eachModelPriolity.Sort((x, y) => x.dist.CompareTo(y.dist));
 
-        return eachModelPriolity.First().model;
+        return eachModelPriolity.First().target;
     }
 
-    (Model model, int priolity, float dist) GetPriolityTuple(Model model, int priolity = 0)
+    (Transform model, int priolity, float dist) GetPriolityTuple(Transform target, int priolity = 0)
     {
-        var dist = Vector3.Distance(person.modelPhysicsHandler.transform.position, model.modelPhysicsHandler.transform.position);
+        var dist = Vector3.Distance(ActorTransform.position, target.position);
         var shouldAttack = dist <= PrepareAttack_PersonState.prepareAttackDist;
         priolity += priolity == 0 ?
                         PriolityList.IndexOf(shouldAttack ? StateKinds.PrepareAttack : StateKinds.Curiousity) :
                         priolity;
 
-        priolity += model as Player ? 5 : 0;
+        priolity += Person.GetPriolity(target);
 
-        return (model, priolity, dist);
+        return (target, priolity, dist);
     }
 
     public override void EnterToException()
@@ -125,7 +125,7 @@ public class Sensed_PersonState : PersonState
     public class SensedPrepareData : PersonPrepareData
     {
         public bool isInSight = false;
-        public SensedPrepareData(Model target, bool isInSight) : base(target)
+        public SensedPrepareData(Transform target, bool isInSight) : base(target)
         {
             this.isInSight = isInSight;
         }

@@ -31,7 +31,7 @@ public class Weapon : MonoBehaviour, IObjCollisionDetectorConnector_OnCollisionE
         yield return null;
     }
 
-    public void OnCollisionEnter(ObjCollisionDetector detector, Collision collision)
+    public void OnCollisionEnterByConnector(ObjCollisionDetector detector, Collision collision)
     {
         IDamageController damageController = collision.collider.GetComponent<IDamageController>();
         if (damageController != null)

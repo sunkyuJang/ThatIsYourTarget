@@ -1,3 +1,4 @@
+using UnityEngine;
 public class PersonStateModuleHandler : StateModuleHandler
 {
     public PersonStateModuleHandler(Person person)
@@ -16,7 +17,7 @@ public class PersonStateModuleHandler : StateModuleHandler
         return prepareData != null && prepareData.target != null;
     }
 
-    public Model GetPlayingModuleTarget()
+    public Transform GetPlayingModuleTarget()
     {
         if (isPlayingModuleHasTarget())
         {
@@ -25,7 +26,7 @@ public class PersonStateModuleHandler : StateModuleHandler
         return null;
     }
 
-    public Model GetPlayingModuleTarget(PersonState.StateKinds exclusiveKinds)
+    public Transform GetPlayingModuleTarget(PersonState.StateKinds exclusiveKinds)
     {
         var isStateKindDifferent = ConvertStateKindToInt(exclusiveKinds) != playingModuleIndex;
         if (isStateKindDifferent)

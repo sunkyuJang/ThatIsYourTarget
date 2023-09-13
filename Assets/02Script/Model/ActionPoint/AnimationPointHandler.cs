@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class AnimationPointHandler : MonoBehaviour
@@ -71,5 +72,70 @@ public class AnimationPointHandler : MonoBehaviour
         ResetIndex();
         shouldLoop = true;
 
+    }
+}
+
+[CustomEditor(typeof(AnimationPointHandler))]
+public class AnimationPointHandlerEditor : Editor
+{
+    AnimationPointHandler handler { get; set; }
+    List<AnimationPoint> animationPoints = new List<AnimationPoint>();
+    public void OnEnable()
+    {
+        handler = target as AnimationPointHandler;
+    }
+    public override void OnInspectorGUI()
+    {
+        // 기본 인스펙터 UI를 그립니다.
+        DrawDefaultInspector();
+
+        // 추가적인 인스펙터 UI를 여기에 그릴 수 있습니다.
+    }
+    void OnSceneGUI()
+    {
+        if (handler != null)
+        {
+            if (handler.transform.childCount != animationPoints.Count)
+            {
+                animationPoints.Clear();
+
+                for (int i = 0; i < handler.transform.childCount; i++)
+                {
+                    var ap = handler.transform.GetChild(i).GetComponent<AnimationPoint>();
+                    animationPoints.Add(ap);
+                }
+            }
+
+            for (int i = 0; i < animationPoints.Count; i++)
+            {
+                Handles.color = Color.red;
+                var ap = animationPoints[i];
+                var nextAp = i + 1 < animationPoints.Count ? animationPoints[i + 1] : null;
+                var startDrawPosition = Vector3.up * 0.1f;
+                var endDrawPosition = startDrawPosition + Vector3.up * 0.1f;
+                var sphereRadius = 0.05f;
+                if (handler.shouldLoop && nextAp == null)
+                {
+                    nextAp = animationPoints[0];
+                }
+
+                if (nextAp)
+                {
+                    Handles.DrawLine(ap.transform.position, nextAp.transform.position);
+                }
+
+                if (i == animationPoints.Count - 1) // 마지막일때
+                {
+                    var drawPoint = handler.shouldLoop ? animationPoints[0] : animationPoints[i];
+                    Handles.SphereHandleCap(0, drawPoint.transform.position + endDrawPosition, Quaternion.identity, sphereRadius, EventType.Repaint);
+                }
+
+                if (i == 0) // 시작점일떄
+                {
+                    Handles.color = Color.green;
+                    Handles.SphereHandleCap(0, ap.transform.position + startDrawPosition, Quaternion.identity, sphereRadius, EventType.Repaint);
+                }
+            }
+        }
     }
 }

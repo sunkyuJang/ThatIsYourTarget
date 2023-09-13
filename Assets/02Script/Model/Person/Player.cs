@@ -8,15 +8,13 @@ public class Player : Model
     private Renderer renderer;
     public Material belongTo { get { return renderer.material; } }
 
+    private void Awake()
+    {
+
+    }
     protected override StateModuleHandler SetStateModuleHandler()
     {
         throw new System.NotImplementedException();
-    }
-
-    protected override void Awake()
-    {
-        modelPhysicsHandler = GetComponentInChildren<ModelPhysicsHandler>();
-        return;
     }
 
     protected override IEnumerator Start()

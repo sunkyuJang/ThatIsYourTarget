@@ -20,6 +20,9 @@ public abstract class PersonAniState : StateModule
         TurnAround,
         //TurnHead,
     }
+    readonly public static List<StateKind> FixedDuringStateKinds = new List<StateKind>() { StateKind.LookAround, StateKind.Surprize, StateKind.TurnAround };
+    public static bool IsStateDuringFixed(StateKind kind) => FixedDuringStateKinds.Contains(kind);
+
     public static int ConverStateToInt(PersonAniState.StateKind stateKind) => (int)stateKind;
     public PersonAniState(Animator aniController) => this.Animator = aniController;
     public override bool IsReady() { return ap != null && Animator != null; }
@@ -45,6 +48,7 @@ public abstract class PersonAniState : StateModule
                     case StateKind.LookAround: state = new LookAround_PersonAniState(animator); break;
                     case StateKind.Sitting: state = new Sitting_PersonAniState(animator); break;
                     case StateKind.Surprize: state = new Surprize_PersonAniState(animator); break;
+                    case StateKind.PrepareAttack: state = new PrepareAttack_PersonAniState(animator); break;
                     case StateKind.TurnAround: state = new TurnAround_PersonAniState(animator); break;
                 }
 

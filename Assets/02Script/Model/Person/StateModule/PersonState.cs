@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -20,44 +21,75 @@ public abstract class PersonState : StateModule
         Dead,
         Non
     }
-
-    protected Person person;
+    public static int ConvertStateKindToInt(StateKinds kinds) => (int)kinds;
+    private Person Person { get; set; }
+    public PersonState(Person person) => Person = person;
+    protected Transform ActorTransform { get { return Person.ActorTransform; } }
+    protected PersonWeapon Weapon { get { return Person.Weapon; } }
+    protected void HoldWeapon(bool shouldHold) => Person.HoldWeapon(shouldHold);
     new public PersonPrepareData prepareData { set { base.prepareData = value; } get { return base.prepareData as PersonPrepareData; } }
-    public PersonState(Person person)
+    protected PersonStateModuleHandler ModuleHandler { get { return Person.ModuleHandler; } }
+    protected Coroutine StartCoroutine(IEnumerator doFunction) { return Person.StartCoroutine(doFunction); }
+
+    // APH
+    protected AnimationPointHandler GetNewAPH(int APCounts, AnimationPointHandler.WalkingState walkingState = AnimationPointHandler.WalkingState.Walk, PersonAniState.StateKind kind = PersonAniState.StateKind.Non)
     {
-        this.person = person;
+        var requireAPCount = APCounts;
+        var apPooler = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP);
+        var APs = new List<AnimationPoint>();
+        APs.Capacity = requireAPCount;
+
+        for (int i = 0; i < requireAPCount; i++)
+            APs.Add(apPooler.GetNewOne<PersonAnimationPoint>());
+
+        var aph = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.APH).GetNewOne<AnimationPointHandler>();
+        aph.SetAPs(APs);
+        aph.shouldLoop = false;
+        aph.walkingState = walkingState;
+        return aph;
     }
-    public void AfterAPHDone()
+    protected void SetAPs(AnimationPoint ap, Transform target, PersonAniState.StateKind kind, float time = 0, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
     {
-        var state = DoAfterAPHDone(out PersonPrepareData prepareData);
-        SetState(state, prepareData);
+        SetAPs(ap, target.position, kind, time, shouldReachTargetPosition, shouldLookAtTarget);
     }
-    protected virtual StateKinds DoAfterAPHDone(out PersonPrepareData prepareData)
+    protected void SetAPs(AnimationPoint ap, Vector3 target, PersonAniState.StateKind kind, float time = 0, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
     {
-        prepareData = null;
+        if (ap is PersonAnimationPoint)
+        {
+            (ap as PersonAnimationPoint).SetAP(Person.ActorTransform.position, target, kind, time, shouldReachTargetPosition, shouldLookAtTarget);
+        }
+    }
+    protected void SetAPH(AnimationPointHandler aph = null, bool needFuncAfterAPH = false)
+    {
+        Person.SetAPH(aph, needFuncAfterAPH ? () => AfterAPHDone(out PersonPrepareData data) : null);
+    }
+    protected virtual StateKinds AfterAPHDone(out PersonPrepareData data)
+    {
+        data = null;
         return StateKinds.Normal;
     }
+
+    // State
+    public void SetState(StateKinds kinds, PersonPrepareData prepareData)
+    {
+        Person.personInfoUI.StateModule.text = "before : " + Person.ModuleHandler.GetPlayingModuleStateKind().ToString() + "\nNow :" + kinds.ToString();
+        Person.SetState(ConvertStateKindToInt(kinds), prepareData);
+    }
+    public void SetNormalState() => SetState(StateKinds.Normal, null);
+    protected bool IsTargetModelSame(PersonState stateModule)
+    {
+        return prepareData.target == stateModule.prepareData.target;
+    }
+
+    // Sight
+    protected bool IsInSight(Transform target) => Person.IsInSight(target);
+    public Coroutine TracingTargetInSightProcess(Transform target, Func<bool> conditionOfEndLoop) => Person.TracingTargetInSight(target, conditionOfEndLoop, WhenTargetInSight);
+
     public override void Exit()
     {
         prepareData = null;
     }
 
-    protected bool IsTargetModelSame(PersonState stateModule)
-    {
-        return prepareData.target == stateModule.prepareData.target;
-    }
-    public static int ConvertStateKindToInt(StateKinds kinds)
-    {
-        return (int)kinds;
-    }
-    protected void SetState(StateKinds kinds, PersonPrepareData prepareData)
-    {
-        person.personInfoUI.StateModule.text = "before : " + person.moduleHandler.GetPlayingModuleStateKind().ToString() + "\nNow :" + kinds.ToString();
-        person.SetState(ConvertStateKindToInt(kinds), prepareData);
-    }
-    protected void SetNormalState() => SetState(StateKinds.Normal, null);
-    public static int GetStateCount() => Enum.GetValues(typeof(StateKinds)).Length;
-    protected Coroutine TracingTargetInSightProcess(Transform target, Func<bool> conditionOfEndLoop) => person.modelPhysicsHandler.TracingTargetInSight(target, conditionOfEndLoop, WhenTargetInSight);
     protected virtual void WhenTargetInSight(bool isHit) { }
     public static List<StateModule> GetStatesList(Person person)
     {
@@ -88,7 +120,7 @@ public abstract class PersonState : StateModule
 
     public class PersonPrepareData : PrepareData
     {
-        public Model target { private set; get; }
-        public PersonPrepareData(Model target) { this.target = target; }
+        public Transform target { private set; get; }
+        public PersonPrepareData(Transform target) { this.target = target; }
     }
 }

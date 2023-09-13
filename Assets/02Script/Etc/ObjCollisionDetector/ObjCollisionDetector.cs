@@ -43,7 +43,7 @@ public class ObjCollisionDetector : MonoBehaviour
     {
         if (IsFind(other.collider))
         {
-            I_CollisionEnter.OnCollisionEnter(this, other);
+            I_CollisionEnter.OnCollisionEnterByConnector(this, other);
         }
     }
 

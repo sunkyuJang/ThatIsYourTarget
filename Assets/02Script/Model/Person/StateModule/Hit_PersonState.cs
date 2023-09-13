@@ -8,7 +8,7 @@ public class Hit_PersonState : PersonState
     public override void EnterToException() { }
     protected override void StartModule()
     {
-        person.SetOriginalAPH();
+        //person.SetOriginalAPH();
     }
     public override void Exit() { }
 }

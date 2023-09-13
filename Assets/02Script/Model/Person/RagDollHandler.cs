@@ -1,15 +1,13 @@
-using System.Collections;
-using System.Collections.Generic;
 using Autohand;
 using UnityEngine;
 public class RagDollHandler : MonoBehaviour
 {
     Rigidbody[] rigidbodies;
-    Collider[] colliders;
+    //Collider[] colliders;
     void Awake()
     {
         rigidbodies = GetComponentsInChildren<Rigidbody>();
-        colliders = GetComponentsInChildren<Collider>();
+        //colliders = GetComponentsInChildren<Collider>();
 
         TrunOnRigid(false);
     }

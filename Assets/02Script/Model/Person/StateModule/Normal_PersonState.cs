@@ -11,7 +11,7 @@ public class Normal_PersonState : PersonState
     public override void EnterToException() { }
     protected override void StartModule()
     {
-        person.SetOriginalAPH();
+        SetAPH();
     }
     public override void Exit() { }
 }

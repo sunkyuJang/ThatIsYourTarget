@@ -13,29 +13,29 @@ public class Tracking_PersonState : PersonState
     public override void EnterToException() { }
     protected override void StartModule()
     {
-        person.StartCoroutine(DoTrackingPoint());
+        StartCoroutine(DoTrackingPoint());
     }
 
     private IEnumerator DoTrackingPoint()
     {
-        var weapon = person.weapon;
+        var weapon = Weapon;
 
         if (weapon != null)
         {
-            var aph = person.GetNewAPH(1, AnimationPointHandler.WalkingState.Run);
+            var aph = GetNewAPH(1, AnimationPointHandler.WalkingState.Run);
             var ap = aph.GetActionPoint(0);
-            person.SetAPs(ap, prepareData.target.modelPhysicsHandler.transform, PersonAniState.StateKind.Non, false, 0, true, true);
-            person.SetAPH(aph, AfterAPHDone);
+            SetAPs(ap, prepareData.target, PersonAniState.StateKind.Non, 0, true, true);
+            SetAPH(aph, true);
             var shouldFixAPLookAt = false;
             isAphDone = false;
 
             while (!isAphDone)
             {
-                var isInSight = person.modelPhysicsHandler.IsInSight(prepareData.target.modelPhysicsHandler.transform);
+                var isInSight = IsInSight(prepareData.target);
 
                 if (isInSight)
                 {
-                    var dist = Vector3.Distance(prepareData.target.modelPhysicsHandler.transform.position, person.modelPhysicsHandler.transform.position);
+                    var dist = Vector3.Distance(ActorTransform.position, prepareData.target.position);
                     if (dist < weapon.Range)
                     {
                         stateKinds = StateKinds.Hit;
@@ -43,7 +43,7 @@ public class Tracking_PersonState : PersonState
                     }
                     else
                     {
-                        person.SetAPs(ap, prepareData.target.modelPhysicsHandler.transform, PersonAniState.StateKind.LookAround, false, 0, true, true);
+                        SetAPs(ap, prepareData.target, PersonAniState.StateKind.LookAround, 0, true, true);
                     }
 
                     shouldFixAPLookAt = true;
@@ -68,7 +68,7 @@ public class Tracking_PersonState : PersonState
     {
         isAphDone = false;
     }
-    protected override StateKinds DoAfterAPHDone(out PersonPrepareData prepareData)
+    protected StateKinds DoAfterAPHDone(out PersonPrepareData prepareData)
     {
         prepareData = new PersonPrepareData(this.prepareData.target);
         isAphDone = true;

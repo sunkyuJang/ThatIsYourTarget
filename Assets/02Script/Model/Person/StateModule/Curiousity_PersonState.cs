@@ -3,9 +3,11 @@ using UnityEngine;
 
 public class Curiousity_PersonState : PersonState
 {
+    float curiosityDIst = 0;
+    const float MinCuriositiyDist = 3f;
     float curiosityTime = 0;
     const float MaxCuriosityTime = 3;
-    bool IsCuriousState { get { return curiosityTime < MaxCuriosityTime; } }
+    bool IsCuriousState { get { return curiosityTime < MaxCuriosityTime && curiosityDIst > MinCuriositiyDist; } }
     bool isAPHDone = false;
     Coroutine procCountingIgnoreTime = null;
     AnimationPointHandler PlayingAPH { set; get; }
@@ -13,7 +15,7 @@ public class Curiousity_PersonState : PersonState
     public override bool IsReady()
     {
         return prepareData != null &&
-                IsCuriousState;
+                !IsCuriousState;
     }
     public override void EnterToException()
     {
@@ -30,10 +32,11 @@ public class Curiousity_PersonState : PersonState
     {
         if (procCountingIgnoreTime != null) return;
 
-        PlayingAPH = GetCuriousityAPH(prepareData.target.modelPhysicsHandler.transform);
-        procCountingIgnoreTime = person.StartCoroutine(IgnoreTimeByAnimation(PlayingAPH));
-        person.SetAPH(PlayingAPH, AfterAPHDone);
-        TracingTargetInSightProcess(prepareData.target.transform, () => isAPHDone);
+        var targetMPH = prepareData.target;
+        PlayingAPH = GetCuriousityAPH(targetMPH);
+        procCountingIgnoreTime = StartCoroutine(IgnoreTimeByAnimation(PlayingAPH));
+        SetAPH(PlayingAPH, true);
+        TracingTargetInSightProcess(targetMPH, () => isAPHDone);
     }
     IEnumerator IgnoreTimeByAnimation(AnimationPointHandler aph)
     {
@@ -46,11 +49,10 @@ public class Curiousity_PersonState : PersonState
         // target find when aph running.
         if (isHit)
         {
-            var dist = person.modelPhysicsHandler.GetDistTo(prepareData.target.modelPhysicsHandler.transform);
-            if (dist > PrepareAttack_PersonState.prepareAttackDist
-                && IsCuriousState)
+            curiosityDIst = Vector3.Distance(ActorTransform.position, prepareData.target.position);
+            if (IsCuriousState)
             {
-                curiosityTime += Time.fixedTime;
+                curiosityTime += Time.fixedDeltaTime;
             }
             else
             {
@@ -61,9 +63,9 @@ public class Curiousity_PersonState : PersonState
 
     private AnimationPointHandler GetCuriousityAPH(Transform target)
     {
-        var aph = person.GetNewAPH(2);
-        person.SetAPs(aph.animationPoints[0], target, PersonAniState.StateKind.Surprize, true, 0, false, true);
-        person.SetAPs(aph.animationPoints[1], target, PersonAniState.StateKind.LookAround, true, 0, true, false);
+        var aph = GetNewAPH(2);
+        SetAPs(aph.animationPoints[0], target, PersonAniState.StateKind.Surprize, 0, false, true);
+        SetAPs(aph.animationPoints[1], target, PersonAniState.StateKind.LookAround, 0, true, false);
 
         return aph;
     }
@@ -72,9 +74,10 @@ public class Curiousity_PersonState : PersonState
     {
         isAPHDone = false;
         curiosityTime = 0f;
+        curiosityDIst = 0f;
         procCountingIgnoreTime = null;
     }
-    protected override StateKinds DoAfterAPHDone(out PersonPrepareData prepareData)
+    protected override StateKinds AfterAPHDone(out PersonPrepareData prepareData)
     {
         prepareData = null;
         isAPHDone = true;

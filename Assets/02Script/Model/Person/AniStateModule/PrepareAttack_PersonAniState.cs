@@ -24,7 +24,6 @@ internal class PrepareAttack_PersonAniState : PersonAniState
         else
         {
             Animator.SetLayerWeight(layer, 1);
-            SetHandsIK();
         }
     }
 

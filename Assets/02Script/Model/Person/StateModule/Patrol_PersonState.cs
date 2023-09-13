@@ -28,7 +28,7 @@ public class Patrol_PersonState : PersonState
         jobManager.StartJob();
     }
 
-    protected override StateKinds DoAfterAPHDone(out PersonPrepareData prepareData)
+    protected override StateKinds AfterAPHDone(out PersonPrepareData prepareData)
     {
         prepareData = this.prepareData;
         jobManager.NextJob();
@@ -64,16 +64,16 @@ public class Patrol_PersonState : PersonState
     {
         var position = GetForwardPosition();
         var aph = GetAPHByPositions(new List<Vector3>() { position });
-        person.SetAPH(aph, AfterAPHDone);
+        SetAPH(aph, true);
 
-        person.StartCoroutine(DoTracingTarget(job, aph));
+        StartCoroutine(DoTracingTarget(job, aph));
     }
     void LookAroundNearBy(Job job)
     {
         var positions = GetRoundPositions();
         var aph = GetAPHByPositions(positions);
-        person.SetAPH(aph);
-        person.StartCoroutine(DoTracingTarget(job, aph));
+        SetAPH(aph);
+        StartCoroutine(DoTracingTarget(job, aph));
     }
 
     IEnumerator DoTracingTarget(Job job, AnimationPointHandler aph)
@@ -81,7 +81,7 @@ public class Patrol_PersonState : PersonState
         var shouldReadNextJob = true;
         while (!aph.isAPHDone)
         {
-            var isInSight = person.modelPhysicsHandler.IsInSight(prepareData.target.modelPhysicsHandler.transform);
+            var isInSight = IsInSight(prepareData.target);
             if (isInSight)
             {
                 SetState(StateKinds.Tracking, new PersonPrepareData(prepareData.target));
@@ -100,12 +100,12 @@ public class Patrol_PersonState : PersonState
     {
         if (positions.Count <= 0) return null;
 
-        var aph = person.GetNewAPH(positions.Count, AnimationPointHandler.WalkingState.Walk);
+        var aph = GetNewAPH(positions.Count, AnimationPointHandler.WalkingState.Walk);
         var count = 0;
         positions.ForEach(x =>
         {
             var ap = aph.GetActionPoint(count++);
-            person.SetAPs(ap, x, PersonAniState.StateKind.LookAround, true, 0f, true, true);
+            SetAPs(ap, x, PersonAniState.StateKind.LookAround, 0f, true, true);
         });
 
         return aph;
@@ -132,9 +132,9 @@ public class Patrol_PersonState : PersonState
         var farDist = 0f;
         hitList.ForEach(x =>
         {
-            if (NavMesh.CalculatePath(person.modelPhysicsHandler.transform.position, x, 1, path))
+            if (NavMesh.CalculatePath(ActorTransform.position, x, 1, path))
             {
-                var dist = Vector3.Distance(person.modelPhysicsHandler.transform.position, x);
+                var dist = Vector3.Distance(ActorTransform.position, x);
                 if (dist > farDist)
                 {
                     farDist = dist;
@@ -152,7 +152,7 @@ public class Patrol_PersonState : PersonState
         List<Vector3> castList = new List<Vector3>();
         for (int i = 0; i < samplingCount; i++)
         {
-            if (NavMesh.SamplePosition(person.modelPhysicsHandler.transform.position, out NavMeshHit hit, castDist, 1))
+            if (NavMesh.SamplePosition(ActorTransform.position, out NavMeshHit hit, castDist, 1))
             {
                 castList.Add(hit.position);
             }
@@ -170,7 +170,7 @@ public class Patrol_PersonState : PersonState
     {
         var rad = angle * Mathf.Deg2Rad;
         var dir = new Vector3(Mathf.Cos(rad), 0, Mathf.Sign(rad));
-        return new Ray(prepareData.target.modelPhysicsHandler.transform.position, dir);
+        return new Ray(prepareData.target.position, dir);
     }
     public override void Exit()
     {

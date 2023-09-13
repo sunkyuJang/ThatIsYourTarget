@@ -1,77 +1,89 @@
+using JExtentioner;
+using SensorToolkit;
 using System;
 using System.Collections;
 using UnityEngine;
 
-public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConnector_OnContecting, IObjDetectorConnector_OnDetected, IObjDetectorConnector_OnRemoved
+public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConnector_OnAll
 {
+    public enum ModelKinds { Person, Player }
     public float HP { set { HP -= value; HP = HP < 0 ? 0 : HP; } get { return HP; } }
     public int state { private set; get; } = 0;
-    public ModelPhysicsHandler modelPhysicsHandler { protected set; get; }
-    Transform APHGroup;
-    AnimationPointHandler originalAPH;
-    Action nextActionFromState = null;
+    public Transform ActorTransform { private set; get; }
+
+    // DMG
     float MaxAcceptableDmgTime { set; get; } = 2f;
     bool CanAcceptableDmg { set; get; } = true;
-    JobManager jobManager { set; get; }
-    public StateModuleHandler moduleHandler { protected set; get; }
+
+    //APH
+    protected ModelAnimationPlayer ModelAnimationPlayer { set; get; }
+    ModelAPHJobManger ModelAPHJobManger { set; get; }
+
+    // Module
+    public StateModuleHandler ModuleHandler { protected set; get; }
+
+    // Sight
+    [SerializeField]
+    private FOVCollider FOVCollider;
+    public float SightLength { get { return FOVCollider.Length * FOVCollider.transform.lossyScale.x; } }
+
+    // Weapon
+    [SerializeField]
+    private WeaponHolster weaponKeepingHolster;
+    [SerializeField]
+    private WeaponHolster weaponGrabHolster;
+    public Weapon Weapon { get { return weaponKeepingHolster.GetWeapon(); } }
+
     protected virtual void Awake()
     {
-        modelPhysicsHandler = GetComponentInChildren<ModelPhysicsHandler>();
-        APHGroup = transform.Find("APHGroup");
-        originalAPH = APHGroup.Find("OriginalAPH").GetComponent<AnimationPointHandler>();
-        jobManager = new JobManager(GetNextAPH);
-        moduleHandler = SetStateModuleHandler();
+        ActorTransform = transform.Find("Actor");
+        ModelAnimationPlayer = new ModelAnimationPlayer(this, ActorTransform);
+
+        var APHGroup = transform.Find("APHGroup");
+        ModelAPHJobManger = new ModelAPHJobManger(null, null, APHGroup, ModelAnimationPlayer);
+
+        ModuleHandler = SetStateModuleHandler();
     }
     protected abstract StateModuleHandler SetStateModuleHandler();
     protected virtual IEnumerator Start()
     {
         yield return new WaitUntil(() => APHManager.Instance.IsReady);
-        SetOriginalAPH();
+        ModelAPHJobManger.StartJob();
     }
-    protected virtual void SetState(int newState, StateModule.PrepareData prepareData = null)
+    public void SetState(int newState, StateModule.PrepareData prepareData = null)
     {
-        moduleHandler.EnterModule(newState, prepareData);
-    }
-    public void SetOriginalAPH()
-    {
-        SetAPH(originalAPH);
-    }
-
-    public void ReturnAPH(AnimationPointHandler APH)
-    {
-        if (APH != originalAPH)
-            APHManager.Instance.ReturnAPH(APH);
+        ModuleHandler.EnterModule(newState, prepareData);
     }
     public void SetAPH(AnimationPointHandler handler, Action nextActionFromState = null)
     {
-        if (jobManager == null) jobManager = new JobManager(GetNextAPH);
-        var job = new ModelJob(jobManager, handler, ReturnAPH);
-        job.jobAction = () => (modelPhysicsHandler as IJobStarter<ModelJob>).StartJob(job);
-        jobManager.AddJob(job);
-        jobManager.StartJob();
-        if (nextActionFromState != null) this.nextActionFromState = nextActionFromState;
+        ModelAPHJobManger.SetAPH(handler, nextActionFromState);
+        ModelAPHJobManger.StartJob();
     }
 
-    protected virtual void EndEachJob()
+    public bool IsInSight(Transform target) => ActorTransform.IsRayHitToTarget(target, SightLength);
+    public Coroutine TracingTargetInSight(Transform target, Func<bool> conditionOfEndLoop, Action<bool> whenHit)
     {
-        GetNextAPH();
+        return StartCoroutine(DoTracingTargetInSight(target, conditionOfEndLoop, whenHit));
     }
-    protected virtual void ExceptionJob()
+    protected IEnumerator DoTracingTargetInSight(Transform target, Func<bool> conditionOfEndLoop, Action<bool> whenHit)
     {
-        print("somthing wrong with ModelJob");
-        GetNextAPH();
-    }
+        var maxTime = 600f;
+        var time = 0f;
+        while (time < maxTime && !conditionOfEndLoop())
+        {
+            var isHit = ActorTransform.IsRayHitToTarget(target, SightLength);
+            if (isHit)
+            {
+                whenHit?.Invoke(true);
+            }
 
-    public void GetNextAPH()
-    {
-        if (nextActionFromState == null)
-        {
-            SetOriginalAPH();
+            time += Time.fixedDeltaTime;
+            yield return new WaitForFixedUpdate();
         }
-        else
-        {
-            nextActionFromState.Invoke();
-        }
+
+        whenHit?.Invoke(false);
+        Debug.Log("DoTracingTargetInSight closed by force : its over than " + maxTime + "sec.\n" + "instanceID : " + transform.GetInstanceID());
+        yield break;
     }
     public void OnContecting(ObjDetector detector, Collider collider) => OnContecting(collider);
     public void OnDetected(ObjDetector detector, Collider collider) => OnDetected(collider);
@@ -79,9 +91,7 @@ public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConn
     public virtual void OnContecting(Collider collider) { }
     public virtual void OnDetected(Collider collider) { }
     public virtual void OnRemoved(Collider collider) { }
-    protected virtual void ChangedState() { }
     protected virtual void DoDie() { }
-
     public bool SetDamage(float damege)
     {
         if (CanAcceptableDmg)
@@ -101,14 +111,11 @@ public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConn
         return false;
     }
 
-    public class ModelJob : Job
+    public void HoldWeapon(bool shouldHold)
     {
-        public AnimationPointHandler aph { private set; get; }
-        public Action<AnimationPointHandler> returnAPH { private set; get; }
-        public ModelJob(JobManager jobManager, AnimationPointHandler aph, Action<AnimationPointHandler> returnAPH) : base(jobManager)
-        {
-            this.aph = aph;
-            this.returnAPH = returnAPH;
-        }
+        var from = shouldHold ? weaponKeepingHolster : weaponGrabHolster;
+        var to = shouldHold ? weaponGrabHolster : weaponKeepingHolster;
+
+        to.HoldWeapon(from.GetWeapon());
     }
 }

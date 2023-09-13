@@ -11,7 +11,6 @@ public class Dead_PersonState : PersonState
     public override void EnterToException() { }
     protected override void StartModule()
     {
-        person.modelPhysicsHandler.SetDead();
     }
     public override void Exit() { }
 }
