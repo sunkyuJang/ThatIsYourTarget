@@ -7,11 +7,11 @@ public class Weapon : MonoBehaviour, IObjCollisionDetectorConnector_OnCollisionE
     public float Range { set; get; } = 0;
     public bool IsMelee { get { return Range == 0; } }
     public bool IsSingleTarget { set; get; }
-    public float hitPower { set; get; } = 1;
+    public float HitPower { set; get; } = 1;
     public int HitPerCycle { set; get; } = 0;
-    public float coolPerHit { set; get; } = 0;
-    public float coolPerCycle { set; get; } = 0;
-    public int curHitCount { set; get; } = 0;
+    public float CoolPerHit { set; get; } = 0;
+    public float CoolPerCycle { set; get; } = 0;
+    public int CurHitCount { set; get; } = 0;
 
     public void Attack()
     {
@@ -51,7 +51,7 @@ public class Weapon : MonoBehaviour, IObjCollisionDetectorConnector_OnCollisionE
                     {
                         var hipPoint = collision.contacts[0];
                         var targetRigidbody = collision.rigidbody;
-                        targetRigidbody?.AddForceAtPosition((hipPoint.point - transform.position).normalized * hitPower * 100, hipPoint.point, ForceMode.Impulse);
+                        targetRigidbody?.AddForceAtPosition((hipPoint.point - transform.position).normalized * HitPower * 100, hipPoint.point, ForceMode.Impulse);
                     }
                 }
             }

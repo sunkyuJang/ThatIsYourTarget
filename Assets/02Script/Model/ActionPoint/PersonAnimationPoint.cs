@@ -4,16 +4,32 @@ using UnityEngine;
 
 public class PersonAnimationPoint : AnimationPoint
 {
-    public PersonAniState.StateKind State { set { base.state = (int)value; } get { return (PersonAniState.StateKind)state; } }
-    public override bool HasAction { get { return state != (int)PersonAniState.StateKind.Non; } }
+    new public PersonAniState.StateKind State
+    {
+        set
+        {
+            var state = (int)value;
+            if (0 <= state && state <= (int)PersonAniState.StateKind.Non)
+            {
+                base.State = state;
+            }
+            else
+            {
+                Debug.Log("Out of PersonAniKind");
+                base.State = (int)PersonAniState.StateKind.Non;
+            }
+        }
+        get { return (PersonAniState.StateKind)base.State; }
+    }
+    public override bool HasAction { get { return base.State != (int)PersonAniState.StateKind.Non; } }
     public bool shouldReadyForBattle;
     public int subState_int = 0;
     public bool subState_bool = false;
     public float subState_float = 0f;
-    public float GetLength() => GetLength(((PersonAniState.StateKind)state).ToString());
+    public float GetLength() => GetAnimationClipLength(((PersonAniState.StateKind)base.State).ToString());
     public PersonWeapon Weapon { get; set; }
 
-    public void SetAP(Vector3 from, Vector3 to, PersonAniState.StateKind state, float time, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
+    public void SetAP(Vector3 from, Vector3 to, PersonAniState.StateKind state, float time = 0f, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
     {
         var isFixed = PersonAniState.IsStateDuringFixed(state);
         if (isFixed)
@@ -30,6 +46,22 @@ public class PersonAnimationPoint : AnimationPoint
 
     void SetAPWithFixedDuring(Vector3 from, Vector3 to, PersonAniState.StateKind state, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
                         => SetAPWithFixedDuring(from, to, (int)state, state.ToString(), shouldReachTargetPosition, shouldLookAtTarget);
+
+    public ChildAnimatorState GetState()
+    {
+        return GetState(State.ToString());
+    }
+
+    public AnimationClip GetAnimationClip()
+    {
+        var state = GetState();
+        return GetAnimationClip(state);
+    }
+
+    public AnimationEvent[] GetAnimationEvent()
+    {
+        return GetAnimationEvent(State.ToString());
+    }
 }
 
 [CustomEditor(typeof(PersonAnimationPoint))]
@@ -52,48 +84,25 @@ public class PersonActionPointEditor : Editor
             case PersonAniState.StateKind.Sitting:
                 SetSittingInspector(ap);
                 break;
-            case PersonAniState.StateKind.Standing:
-                SetWaitingInspector(ap);
-                break;
-            // case PersonAniState.StateKind.PrepareAttack:
-            //     SetPrepareAttack(ap);
-            //     break;
-            case PersonAniState.StateKind.LookAround:
-                SetLookAround(ap);
-                break;
-            case PersonAniState.StateKind.Surprize:
-                SetSurprize(ap);
-                break;
             default:
                 break;
         }
+        ExpresseDuring(ap);
 
         ap.State = kind;
         ap.animatorController = animatorController;
         EditorUtility.SetDirty(ap);
     }
-    void SetPrepareAttack(PersonAnimationPoint ap)
-    {
-        //ap.shouldReadyForBattle = EditorGUILayout.Toggle("shouldPrepare", ap);
-        //if (ap.shouldReadyForBattle)
-        //{
-        //    ap.Weapon.weaponType = (int)EditorGUILayout.Slider("WeaponLayer", ap.weaponLayer, 1, 3);
-        //}
-    }
 
     void SetSittingInspector(PersonAnimationPoint ap)
     {
-        ExpresseDuring(ap);
         ap.subState_int = (int)EditorGUILayout.Slider(Sitting_PersonAniState.SittingLevel, ap.subState_int, (int)Sitting_PersonAniState.SittingState.Ground, (int)Sitting_PersonAniState.SittingState.High);
     }
 
-    void SetLookAround(PersonAnimationPoint ap)
+    void ExpresseDuring(PersonAnimationPoint ap)
     {
-        ExpresseFixedDuring(ap, ap.GetLength());
+        var find = PersonAniState.FixedDuringStateKinds.Find(x => x == ap.State);
+        ap.during = find == ap.State ? (float)EditorGUILayout.DelayedFloatField("FixedDuring", ap.GetLength())
+                                        : (float)EditorGUILayout.FloatField("during", ap.during);
     }
-    void SetWaitingInspector(AnimationPoint ap) => ExpresseDuring(ap);
-    void SetPrepareAttack(AnimationPoint ap) => ExpresseDuring(ap);
-    void SetSurprize(PersonAnimationPoint ap) => ExpresseFixedDuring(ap, ap.GetLength());
-    void ExpresseDuring(AnimationPoint ap) => ap.during = (float)EditorGUILayout.FloatField("during", ap.during);
-    void ExpresseFixedDuring(AnimationPoint ap, float fixedTime) => ap.during = (float)EditorGUILayout.DelayedFloatField("FixedDuring", fixedTime);
 }

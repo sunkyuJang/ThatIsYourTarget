@@ -13,9 +13,10 @@ public abstract class PersonState : StateModule
         //Warn,
         //Follow,
         //Wait,
-        PrepareAttack,
+        DrawWeapon,
         Tracking,
         Patrol,
+        Attack,
         Hit,
         //Avoid,
         Dead,
@@ -32,7 +33,7 @@ public abstract class PersonState : StateModule
     protected Coroutine StartCoroutine(IEnumerator doFunction) { return Person.StartCoroutine(doFunction); }
 
     // APH
-    protected AnimationPointHandler GetNewAPH(int APCounts, AnimationPointHandler.WalkingState walkingState = AnimationPointHandler.WalkingState.Walk, PersonAniState.StateKind kind = PersonAniState.StateKind.Non)
+    protected AnimationPointHandler GetNewAPH(int APCounts, AnimationPointHandler.WalkingState walkingState = AnimationPointHandler.WalkingState.Walk)
     {
         var requireAPCount = APCounts;
         var apPooler = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP);
@@ -61,12 +62,17 @@ public abstract class PersonState : StateModule
     }
     protected void SetAPH(AnimationPointHandler aph = null, bool needFuncAfterAPH = false)
     {
-        Person.SetAPH(aph, needFuncAfterAPH ? () => AfterAPHDone(out PersonPrepareData data) : null);
+        Person.SetAPH(aph, needFuncAfterAPH ? SetStateAfterAPHDone : null);
     }
     protected virtual StateKinds AfterAPHDone(out PersonPrepareData data)
     {
-        data = null;
+        data = new PersonPrepareData(null);
         return StateKinds.Normal;
+    }
+    protected void SetStateAfterAPHDone()
+    {
+        var state = AfterAPHDone(out PersonPrepareData data);
+        SetState(state, data);
     }
 
     // State
@@ -83,14 +89,14 @@ public abstract class PersonState : StateModule
 
     // Sight
     protected bool IsInSight(Transform target) => Person.IsInSight(target);
-    public Coroutine TracingTargetInSightProcess(Transform target, Func<bool> conditionOfEndLoop) => Person.TracingTargetInSight(target, conditionOfEndLoop, WhenTargetInSight);
+    public Coroutine TracingTargetInSightProcess(Transform target, Func<bool> conditionOfEndLoop) => Person.TracingTargetInSight(target, conditionOfEndLoop, ShouldStopAfterHit);
 
     public override void Exit()
     {
         prepareData = null;
     }
 
-    protected virtual void WhenTargetInSight(bool isHit) { }
+    protected virtual bool ShouldStopAfterHit(bool whenHit) { return false; }
     public static List<StateModule> GetStatesList(Person person)
     {
         if (person is Person)
@@ -103,10 +109,10 @@ public abstract class PersonState : StateModule
                     case StateKinds.Normal: list.Add(new Normal_PersonState(person)); break;
                     case StateKinds.Sensed: list.Add(new Sensed_PersonState(person)); break;
                     case StateKinds.Curiousity: list.Add(new Curiousity_PersonState(person)); break;
-                    case StateKinds.PrepareAttack: list.Add(new PrepareAttack_PersonState(person)); break;
+                    case StateKinds.DrawWeapon: list.Add(new DrawWeapon_PersonState(person)); break;
                     case StateKinds.Tracking: list.Add(new Tracking_PersonState(person)); break;
                     case StateKinds.Patrol: list.Add(new Patrol_PersonState(person)); break;
-                    case StateKinds.Hit: list.Add(new Hit_PersonState(person)); break;
+                    case StateKinds.Attack: list.Add(new Attack_PersonState(person)); break;
                     case StateKinds.Dead: list.Add(new Dead_PersonState(person)); break;
                     default: list.Add(null); break;
                 }

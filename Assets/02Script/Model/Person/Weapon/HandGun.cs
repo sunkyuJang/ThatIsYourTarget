@@ -6,6 +6,8 @@ public class HandGun : PersonWeapon
     {
         base.Awake();
         weaponType = WeaponType.HandGun;
+        Range = 5f;
+        Dmg = 1;
     }
 
     public override void AttachToHand(Animator HumanoidAnimator)

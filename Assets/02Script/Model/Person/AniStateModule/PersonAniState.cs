@@ -6,7 +6,6 @@ public abstract class PersonAniState : StateModule
     //*if you need change state, you have to controll here frist*/
     public enum StateKind
     {
-        Non,
         Reset,
         Walk,
         //Run,
@@ -14,16 +13,16 @@ public abstract class PersonAniState : StateModule
         LookAround,
         Sitting,
         Surprize,
-        PrepareAttack,
-        Hit,
+        DrawWeapon,
+        Attack,
         // Avoid,
         TurnAround,
         //TurnHead,
+        Non,
     }
-    readonly public static List<StateKind> FixedDuringStateKinds = new List<StateKind>() { StateKind.LookAround, StateKind.Surprize, StateKind.TurnAround };
+    readonly public static List<StateKind> FixedDuringStateKinds = new List<StateKind>() { StateKind.LookAround, StateKind.Surprize, StateKind.DrawWeapon, StateKind.Attack, StateKind.TurnAround };
     public static bool IsStateDuringFixed(StateKind kind) => FixedDuringStateKinds.Contains(kind);
-
-    public static int ConverStateToInt(PersonAniState.StateKind stateKind) => (int)stateKind;
+    public static int ConverStateToInt(StateKind stateKind) => (int)stateKind;
     public PersonAniState(Animator aniController) => this.Animator = aniController;
     public override bool IsReady() { return ap != null && Animator != null; }
     protected Animator Animator { set; get; }
@@ -37,7 +36,7 @@ public abstract class PersonAniState : StateModule
             var stateList = new List<StateModule>();
 
             StateModule state = null;
-            for (StateKind stateKind = StateKind.Non; stateKind <= StateKind.TurnAround; stateKind++)
+            for (StateKind stateKind = StateKind.Reset; stateKind <= StateKind.Non; stateKind++)
             {
                 switch (stateKind)
                 {
@@ -48,7 +47,8 @@ public abstract class PersonAniState : StateModule
                     case StateKind.LookAround: state = new LookAround_PersonAniState(animator); break;
                     case StateKind.Sitting: state = new Sitting_PersonAniState(animator); break;
                     case StateKind.Surprize: state = new Surprize_PersonAniState(animator); break;
-                    case StateKind.PrepareAttack: state = new PrepareAttack_PersonAniState(animator); break;
+                    case StateKind.DrawWeapon: state = new DrawWeapon_PersonAniState(animator); break;
+                    case StateKind.Attack: state = new Attack_PersonAniState(animator); break;
                     case StateKind.TurnAround: state = new TurnAround_PersonAniState(animator); break;
                 }
 

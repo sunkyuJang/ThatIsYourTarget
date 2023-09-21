@@ -61,11 +61,11 @@ public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConn
     }
 
     public bool IsInSight(Transform target) => ActorTransform.IsRayHitToTarget(target, SightLength);
-    public Coroutine TracingTargetInSight(Transform target, Func<bool> conditionOfEndLoop, Action<bool> whenHit)
+    public Coroutine TracingTargetInSight(Transform target, Func<bool> conditionOfEndLoop, Func<bool, bool> ShouldStopAfterHit)
     {
-        return StartCoroutine(DoTracingTargetInSight(target, conditionOfEndLoop, whenHit));
+        return StartCoroutine(DoTracingTargetInSight(target, conditionOfEndLoop, ShouldStopAfterHit));
     }
-    protected IEnumerator DoTracingTargetInSight(Transform target, Func<bool> conditionOfEndLoop, Action<bool> whenHit)
+    protected IEnumerator DoTracingTargetInSight(Transform target, Func<bool> conditionOfEndLoop, Func<bool, bool> ShouldStopAfterHit)
     {
         var maxTime = 600f;
         var time = 0f;
@@ -74,14 +74,17 @@ public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConn
             var isHit = ActorTransform.IsRayHitToTarget(target, SightLength);
             if (isHit)
             {
-                whenHit?.Invoke(true);
+                if (ShouldStopAfterHit.Invoke(true))
+                {
+                    yield break;
+                }
             }
 
             time += Time.fixedDeltaTime;
             yield return new WaitForFixedUpdate();
         }
 
-        whenHit?.Invoke(false);
+        ShouldStopAfterHit?.Invoke(false);
         Debug.Log("DoTracingTargetInSight closed by force : its over than " + maxTime + "sec.\n" + "instanceID : " + transform.GetInstanceID());
         yield break;
     }

@@ -173,16 +173,28 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
 
     protected virtual float GetMakeTurnDuring(float degree) { return 0; }
     protected abstract void StartAni(AnimationPoint actionPoint, bool shouldReturnAP = false);
-    protected void StartAniTimeCount(AnimationPoint ap, bool shouldReturnAP, StateModule stateModule)
+    protected void StartAniTimeCount(AnimationPoint ap, bool shouldReturnAP, StateModule stateModule, AnimationEvent[] events)
     {
-        PlayingAni = StartCoroutine(DoAnimationTimeCount(ap, shouldReturnAP, stateModule));
+        PlayingAni = StartCoroutine(DoAnimationTimeCount(ap, shouldReturnAP, stateModule, events));
     }
-    protected IEnumerator DoAnimationTimeCount(AnimationPoint ap, bool shouldReturnAP, StateModule stateModule)
+    protected IEnumerator DoAnimationTimeCount(AnimationPoint ap, bool shouldReturnAP, StateModule stateModule, AnimationEvent[] events)
     {
         if (ap.during < -1) yield return null;
         var maxTime = Mathf.Lerp(0, ap.during, animationPlayLimit);
+        int eventsCount = 0;
         for (float time = 0f; time < maxTime && !IsAPReserved; time += Time.fixedDeltaTime)
         {
+            if (events != null &&
+                eventsCount < events.Length)
+            {
+                var targetEvent = events[eventsCount];
+                if (targetEvent.time > time)
+                {
+                    ap.EventTrigger?.Invoke(targetEvent.stringParameter);
+                    eventsCount++;
+                }
+            }
+
             yield return new WaitForFixedUpdate();
         }
 
@@ -215,4 +227,7 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
         }
         yield return null;
     }
+
+    // this function only exist for hiding console log. basiclly not use. 
+    public void ExcuteDummyAniamtionEvent(string eventName) { }
 }

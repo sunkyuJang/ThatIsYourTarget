@@ -9,11 +9,11 @@ public class ModelAnimationPlayerJobManager : JobManager
     private IJobStarter<ModelHandlerJob> aniJobstarter;
 
     public ModelAnimationPlayerJobManager(
-            Action endJob,
+            Action runAfterJobEnd,
             ModelAPHJobManger.ModelJob modelJob,
             NaviController naviJobStarter,
             AniController aniJobstarter)
-        : base(modelJob, endJob)
+        : base(modelJob, runAfterJobEnd)
     {
         this.modelJob = modelJob;
         this.naviJobStarter = naviJobStarter;

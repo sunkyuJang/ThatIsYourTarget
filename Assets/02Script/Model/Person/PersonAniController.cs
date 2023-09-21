@@ -35,7 +35,8 @@ public class PersonAniController : AniController
                 // walk animation should stop for other animation
                 SetWalkModule(AnimationPointHandler.WalkingState.Non);
 
-                StartAniTimeCount(ap, shouldReturnAP, module);
+                var events = ap.GetAnimationEvent();
+                StartAniTimeCount(ap, shouldReturnAP, module, events);
             }
         }
     }
@@ -85,7 +86,7 @@ public class PersonAniController : AniController
         var ap = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP).GetNewOne<PersonAnimationPoint>();
         ap.State = PersonAniState.StateKind.TurnAround;
         ap.targetDegree = degree;
-        ap.during = ap.GetLength(GetStateNameByDegree(ap.targetDegree));
+        ap.during = ap.GetAnimationClipLength(GetStateNameByDegree(ap.targetDegree));
         StartAni(ap, true);
         return ap.during;
     }

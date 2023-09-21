@@ -13,7 +13,7 @@ public class Sensed_PersonState : PersonState
             StateKinds.Curiousity, // 의심
             StateKinds.Patrol, // 놓쳤을 때
             StateKinds.Tracking, // 타겟을 놓치지 전까지
-            StateKinds.PrepareAttack, // 발견 직후 공격 준비
+            StateKinds.DrawWeapon, // 발견 직후 공격 준비
             StateKinds.Hit, // 타겟이 힛범위 내에
         };
     public Sensed_PersonState(Person person) : base(person) { }
@@ -64,8 +64,8 @@ public class Sensed_PersonState : PersonState
                 if (selectedModel != playingTargetModel)
                 {
                     var dist = Vector3.Distance(ActorTransform.transform.position, selectedModel.position);
-                    var shouldAttack = dist < PrepareAttack_PersonState.prepareAttackDist;
-                    SetState(shouldAttack ? StateKinds.PrepareAttack : StateKinds.Curiousity, new PersonPrepareData(selectedModel));
+                    var shouldAttack = dist < DrawWeapon_PersonState.AbsoluteAttackDist;
+                    SetState(shouldAttack ? StateKinds.DrawWeapon : StateKinds.Curiousity, new PersonPrepareData(selectedModel));
                     var selectedModelIndex = sensedPrepareDatas.FindIndex(x => x.target == selectedModel);
                     sensedPrepareDatas.RemoveAt(selectedModelIndex);
                 }
@@ -108,9 +108,9 @@ public class Sensed_PersonState : PersonState
     (Transform model, int priolity, float dist) GetPriolityTuple(Transform target, int priolity = 0)
     {
         var dist = Vector3.Distance(ActorTransform.position, target.position);
-        var shouldAttack = dist <= PrepareAttack_PersonState.prepareAttackDist;
+        var shouldAttack = dist <= DrawWeapon_PersonState.AbsoluteAttackDist;
         priolity += priolity == 0 ?
-                        PriolityList.IndexOf(shouldAttack ? StateKinds.PrepareAttack : StateKinds.Curiousity) :
+                        PriolityList.IndexOf(shouldAttack ? StateKinds.DrawWeapon : StateKinds.Curiousity) :
                         priolity;
 
         priolity += Person.GetPriolity(target);

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -12,6 +13,7 @@ public class Curiousity_PersonState : PersonState
     Coroutine procCountingIgnoreTime = null;
     AnimationPointHandler PlayingAPH { set; get; }
     public Curiousity_PersonState(Person person) : base(person) { }
+    private delegate Func<bool> conditionOfEndForTracking();
     public override bool IsReady()
     {
         return prepareData != null &&
@@ -25,7 +27,7 @@ public class Curiousity_PersonState : PersonState
         }
         else
         {
-            SetState(StateKinds.PrepareAttack, new PersonPrepareData(prepareData.target));
+            SetState(StateKinds.DrawWeapon, new PersonPrepareData(prepareData.target));
         }
     }
     protected override void StartModule()
@@ -44,7 +46,7 @@ public class Curiousity_PersonState : PersonState
         procCountingIgnoreTime = null;
     }
 
-    protected override void WhenTargetInSight(bool isHit)
+    protected override bool ShouldStopAfterHit(bool isHit)
     {
         // target find when aph running.
         if (isHit)
@@ -56,9 +58,12 @@ public class Curiousity_PersonState : PersonState
             }
             else
             {
-                SetState(StateKinds.PrepareAttack, new PersonPrepareData(prepareData.target));
+                SetState(StateKinds.DrawWeapon, new PersonPrepareData(prepareData.target));
+                return true;
             }
         }
+
+        return false;
     }
 
     private AnimationPointHandler GetCuriousityAPH(Transform target)

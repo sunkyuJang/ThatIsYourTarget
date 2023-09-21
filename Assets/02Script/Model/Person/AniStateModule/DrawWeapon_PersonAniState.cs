@@ -1,8 +1,9 @@
 using UnityEngine;
 
-internal class PrepareAttack_PersonAniState : PersonAniState
+internal class DrawWeapon_PersonAniState : PersonAniState
 {
-    public PrepareAttack_PersonAniState(Animator ani) : base(ani) { }
+    public string PrepareAttack { get { return "PrepareAttack"; } }
+    public DrawWeapon_PersonAniState(Animator ani) : base(ani) { }
     public override bool IsReady()
     {
         return base.IsReady();
@@ -24,6 +25,7 @@ internal class PrepareAttack_PersonAniState : PersonAniState
         else
         {
             Animator.SetLayerWeight(layer, 1);
+            Animator.SetBool(PrepareAttack, true);
         }
     }
 

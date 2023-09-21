@@ -12,9 +12,9 @@ public class ModelAPHJobManger : JobManager
 
     public ModelAPHJobManger(
                 object section,
-                Action endjob,
+                Action runAfterJobEnd,
                 Transform originalAPHGroup,
-                IJobStarter<ModelJob> targetJobStarter) : base(section, endjob)
+                IJobStarter<ModelJob> targetJobStarter) : base(section, runAfterJobEnd)
     {
         OriginalAPH = originalAPHGroup.Find("OriginalAPH").GetComponent<AnimationPointHandler>();
         TargetJobStarter = targetJobStarter;

@@ -1,3 +1,4 @@
+using System;
 using UnityEditor.Animations;
 using UnityEngine;
 
@@ -7,11 +8,12 @@ public class AnimationPoint : MonoBehaviour
     public AnimatorController animatorController;
     public virtual bool HasAction { get { return true; } }
     [HideInInspector]
-    protected int state { set; get; } = 0;
+    protected int State { set; get; } = 0;
     [HideInInspector]
     public float during = 0;
     [HideInInspector]
     public float targetDegree = 0;
+    public Action<string> EventTrigger { set; get; }
     public ChildAnimatorState GetState(string stateName)
     {
         var aniState = animatorController.layers;
@@ -37,24 +39,33 @@ public class AnimationPoint : MonoBehaviour
 
         return new ChildAnimatorState();
     }
-    public float GetLength(string stateName)
+    public AnimationClip GetAnimationClip(ChildAnimatorState state)
     {
-        var state = GetState(stateName);
         if (state.state != null)
         {
-            var speed = state.state.speed;
             var motionName = state.state.motion.name;
             var clips = animatorController.animationClips;
             foreach (AnimationClip clip in clips)
             {
                 if (clip.name == motionName)
                 {
-                    return clip.length / speed;
+                    return clip;
                 }
             }
         }
-
-        return 0;
+        return null;
+    }
+    public float GetAnimationClipLength(string stateName)
+    {
+        var state = GetState(stateName);
+        var clip = GetAnimationClip(state);
+        return clip == null ? -1f : clip.length / state.state.speed;
+    }
+    public AnimationEvent[] GetAnimationEvent(string stateName)
+    {
+        var state = GetState(stateName);
+        var clip = GetAnimationClip(state);
+        return clip == null ? null : clip.events;
     }
     public void ChangePosition(Vector3 position) => transform.position = position;
     public void MakeLookAtTo(Vector3 to) => transform.LookAt(to - Vector3.up * to.y);
@@ -68,14 +79,14 @@ public class AnimationPoint : MonoBehaviour
 
     protected void SetAPWithDuring(Vector3 from, Vector3 to, int state, float time, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
     {
-        this.state = state;
+        this.State = state;
         during = time;
         SetPositionForTracking(from, to, shouldReachTargetPosition, shouldLookAtTarget);
     }
 
     protected void SetAPWithFixedDuring(Vector3 from, Vector3 to, int state, string kind, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
     {
-        SetAPWithDuring(from, to, state, GetLength(kind), shouldReachTargetPosition, shouldLookAtTarget);
+        SetAPWithDuring(from, to, state, GetAnimationClipLength(kind), shouldReachTargetPosition, shouldLookAtTarget);
     }
 }
 

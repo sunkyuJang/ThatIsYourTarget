@@ -35,17 +35,11 @@ public class ModelAnimationPlayer : IJobStarter<ModelAPHJobManger.ModelJob>, IDa
         modelJob = job;
         actionPointHandler = modelJob.aph;
         jobManager = new ModelAnimationPlayerJobManager(
-                        endJob: EndJob,
+                        runAfterJobEnd: () => { modelJob.EndJob(); },
                         modelJob: modelJob,
                         naviJobStarter: naviController,
                         aniJobstarter: aniController);
         jobManager.StartJob();
-    }
-    void EndJob()
-    {
-        modelJob?.EndJob();
-        modelJob = null;
-        jobManager = null;
     }
 
     public void StopJob()
