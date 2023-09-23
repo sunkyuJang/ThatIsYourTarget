@@ -41,10 +41,15 @@ public abstract class PersonState : StateModule
         APs.Capacity = requireAPCount;
 
         for (int i = 0; i < requireAPCount; i++)
-            APs.Add(apPooler.GetNewOne<PersonAnimationPoint>());
+        {
+            var ap = apPooler.GetNewOne<PersonAnimationPoint>();
+            ap.gameObject.SetActive(true);
+            APs.Add(ap);
+        }
 
         var aph = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.APH).GetNewOne<AnimationPointHandler>();
         aph.transform.SetParent(Person.APHGroup);
+        aph.gameObject.SetActive(true);
         aph.SetAPs(APs);
         aph.shouldLoop = false;
         aph.walkingState = walkingState;

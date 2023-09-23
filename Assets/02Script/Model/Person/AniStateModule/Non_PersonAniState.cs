@@ -7,7 +7,7 @@ public class Non_PersonAniState : PersonAniState
     }
     protected override void StartModule()
     {
-        Debug.Log("isIn");
+
     }
 
     public override void EnterToException()

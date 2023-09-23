@@ -43,7 +43,6 @@ public class Tracking_PersonState : PersonState
         var ap = aph.GetActionPoint(0);
         if (isHit)
         {
-            SetAPs(ap, prepareData.target, PersonAniState.StateKind.LookAround, 0, false, true);
             var dist = Vector3.Distance(ActorTransform.position, prepareData.target.position);
             if (dist < Weapon.Range)
             {
@@ -55,6 +54,7 @@ public class Tracking_PersonState : PersonState
             else
             {
                 stateKinds = StateKinds.Tracking;
+                SetAPs(ap, prepareData.target, PersonAniState.StateKind.LookAround, 0, true, true);
             }
         }
         else
