@@ -28,11 +28,10 @@ public class Patrol_PersonState : PersonState
         jobManager.StartJob();
     }
 
-    protected override StateKinds AfterAPHDone(out PersonPrepareData prepareData)
+    protected override void AfterAPHDone()
     {
-        prepareData = this.prepareData;
         jobManager.NextJob();
-        return StateKinds.Patrol; // enter to same state will be ignored.
+        SetState(StateKinds.Patrol, prepareData);
     }
 
     void SetJobsAction(JobManager jobManager)

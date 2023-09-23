@@ -46,7 +46,7 @@ public class Curiousity_PersonState : PersonState
         procCountingIgnoreTime = null;
     }
 
-    protected override bool ShouldStopAfterHit(bool isHit)
+    protected override bool ShouldStopAfterCast(bool isHit)
     {
         // target find when aph running.
         if (isHit)
@@ -82,10 +82,10 @@ public class Curiousity_PersonState : PersonState
         curiosityDIst = 0f;
         procCountingIgnoreTime = null;
     }
-    protected override StateKinds AfterAPHDone(out PersonPrepareData prepareData)
+    protected override void AfterAPHDone()
     {
         prepareData = null;
         isAPHDone = true;
-        return StateKinds.Normal;
+        SetNormalState();
     }
 }

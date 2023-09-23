@@ -18,6 +18,7 @@ public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConn
     //APH
     protected ModelAnimationPlayer ModelAnimationPlayer { set; get; }
     ModelAPHJobManger ModelAPHJobManger { set; get; }
+    public Transform APHGroup { private set; get; }
 
     // Module
     public StateModuleHandler ModuleHandler { protected set; get; }
@@ -39,7 +40,7 @@ public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConn
         ActorTransform = transform.Find("Actor");
         ModelAnimationPlayer = new ModelAnimationPlayer(this, ActorTransform);
 
-        var APHGroup = transform.Find("APHGroup");
+        APHGroup = transform.Find("APHGroup");
         ModelAPHJobManger = new ModelAPHJobManger(null, null, APHGroup, ModelAnimationPlayer);
 
         ModuleHandler = SetStateModuleHandler();
@@ -61,31 +62,31 @@ public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConn
     }
 
     public bool IsInSight(Transform target) => ActorTransform.IsRayHitToTarget(target, SightLength);
-    public Coroutine TracingTargetInSight(Transform target, Func<bool> conditionOfEndLoop, Func<bool, bool> ShouldStopAfterHit)
+    public Coroutine TracingTargetInSight(Transform target, Func<bool> conditionOfEndLoop, Func<bool, bool> ShouldStopAfterCast)
     {
-        return StartCoroutine(DoTracingTargetInSight(target, conditionOfEndLoop, ShouldStopAfterHit));
+        return StartCoroutine(DoTracingTargetInSight(target, conditionOfEndLoop, ShouldStopAfterCast));
     }
-    protected IEnumerator DoTracingTargetInSight(Transform target, Func<bool> conditionOfEndLoop, Func<bool, bool> ShouldStopAfterHit)
+    protected IEnumerator DoTracingTargetInSight(Transform target, Func<bool> conditionOfEndLoop, Func<bool, bool> ShouldStopAfterCast)
     {
         var maxTime = 600f;
         var time = 0f;
         while (time < maxTime && !conditionOfEndLoop())
         {
             var isHit = ActorTransform.IsRayHitToTarget(target, SightLength);
-            if (isHit)
+            if (ShouldStopAfterCast.Invoke(isHit))
             {
-                if (ShouldStopAfterHit.Invoke(true))
-                {
-                    yield break;
-                }
+                yield break;
             }
 
             time += Time.fixedDeltaTime;
             yield return new WaitForFixedUpdate();
         }
 
-        ShouldStopAfterHit?.Invoke(false);
-        Debug.Log("DoTracingTargetInSight closed by force : its over than " + maxTime + "sec.\n" + "instanceID : " + transform.GetInstanceID());
+        ShouldStopAfterCast?.Invoke(false);
+
+        if (time > maxTime)
+            Debug.Log("DoTracingTargetInSight closed by force : its over than " + maxTime + "sec.\n" + "instanceID : " + transform.GetInstanceID());
+
         yield break;
     }
     public void OnContecting(ObjDetector detector, Collider collider) => OnContecting(collider);

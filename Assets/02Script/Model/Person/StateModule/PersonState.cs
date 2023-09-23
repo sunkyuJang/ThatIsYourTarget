@@ -44,6 +44,7 @@ public abstract class PersonState : StateModule
             APs.Add(apPooler.GetNewOne<PersonAnimationPoint>());
 
         var aph = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.APH).GetNewOne<AnimationPointHandler>();
+        aph.transform.SetParent(Person.APHGroup);
         aph.SetAPs(APs);
         aph.shouldLoop = false;
         aph.walkingState = walkingState;
@@ -62,18 +63,9 @@ public abstract class PersonState : StateModule
     }
     protected void SetAPH(AnimationPointHandler aph = null, bool needFuncAfterAPH = false)
     {
-        Person.SetAPH(aph, needFuncAfterAPH ? SetStateAfterAPHDone : null);
+        Person.SetAPH(aph, needFuncAfterAPH ? AfterAPHDone : null);
     }
-    protected virtual StateKinds AfterAPHDone(out PersonPrepareData data)
-    {
-        data = new PersonPrepareData(null);
-        return StateKinds.Normal;
-    }
-    protected void SetStateAfterAPHDone()
-    {
-        var state = AfterAPHDone(out PersonPrepareData data);
-        SetState(state, data);
-    }
+    protected virtual void AfterAPHDone() { }
 
     // State
     public void SetState(StateKinds kinds, PersonPrepareData prepareData)
@@ -89,14 +81,18 @@ public abstract class PersonState : StateModule
 
     // Sight
     protected bool IsInSight(Transform target) => Person.IsInSight(target);
-    public Coroutine TracingTargetInSightProcess(Transform target, Func<bool> conditionOfEndLoop) => Person.TracingTargetInSight(target, conditionOfEndLoop, ShouldStopAfterHit);
+    public Coroutine TracingTargetInSightProcess(Transform target, Func<bool> conditionOfEndLoop)
+    {
+        var thisState = ModuleHandler.GetPlayingModule();
+        return Person.TracingTargetInSight(target, () => conditionOfEndLoop() && thisState != ModuleHandler.GetPlayingModule(), ShouldStopAfterCast);
+    }
 
     public override void Exit()
     {
         prepareData = null;
     }
 
-    protected virtual bool ShouldStopAfterHit(bool whenHit) { return false; }
+    protected virtual bool ShouldStopAfterCast(bool isHit) { return false; }
     public static List<StateModule> GetStatesList(Person person)
     {
         if (person is Person)

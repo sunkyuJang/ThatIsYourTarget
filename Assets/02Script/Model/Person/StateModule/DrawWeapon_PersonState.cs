@@ -27,11 +27,11 @@ public class DrawWeapon_PersonState : PersonState
         HoldWeapon(true);
         return aph;
     }
-    protected override StateKinds AfterAPHDone(out PersonPrepareData data)
+    protected override void AfterAPHDone()
     {
         var state = StateKinds.Tracking;
-        data = new PersonPrepareData(prepareData.target);
-        return state;
+        var data = new PersonPrepareData(prepareData.target);
+        SetState(state, data);
     }
 
     public override void Exit()

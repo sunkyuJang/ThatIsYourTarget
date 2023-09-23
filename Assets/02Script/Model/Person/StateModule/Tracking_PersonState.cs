@@ -1,12 +1,11 @@
-using System.Collections;
 using UnityEngine;
 
 public class Tracking_PersonState : PersonState
 {
     bool isAphDone = false;
     bool shouldFixedLookAt = false;
-    AnimationPointHandler aph = null;
     StateKinds stateKinds;
+    AnimationPointHandler aph { set; get; } = null;
     public Tracking_PersonState(Person person) : base(person) { }
     public override bool IsReady()
     {
@@ -15,52 +14,53 @@ public class Tracking_PersonState : PersonState
     public override void EnterToException() { }
     protected override void StartModule()
     {
-        StartCoroutine(DoTrackingPoint());
-    }
-
-    private IEnumerator DoTrackingPoint()
-    {
         var weapon = Weapon;
 
         if (weapon != null)
         {
-            aph = GetNewAPH(1, AnimationPointHandler.WalkingState.Run);
-            var ap = aph.GetActionPoint(0);
-            SetAPs(ap, prepareData.target, PersonAniState.StateKind.Non, 0f, true, true);
+            aph = GetTrackingAPH();
             SetAPH(aph, true);
-
             isAphDone = false;
 
             TracingTargetInSightProcess(prepareData.target, () => isAphDone);
         }
-        yield break;
     }
 
-    protected override bool ShouldStopAfterHit(bool whenHit)
+    AnimationPointHandler GetTrackingAPH()
     {
+        var aph = GetNewAPH(1, AnimationPointHandler.WalkingState.Run);
+        aph.shouldLoop = true;
         var ap = aph.GetActionPoint(0);
-        if (whenHit)
+        SetAPs(ap, prepareData.target, PersonAniState.StateKind.LookAround, 0f, true, true);
+
+        return aph;
+    }
+
+    protected override bool ShouldStopAfterCast(bool isHit)
+    {
+        // this function will loop untill isAphDone == true
+        aph.shouldLoop = true;
+        var ap = aph.GetActionPoint(0);
+        if (isHit)
         {
-            SetAPs(ap, prepareData.target, PersonAniState.StateKind.Non, 0, false, true);
+            SetAPs(ap, prepareData.target, PersonAniState.StateKind.LookAround, 0, false, true);
             var dist = Vector3.Distance(ActorTransform.position, prepareData.target.position);
             if (dist < Weapon.Range)
             {
+                SetAPs(ap, prepareData.target, PersonAniState.StateKind.Non, 0, false, true);
                 stateKinds = StateKinds.Attack;
-                // cause have to attack in position that actor stand.
+                aph.shouldLoop = false;
                 return true;
             }
             else
             {
-                shouldFixedLookAt = true;
+                stateKinds = StateKinds.Tracking;
             }
         }
         else
         {
-            if (shouldFixedLookAt)
-            {
-                shouldFixedLookAt = false;
-                SetAPs(ap, prepareData.target, PersonAniState.StateKind.LookAround, 0f, false, true);
-            }
+            stateKinds = StateKinds.Patrol;
+            SetAPs(ap, prepareData.target, PersonAniState.StateKind.LookAround, 0, false, true);
         }
 
         return false;
@@ -69,11 +69,15 @@ public class Tracking_PersonState : PersonState
     public override void Exit()
     {
         isAphDone = true;
+        base.Exit();
     }
-    protected override StateKinds AfterAPHDone(out PersonPrepareData prepareData)
+    protected override void AfterAPHDone()
     {
-        prepareData = new PersonPrepareData(this.prepareData.target);
-        isAphDone = true;
-        return stateKinds;
+        switch (stateKinds)
+        {
+            case StateKinds.Attack: SetState(StateKinds.Attack, prepareData); break;
+            case StateKinds.Patrol: SetState(StateKinds.Patrol, prepareData); break;
+            case StateKinds.Tracking: StartModule(); break;
+        }
     }
 }

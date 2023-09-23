@@ -28,7 +28,7 @@ namespace JExtentioner
         public static bool IsRayHitToTarget(this Transform center, Transform target, float dist = 0f)
         {
             var hit = GetRayHit(center, target, dist);
-            return target.CompareTag(hit.transform.tag);
+            return hit.transform == null ? false : true;
         }
     }
 }

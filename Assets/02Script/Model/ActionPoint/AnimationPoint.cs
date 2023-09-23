@@ -1,6 +1,7 @@
 using System;
 using UnityEditor.Animations;
 using UnityEngine;
+using UnityEngine.AI;
 
 [System.Serializable]
 public class AnimationPoint : MonoBehaviour
@@ -14,6 +15,10 @@ public class AnimationPoint : MonoBehaviour
     [HideInInspector]
     public float targetDegree = 0;
     public Action<string> EventTrigger { set; get; }
+    public bool IsSameState(AnimationPoint other)
+    {
+        return other.State == State;
+    }
     public ChildAnimatorState GetState(string stateName)
     {
         var aniState = animatorController.layers;
@@ -67,14 +72,33 @@ public class AnimationPoint : MonoBehaviour
         var clip = GetAnimationClip(state);
         return clip == null ? null : clip.events;
     }
-    public void ChangePosition(Vector3 position) => transform.position = position;
+    public void ChangePosition(Vector3 position)
+    {
+        transform.position = position;
+    }
     public void MakeLookAtTo(Vector3 to) => transform.LookAt(to - Vector3.up * to.y);
     public void SetPositionForTracking(Vector3 from, Vector3 to, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
     {
         ChangePosition(from);
         MakeLookAtTo(shouldLookAtTarget ? to : from);
         if (shouldReachTargetPosition)
+        {
+            NavMeshHit hit;
+            for (float searchRadius = 5f, increasingRadius = 10f; searchRadius < 50f; searchRadius += increasingRadius)
+            {
+                if (NavMesh.SamplePosition(to, out hit, searchRadius, NavMesh.AllAreas))
+                {
+                    to = hit.position;
+                    break;
+                }
+                else
+                {
+                    to = from;
+                }
+            }
+
             ChangePosition(to);
+        }
     }
 
     protected void SetAPWithDuring(Vector3 from, Vector3 to, int state, float time, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)

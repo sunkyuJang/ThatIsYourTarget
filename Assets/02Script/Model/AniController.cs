@@ -119,7 +119,7 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
         var t = 0f;
         var maxT = 0.05f;
         var beforePosition = transform.position;
-        while (t < maxT && !IsAPReserved)
+        while (t < maxT)
         {
             yield return new WaitForFixedUpdate();
             t += Time.fixedDeltaTime;
@@ -131,31 +131,32 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
     }
     protected virtual IEnumerator DoRotationCorrectly(Vector3 dir, Action done)
     {
-        var startForward = transform.forward;
-        var cross = Vector3.Cross(Vector3.up, startForward);
-        var dot = Vector3.Dot(cross, dir);
-        var isLeft = dot < 0;
+        var isLeft = IsRatationDirLeft(dir);
         var rotateDir = transform.forward.GetRotationDir(dir);
-
         var shouldBodyTurnWithAnimation = rotateDir >= bodyThreshold;
 
         if (shouldBodyTurnWithAnimation)
         {
-            var during = GetMakeTurnDuring(rotateDir);
-
-            var rotateTime = Mathf.Lerp(0, during, 0.45f);
+            var during = GetMakeTurnDuring(rotateDir, out AnimationPoint playingAP);
             var totalAngle = Vector3.Angle(transform.forward, dir);
-            var eachFrameAngle = totalAngle / (rotateTime / Time.fixedDeltaTime);
-            for (float t = 0; t < during && !IsAPReserved; t += Time.fixedDeltaTime)
+            var eachFrameAngle = totalAngle / (during / Time.fixedDeltaTime);
+            for (float t = 0; t < during; t += Time.fixedDeltaTime)
             {
-                if (t < rotateTime)
-                    transform.Rotate(isLeft ? Vector3.down : Vector3.up, eachFrameAngle);
+                transform.Rotate(isLeft ? Vector3.down : Vector3.up, eachFrameAngle);
                 yield return new WaitForFixedUpdate();
             }
         }
 
         done?.Invoke();
         yield return null;
+    }
+
+    bool IsRatationDirLeft(Vector3 targetDir)
+    {
+        var startForward = transform.forward;
+        var cross = Vector3.Cross(Vector3.up, startForward);
+        var dot = Vector3.Dot(cross, targetDir);
+        return dot < 0;
     }
 
     public void StopJob() { }
@@ -171,7 +172,7 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
         }
     }
 
-    protected virtual float GetMakeTurnDuring(float degree) { return 0; }
+    protected virtual float GetMakeTurnDuring(float degree, out AnimationPoint playingAP) { playingAP = null; return 0; }
     protected abstract void StartAni(AnimationPoint actionPoint, bool shouldReturnAP = false);
     protected void StartAniTimeCount(AnimationPoint ap, bool shouldReturnAP, StateModule stateModule, AnimationEvent[] events)
     {
@@ -182,7 +183,7 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
         if (ap.during < -1) yield return null;
         var maxTime = Mathf.Lerp(0, ap.during, animationPlayLimit);
         int eventsCount = 0;
-        for (float time = 0f; time < maxTime && !IsAPReserved; time += Time.fixedDeltaTime)
+        for (float time = 0f; time < maxTime; time += Time.fixedDeltaTime)
         {
             if (events != null &&
                 eventsCount < events.Length)

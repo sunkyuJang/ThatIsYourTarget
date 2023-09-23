@@ -29,10 +29,9 @@ public class Attack_PersonState : PersonState
         }
     }
 
-    protected override StateKinds AfterAPHDone(out PersonPrepareData data)
+    protected override void AfterAPHDone()
     {
-        data = prepareData;
-        return StateKinds.Tracking;
+        SetState(StateKinds.Tracking, prepareData);
     }
     public override void Exit() { }
 }
