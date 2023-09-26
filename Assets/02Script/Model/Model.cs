@@ -89,9 +89,10 @@ public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConn
 
         yield break;
     }
-    public void OnContecting(ObjDetector detector, Collider collider) => OnContecting(collider);
-    public void OnDetected(ObjDetector detector, Collider collider) => OnDetected(collider);
-    public void OnRemoved(ObjDetector detector, Collider collider) => OnRemoved(collider);
+    bool IsHitToTarget(Transform target) => FOVCollider.transform.IsRayHitToTarget(target);
+    public void OnContecting(ObjDetector detector, Collider collider) { if (IsHitToTarget(collider.transform)) OnContecting(collider); }
+    public void OnDetected(ObjDetector detector, Collider collider) { if (IsHitToTarget(collider.transform)) OnDetected(collider); }
+    public void OnRemoved(ObjDetector detector, Collider collider) { if (IsHitToTarget(collider.transform)) OnRemoved(collider); }
     public virtual void OnContecting(Collider collider) { }
     public virtual void OnDetected(Collider collider) { }
     public virtual void OnRemoved(Collider collider) { }
