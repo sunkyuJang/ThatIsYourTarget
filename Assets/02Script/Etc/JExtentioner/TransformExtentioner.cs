@@ -21,18 +21,19 @@ namespace JExtentioner
             var dir = from.GetDirection(to);
             dist = dist == 0f ? Vector3.Distance(from, to) : dist;
             hit = new RaycastHit();
-            for (bool isSelf = true; isSelf == true;)
+            for (bool isSelf = false; isSelf == false;)
             {
                 if (Physics.Raycast(from, dir, out hit, dist))
                 {
-                    if (center.CompareTag(hit.transform.tag))
+                    if (hit.transform != center &&
+                        !hit.transform.IsChildOf(center.root))
                     {
-                        // recast for excepting self.
-                        from = hit.point + dir * 0.01f;
+                        return true;
                     }
                     else
                     {
-                        return true;
+                        from = hit.point + dir * 0.01f;
+                        dist = Vector3.Distance(from, to);
                     }
                 }
                 else

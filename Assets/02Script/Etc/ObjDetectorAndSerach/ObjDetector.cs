@@ -1,3 +1,4 @@
+using JExtentioner;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -137,23 +138,8 @@ public class ObjDetector : MonoBehaviour
                 for (int i = 0; i < Targets.Count; i++)
                 {
                     var target = Targets[i];
-                    var dir = target.position - transform.position;
-                    var dist = Vector3.Distance(transform.position, target.position);
-                    var startPoint = transform.position;
-                    for (bool isExceptSelf = false; isExceptSelf == false;)
-                    {
-                        Physics.Raycast(startPoint, dir, out RaycastHit hit, dist);
-                        if (hit.transform != transform && !hit.transform.IsChildOf(transform.root))
-                        {
-                            Debug.DrawLine(transform.position, hit.point, hit.transform == target ? Color.green : Color.red, 2f);
-                            isExceptSelf = true;
-                        }
-                        else
-                        {
-                            startPoint = hit.point + dir * 0.01f;
-                            dist = Vector3.Distance(startPoint, target.position);
-                        }
-                    }
+                    transform.IsRayHit(target, out RaycastHit hit);
+                    Debug.DrawLine(transform.position, hit.point, hit.transform == target ? Color.green : Color.red, 2f);
 
                     if (drawTarget == DrawTarget.OnlyClosedOne)
                         break;
