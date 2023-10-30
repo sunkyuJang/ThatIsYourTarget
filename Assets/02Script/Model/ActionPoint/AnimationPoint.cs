@@ -1,7 +1,6 @@
 using System;
 using UnityEditor.Animations;
 using UnityEngine;
-using UnityEngine.AI;
 
 [System.Serializable]
 public class AnimationPoint : MonoBehaviour
@@ -76,27 +75,13 @@ public class AnimationPoint : MonoBehaviour
     {
         transform.position = position;
     }
-    public void MakeLookAtTo(Vector3 to) => transform.LookAt(to - Vector3.up * to.y);
+    public void MakeLookAtTo(Vector3 to) => transform.LookAt(to - (Vector3.up * to.y + Vector3.up * transform.position.y));
     public void SetPositionForTracking(Vector3 from, Vector3 to, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
     {
         ChangePosition(from);
         MakeLookAtTo(shouldLookAtTarget ? to : from);
         if (shouldReachTargetPosition)
         {
-            NavMeshHit hit;
-            for (float searchRadius = 5f, increasingRadius = 10f; searchRadius < 50f; searchRadius += increasingRadius)
-            {
-                if (NavMesh.SamplePosition(to, out hit, searchRadius, NavMesh.AllAreas))
-                {
-                    to = hit.position;
-                    break;
-                }
-                else
-                {
-                    to = from;
-                }
-            }
-
             ChangePosition(to);
         }
     }

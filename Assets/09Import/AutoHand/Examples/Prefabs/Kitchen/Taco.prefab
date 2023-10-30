@@ -133,22 +133,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   body: {fileID: 0}
-  heldPositionOffset: {x: 0, y: 0, z: 0}
-  heldRotationOffset: {x: 0, y: 0, z: 0}
-  releaseOnTeleport: 0
-  throwMultiplyer: 1
   handType: 0
-  singleHandOnly: 0
+  ignoreWeight: 0
+  maintainGrabOffset: 0
+  singleHandOnly: 1
+  allowHeldSwapping: 1
   instantGrab: 0
   parentOnGrab: 1
-  lockHandOnGrab: 0
-  maintainGrabOffset: 0
-  ignoreReleaseTime: 0.25
+  throwMultiplyer: 1
+  lookAssistMultiplyer: 1
   hightlightMaterial: {fileID: 0}
-  pullApartBreakOnly: 1
-  makeChildrenGrabbable: 1
   jointBreakForce: 1000
-  jointBreakTorque: 1000
+  showAdvancedSettings: 0
+  lockHandOnGrab: 0
+  makeChildrenGrabbable: 1
+  jointedBodies: []
+  ignoreReleaseTime: 0.25
+  grabDistancePriority: 1
+  heldPositionOffset: {x: 0, y: 0, z: 0}
+  heldRotationOffset: {x: 0, y: 0, z: 0}
+  showEvents: 0
   onGrab:
     m_PersistentCalls:
       m_Calls: []
@@ -173,6 +177,13 @@ MonoBehaviour:
   onUnsqueeze:
     m_PersistentCalls:
       m_Calls: []
+  onHighlight:
+    m_PersistentCalls:
+      m_Calls: []
+  onUnhighlight:
+    m_PersistentCalls:
+      m_Calls: []
+  pullApartBreakOnly: 1
   OnJointBreak:
     m_PersistentCalls:
       m_Calls:
@@ -188,7 +199,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  hideEvents: 0
+  isGrabbable: 1
 --- !u!114 &8035188000993757345
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -202,9 +213,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   smashForce: 1.5
+  destroyOnSmash: 0
+  releaseOnSmash: 0
   effect: {fileID: 1708889463548190791, guid: ae95971c2f52c7a49b273f7a6547f819, type: 3}
+  createNewEffect: 1
+  applyVelocityOnSmash: 1
   smashSound: {fileID: 0}
   smashVolume: 1
+  OnSmash:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &8035188000993757344
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,8 +1,6 @@
-using JExtentioner;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AI;
 
 // the goal of patrol is, person should be trace the way that player gone.
 public class Patrol_PersonState : PersonState
@@ -31,7 +29,6 @@ public class Patrol_PersonState : PersonState
     protected override void AfterAPHDone()
     {
         jobManager.NextJob();
-        SetState(StateKinds.Patrol, prepareData);
     }
 
     void SetJobsAction(JobManager jobManager)
@@ -48,6 +45,8 @@ public class Patrol_PersonState : PersonState
                     job.jobAction = () => { LookAroundNearBy(job); };
                     break;
             }
+
+            jobManager.AddJob(job);
         }
     }
 
@@ -56,41 +55,44 @@ public class Patrol_PersonState : PersonState
         // if job manager come here means like,
         // in the patrol state, the person didnt find anything.
         // so, it should go to normal state.
+        Debug.Log("Go To Normal State");
         SetNormalState();
     }
 
     void TracingTarget(Job job)
     {
-        var position = GetForwardPosition();
-        var aph = GetAPHByPositions(new List<Vector3>() { position });
+        Debug.Log("TracingTarget");
+
+        var position = GetAroundPositionCast(-30f, 30f, 60f, true);
+        var aph = GetAPHByPositions(position);
         SetAPH(aph, true);
 
-        StartCoroutine(DoTracingTarget(job, aph));
+        StartCoroutine(DoTracingTarget(job, aph, "tracing part"));
     }
     void LookAroundNearBy(Job job)
     {
-        var positions = GetRoundPositions();
+        Debug.Log("LockAround");
+
+        var positions = GetAroundPositionCast(-160f, 20f, 160f, false);
         var aph = GetAPHByPositions(positions);
         SetAPH(aph);
-        StartCoroutine(DoTracingTarget(job, aph));
+        StartCoroutine(DoTracingTarget(job, aph, "Look part"));
     }
 
-    IEnumerator DoTracingTarget(Job job, AnimationPointHandler aph)
+    IEnumerator DoTracingTarget(Job job, AnimationPointHandler aph, string part)
     {
-        var shouldReadNextJob = true;
         while (!aph.isAPHDone)
         {
             var isInSight = IsInSight(prepareData.target);
             if (isInSight)
             {
+                Debug.Log(part + "is in sight");
                 SetState(StateKinds.Tracking, new PersonPrepareData(prepareData.target));
+                break;
             }
 
             yield return new WaitForFixedUpdate();
         }
-
-        if (shouldReadNextJob)
-            job.EndJob();
 
         yield break;
     }
@@ -110,10 +112,11 @@ public class Patrol_PersonState : PersonState
         return aph;
     }
 
-    Vector3 GetForwardPosition()
+    List<Vector3> GetAroundPositionCast(float startAngle, float angleUnit, float maxAngle, bool onlyFarOne)
     {
         var hitList = new List<Vector3>();
-        for (float angle = -30f; angle < 60; angle += 30f)
+        startAngle = startAngle < 0 ? startAngle : startAngle * -1f;
+        for (float angle = startAngle; angle < maxAngle; angle += angleUnit)
         {
             var ray = GetRay(angle);
             if (Physics.Raycast(ray, out RaycastHit hit, castDist))
@@ -126,54 +129,40 @@ public class Patrol_PersonState : PersonState
             }
         }
 
-        var path = new NavMeshPath();
-        var mostFarAway = Vector3.zero;
-        var farDist = 0f;
-        hitList.ForEach(x =>
+        if (onlyFarOne)
         {
-            if (NavMesh.CalculatePath(ActorTransform.position, x, 1, path))
+            var mostFarAway = Vector3.zero;
+            var farDist = 0f;
+            hitList.ForEach(x =>
             {
+                Debug.DrawLine(ActorTransform.position, x, Color.blue, 2f);
                 var dist = Vector3.Distance(ActorTransform.position, x);
                 if (dist > farDist)
                 {
                     farDist = dist;
                     mostFarAway = x;
                 }
-            }
-        });
+            });
 
-        return mostFarAway;
-    }
-
-    List<Vector3> GetRoundPositions()
-    {
-        var samplingCount = 10;
-        List<Vector3> castList = new List<Vector3>();
-        for (int i = 0; i < samplingCount; i++)
-        {
-            if (NavMesh.SamplePosition(ActorTransform.position, out NavMeshHit hit, castDist, 1))
-            {
-                castList.Add(hit.position);
-            }
+            return new List<Vector3>() { mostFarAway };
         }
-
-        if (castList.Count > 0)
+        else
         {
-            castList.Shuffle();
+            return hitList;
         }
-
-        return castList;
     }
 
     Ray GetRay(float angle)
     {
-        var rad = angle * Mathf.Deg2Rad;
-        var dir = new Vector3(Mathf.Cos(rad), 0, Mathf.Sign(rad));
-        return new Ray(prepareData.target.position, dir);
+        var rotatedDirection = Quaternion.Euler(0, angle, 0) * ActorTransform.forward;
+        return new Ray(ActorTransform.position, rotatedDirection);
     }
     public override void Exit()
     {
+        Debug.Log("Exit Patrol");
+
         jobManager.CancleJob();
         jobManager = null;
+        base.Exit();
     }
 }

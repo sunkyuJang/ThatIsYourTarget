@@ -2,6 +2,14 @@ using UnityEngine;
 
 public class FovSensor : ObjDetector
 {
+    private void Awake()
+    {
+        if (!transform.CompareTag("Untagged"))
+        {
+            transform.tag = "Untagged";
+            Debug.Log("FOVSenser should be untagged for unexpecting catcing by other objDetector");
+        }
+    }
     public Vector3 rayStartPoint { get { return transform.position + transform.forward * 0.2f; } }
     //protected override void OnTriggerStay(Collider other)
     //{

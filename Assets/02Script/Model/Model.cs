@@ -24,8 +24,7 @@ public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConn
     public StateModuleHandler ModuleHandler { protected set; get; }
 
     // Sight
-    [SerializeField]
-    private FOVCollider FOVCollider;
+    public FOVCollider FOVCollider;
     public float SightLength { get { return FOVCollider.Length * FOVCollider.transform.lossyScale.x; } }
 
     // Weapon
@@ -61,7 +60,6 @@ public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConn
         ModelAPHJobManger.StartJob();
     }
 
-    public bool IsInSight(Transform target) => ActorTransform.IsRayHitToTarget(target, SightLength);
     public Coroutine TracingTargetInSight(Transform target, Func<bool> conditionOfEndLoop, Func<bool, bool> ShouldStopAfterCast)
     {
         return StartCoroutine(DoTracingTargetInSight(target, conditionOfEndLoop, ShouldStopAfterCast));
@@ -72,7 +70,7 @@ public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConn
         var time = 0f;
         while (time < maxTime && !conditionOfEndLoop())
         {
-            var isHit = ActorTransform.IsRayHitToTarget(target, SightLength);
+            var isHit = IsHitToTarget(target, SightLength);
             if (ShouldStopAfterCast.Invoke(isHit))
             {
                 yield break;
@@ -82,14 +80,15 @@ public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConn
             yield return new WaitForFixedUpdate();
         }
 
-        ShouldStopAfterCast?.Invoke(false);
+        if (!conditionOfEndLoop())
+            ShouldStopAfterCast?.Invoke(false);
 
         if (time > maxTime)
             Debug.Log("DoTracingTargetInSight closed by force : its over than " + maxTime + "sec.\n" + "instanceID : " + transform.GetInstanceID());
 
         yield break;
     }
-    bool IsHitToTarget(Transform target) => FOVCollider.transform.IsRayHitToTarget(target);
+    public bool IsHitToTarget(Transform target, float dist = 0f) => FOVCollider.transform.IsRayHitToTarget(target, dist);
     public void OnContecting(ObjDetector detector, Collider collider) { if (IsHitToTarget(collider.transform)) OnContecting(collider); }
     public void OnDetected(ObjDetector detector, Collider collider) { if (IsHitToTarget(collider.transform)) OnDetected(collider); }
     public void OnRemoved(ObjDetector detector, Collider collider) { if (IsHitToTarget(collider.transform)) OnRemoved(collider); }

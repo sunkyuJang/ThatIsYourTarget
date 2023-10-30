@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -32,7 +31,7 @@ public class ObjPooler : MonoBehaviour
     }
 
     public bool CanPull(int i) { return instantiatedObj.Count >= i; }
-    public bool CanPull() => CanPull(0);
+    public bool CanPull() => CanPull(1);
 
     public GameObject GetNewOne()
     {

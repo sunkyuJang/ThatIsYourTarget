@@ -8,61 +8,42 @@ namespace Autohand.Demo{
         public TMPro.TextMeshPro text;
         Coroutine changing;
         Coroutine hide;
-        GameObject lastCommandFrom;
         
+        public void UpdateText(string newText, float upTime) {
 
-        public void HideText(float changeTime, float fadeTime) {
-            if(hide != null)
-                StopCoroutine(hide);
-            hide = StartCoroutine(HideTextRoutine(changeTime, fadeTime));
         }
 
-        public void UpdateText(GameObject from, string newText, float changeTime) {
-            if(lastCommandFrom != from || !newText.Equals(text.text)){ 
-                lastCommandFrom = from;
-                if(hide != null)
-                    StopCoroutine(hide);
-                if(changing != null)
-                    StopCoroutine(changing);
-                changing = StartCoroutine(ChangeText(changeTime, newText));
-            }
+        public void UpdateText(string newText) {
+
         }
 
         IEnumerator ChangeText(float seconds, string newText) {
-            seconds /= 2f;
-            float totalTime = seconds;
-            while(totalTime > 0) {
-                text.alpha = Mathf.Sqrt(totalTime/seconds);
-                totalTime -= Time.deltaTime;
-                if(totalTime <= 0)
-                    text.alpha = 0;
-                yield return Time.deltaTime;
-            }
+            //float totalTime = 1f;
+            //var timePassed = 0f;
+            //text.text = newText;
+            //text.alpha = 0;
 
-            text.text = newText;
+            //while(timePassed <= totalTime) {
+            //    text.alpha = (timePassed/totalTime);
+            //    timePassed += Time.deltaTime;
+            //    if(totalTime >= timePassed)
+            //        text.alpha = 1;
+            //    yield return new WaitForFixedUpdate();
+            //}
 
-            totalTime = 0;
-            while(totalTime < seconds) {
-                text.alpha = Mathf.Sqrt(totalTime/seconds);
-                totalTime += Time.deltaTime;
-                if(totalTime >= seconds)
-                    text.alpha = 1;
-                yield return Time.deltaTime;
-            }
+            //yield return new WaitForSeconds(seconds);
 
-        }
+            //totalTime = 2f;
+            //timePassed = 0f;
+            //while(timePassed <= totalTime) {
+            //    text.alpha = 1-(timePassed/totalTime);
+            //    timePassed += Time.deltaTime;
+            //    if(totalTime >= timePassed)
+            //        text.alpha = 0;
+            //    yield return new WaitForFixedUpdate();
+            //}
 
-        IEnumerator HideTextRoutine(float seconds, float delay = 0) {
-            yield return new WaitForSeconds(delay);
-            float totalTime = seconds;
-            while(totalTime > 0) {
-                text.alpha = Mathf.Sqrt(totalTime/seconds);
-                totalTime -= Time.deltaTime;
-                if(totalTime <= 0)
-                    text.alpha = 0;
-                yield return Time.deltaTime;
-            }
-
+            yield return new WaitForFixedUpdate();
             text.text = "";
         }
 

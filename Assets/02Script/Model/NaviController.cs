@@ -1,16 +1,25 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
+using JExtentioner;
+using System.Linq;
 
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(NavMeshObstacle))]
 public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJobManager.ModelHandlerJob>
 {
-    public NavMeshAgent navMeshAgent { private set; get; }
+    NavMeshAgent navMeshAgent { set; get; }
     NavMeshObstacle navMeshObstacle { set; get; }
-    public float permissibleRangeToDestination = 0.01f;
-    public bool IsArrivedDestination { get { return Vector3.Distance(transform.position, navMeshAgent.destination) < permissibleRangeToDestination; } }
-    public Coroutine CheckingUntilArrive;
+    float permissibleRangeToDestinationXZ = 0.01f;
+    bool IsArrivedDestination
+    {
+        get
+        {
+            var distXZ = Vector2.Distance(transform.position.ConvertVector3To2(1), navMeshAgent.destination.ConvertVector3To2(1));
+            return distXZ < permissibleRangeToDestinationXZ;
+        }
+    }
+    Coroutine CheckingUntilArrive;
     void Awake()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
@@ -21,14 +30,8 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
     {
         if (job.ap != null)
         {
-            var ap = job.ap;
-            TurnOnNavi(true);
-            navMeshAgent.SetDestination(ap.transform.position);
-
             if (CheckingUntilArrive != null)
-            {
                 StopCoroutine(CheckingUntilArrive);
-            }
 
             CheckingUntilArrive = StartCoroutine(DoCheckUntilArrive(job));
         }
@@ -38,12 +41,12 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
         var ap = job.ap;
         TurnOnNavi(true);
         var lastPosition = ap.transform.position;
-
+        SetDestination(ap.transform.position, out Vector3 correctiondVector);
         while (!IsArrivedDestination)
         {
             if (lastPosition != ap.transform.position)
             {
-                navMeshAgent.SetDestination(ap.transform.position);
+                SetDestination(ap.transform.position, out correctiondVector);
                 lastPosition = ap.transform.position;
             }
             yield return new WaitForFixedUpdate();
@@ -51,7 +54,78 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
 
         TurnOnNavi(false);
 
+        ap.transform.position = correctiondVector;
         job.EndJob();
+    }
+
+    Vector3 CorrectPosition(Vector3 position, Vector3 dir)
+    {
+        var collideRadius = navMeshAgent.radius * 1.2f;
+        var maxIterations = 5;
+        var hitPoint = transform.GetSurroundingCastHitPosition(45f, collideRadius);
+        if (hitPoint.Any())
+        {
+            hitPoint.ForEach(x =>
+            {
+
+            });
+        }
+        for (int interation = 0; interation < maxIterations; interation++)
+        {
+            if (!Physics.Raycast(position, dir, out RaycastHit hit, collideRadius))
+            {
+                break;
+            }
+            else
+            {
+                if (Mathf.Abs(hit.normal.y) < 0.1f)
+                {
+                    Vector3 offsetPosition = hit.point - (dir.normalized * collideRadius);
+                    var tempPosition = new Vector3(offsetPosition.x, position.y, offsetPosition.z);
+                    if (tempPosition == position)
+                        interation = maxIterations;
+
+                    position = tempPosition;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+        return position;
+    }
+
+    bool IsPositionCanReach(Vector3 targetPosition, out NavMeshHit hit)
+    {
+        hit = new NavMeshHit();
+        var filter = new NavMeshQueryFilter
+        {
+            agentTypeID = navMeshAgent.agentTypeID,
+            areaMask = NavMesh.AllAreas
+        };
+
+        for (float searchRadius = 5f, increasingRadius = 10f; searchRadius < 50f; searchRadius += increasingRadius)
+        {
+            if (NavMesh.SamplePosition(targetPosition, out hit, searchRadius, filter))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    void SetDestination(Vector3 targetPosition, out Vector3 correctiondVector)
+    {
+        correctiondVector = Vector3.zero;
+        if (IsPositionCanReach(targetPosition, out NavMeshHit hit))
+        {
+            correctiondVector = hit.position;
+            navMeshAgent.SetDestination(correctiondVector);
+            GizmosDrawer.instanse.DrawLine(targetPosition, correctiondVector, 2f, Color.magenta);
+            GizmosDrawer.instanse.DrawSphere(correctiondVector, 0.05f, 2f, Color.magenta);
+        }
     }
 
     public void StopJob()

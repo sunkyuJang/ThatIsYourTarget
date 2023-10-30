@@ -8,18 +8,19 @@ public class ObjDetector : MonoBehaviour
     public GameObject connectedObj;
     public List<string> targetTags = new List<string>();
     public bool shouldFindByName = false;
+    public bool ignoreTriggerCollider = false;
 
     protected Collider DectectCollider { set; get; }
     protected IObjDetectorConnector_OnDetected I_OnDetected { set; get; }
     protected IObjDetectorConnector_OnContecting I_OnContecting { set; get; }
     protected IObjDetectorConnector_OnRemoved I_OnRemoved { set; get; }
 
+
     public enum DrawTarget { OnlyClosedOne, AllTheTarget, Non }
     public DrawTarget drawTarget = DrawTarget.OnlyClosedOne;
     public enum LineKind { Collide, Pass }
     public LineKind lineKind = LineKind.Collide;
     List<Transform> Targets { set; get; } = new List<Transform>();
-    Transform Parent { set; get; }
     protected virtual void SetDetectCollider()
     {
         //check collider
@@ -75,6 +76,7 @@ public class ObjDetector : MonoBehaviour
 
     protected bool IsFind(Collider other)
     {
+        if (other.isTrigger && ignoreTriggerCollider) return false;
         var nowString = shouldFindByName ? other.gameObject.name : other.tag;
         foreach (var item in targetTags)
         {

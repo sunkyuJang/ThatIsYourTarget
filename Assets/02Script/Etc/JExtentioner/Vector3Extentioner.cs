@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace JExtentioner
@@ -48,6 +49,21 @@ namespace JExtentioner
             return new Vector3(isX ? overrideVector.x : original.x,
                                 isY ? overrideVector.y : original.y,
                                 isZ ? overrideVector.z : original.z);
+        }
+
+        public static Vector2 ConvertVector3To2(this Vector3 target, int exceptiedIndex)
+        {
+            switch (exceptiedIndex)
+            {
+                case 0: return new Vector2(target.y, target.z);
+                case 1: return new Vector2(target.x, target.z);
+                default: return new Vector2(target.x, target.y);
+            }
+        }
+
+        public static Vector2 ReverseVector2(this Vector2 target)
+        {
+            return new Vector2(target.y, target.x);
         }
     }
 }

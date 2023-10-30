@@ -9,6 +9,6 @@ PhysicMaterial:
   m_Name: Sticky
   dynamicFriction: 100000000
   staticFriction: 100000000
-  bounciness: 0.9
+  bounciness: 0
   frictionCombine: 3
   bounceCombine: 0

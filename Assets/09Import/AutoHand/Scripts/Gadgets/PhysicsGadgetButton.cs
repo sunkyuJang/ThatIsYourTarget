@@ -19,30 +19,31 @@ namespace Autohand{
 
         new protected void Start(){
             base.Start();
-            startPos = transform.position;
+            startPos = transform.localPosition;
         }
 
 
         protected void FixedUpdate(){
-            if(!pressed && GetValue()+threshold >= 1) {
+            var value = GetValue();
+            if(!pressed && value+threshold >= 1) {
                 Pressed();
             }
-            else if(!lockOnPressed && pressed && GetValue()-threshold <= 0){
+            else if(!lockOnPressed && pressed && value-threshold <= 0){
                 Unpressed();
             }
 
-            if (GetValue() < 0)
-                transform.position = startPos;
+            if (value < 0)
+                transform.localPosition = startPos;
 
-            if (pressed && lockOnPressed && GetValue() + threshold < pressedValue)
-                transform.position = pressedPos;
+            if (pressed && lockOnPressed && value + threshold < pressedValue)
+                transform.localPosition = pressedPos;
         }
 
 
         public void Pressed() {
             pressed = true;
             pressedValue = GetValue();
-            pressedPos = transform.position;
+            pressedPos = transform.localPosition;
             OnPressed?.Invoke();
         }
 

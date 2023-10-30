@@ -6,6 +6,7 @@ public class Tracking_PersonState : PersonState
     bool shouldFixedLookAt = false;
     StateKinds stateKinds;
     AnimationPointHandler aph { set; get; } = null;
+    Coroutine ProcessTracingTarget { get; set; } = null;
     public Tracking_PersonState(Person person) : base(person) { }
     public override bool IsReady()
     {
@@ -16,13 +17,13 @@ public class Tracking_PersonState : PersonState
     {
         var weapon = Weapon;
 
-        if (weapon != null)
+        if (weapon != null && ProcessTracingTarget == null)
         {
             aph = GetTrackingAPH();
             SetAPH(aph, true);
             isAphDone = false;
 
-            TracingTargetInSightProcess(prepareData.target, () => isAphDone);
+            ProcessTracingTarget = TracingTargetInSightProcess(prepareData.target, () => isAphDone);
         }
     }
 
@@ -39,8 +40,9 @@ public class Tracking_PersonState : PersonState
     protected override bool ShouldStopAfterCast(bool isHit)
     {
         // this function will loop untill isAphDone == true
-        aph.shouldLoop = true;
+        aph.shouldLoop = false;
         var ap = aph.GetActionPoint(0);
+        var copyOfDon = isAphDone;
         if (isHit)
         {
             var dist = Vector3.Distance(ActorTransform.position, prepareData.target.position);
@@ -48,13 +50,13 @@ public class Tracking_PersonState : PersonState
             {
                 SetAPs(ap, prepareData.target, PersonAniState.StateKind.Non, 0, false, true);
                 stateKinds = StateKinds.Attack;
-                aph.shouldLoop = false;
                 return true;
             }
             else
             {
                 stateKinds = StateKinds.Tracking;
                 SetAPs(ap, prepareData.target, PersonAniState.StateKind.LookAround, 0, true, true);
+                aph.shouldLoop = true;
             }
         }
         else
@@ -69,6 +71,7 @@ public class Tracking_PersonState : PersonState
     public override void Exit()
     {
         isAphDone = true;
+        ProcessTracingTarget = null;
         base.Exit();
     }
     protected override void AfterAPHDone()

@@ -20,7 +20,7 @@ namespace Autohand{
         // Start is called before the first frame update
         void Start(){
             collisionGuard.enabled = false;
-            hand.OnReleased += OnRelease;
+            hand.OnGrabJointBreak += OnRelease;
             hand.OnBeforeGrabbed += BeforeGrab;
         }
 
@@ -28,8 +28,10 @@ namespace Autohand{
             if(body == null)
                 body = hand.transform.parent;
 
-            if(grab.ignoreReleaseTime == 0)
+            if (grab.ignoreReleaseTime == 0)
                 runProtection = true;
+            else
+                runProtection = false;
 
             grabPoint = hand.transform.position;
             if(guardRoutine != null){
@@ -39,12 +41,14 @@ namespace Autohand{
         }
 
         void OnRelease(Hand hand, Grabbable grab) {
-            if(runProtection)
+            if (runProtection) {
                 guardRoutine = StartCoroutine(Guard(hand));
+                runProtection = false;
+            }
         }
 
         IEnumerator Guard(Hand hand) {
-            hand.GetComponent<Rigidbody>().position = grabPoint;
+            hand.body.position = grabPoint;
             hand.transform.position = grabPoint;
             hand.transform.position = Vector3.MoveTowards(hand.transform.position, body.position, collisionGuard.radius);
             collisionGuard.enabled = true;

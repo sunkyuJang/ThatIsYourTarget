@@ -26,6 +26,7 @@ public abstract class PersonState : StateModule
     private Person Person { get; set; }
     public PersonState(Person person) => Person = person;
     protected Transform ActorTransform { get { return Person.ActorTransform; } }
+    protected Transform FovTransform { get { return Person.FOVCollider.transform; } }
     protected PersonWeapon Weapon { get { return Person.Weapon; } }
     protected void HoldWeapon(bool shouldHold) => Person.HoldWeapon(shouldHold);
     new public PersonPrepareData prepareData { set { base.prepareData = value; } get { return base.prepareData as PersonPrepareData; } }
@@ -85,7 +86,7 @@ public abstract class PersonState : StateModule
     }
 
     // Sight
-    protected bool IsInSight(Transform target) => Person.IsInSight(target);
+    protected bool IsInSight(Transform target) => Person.IsHitToTarget(target);
     public Coroutine TracingTargetInSightProcess(Transform target, Func<bool> conditionOfEndLoop)
     {
         var thisState = ModuleHandler.GetPlayingModule();

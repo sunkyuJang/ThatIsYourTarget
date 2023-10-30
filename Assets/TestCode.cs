@@ -1,20 +1,18 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class TestCode : MonoBehaviour
+public class TestCode : MonoBehaviour, IObjDetectorConnector_OnDetected
 {
-    private IEnumerator Start()
+    public void OnDetected(ObjDetector detector, Collider collider)
     {
-        var aa = new GameObject();
-        var originalAPH = GetComponent<AnimationPointHandler>();
-        aa.transform.position = originalAPH.transform.position;
-        Debug.Log(originalAPH.transform.position);
-        yield return new WaitForSeconds(3f);
-
-
-        var newobj = APHManager.Instance.GetCopyAPH(originalAPH);
-
-        newobj.transform.SetParent(aa.transform);
+        if (collider.tag == "Person")
+        {
+            StartCoroutine(DoMove());
+        }
+    }
+    IEnumerator DoMove()
+    {
+        yield return new WaitForSeconds(2f);
+        transform.position = new Vector3(3, 0.8f, -2);
     }
 }

@@ -316,6 +316,7 @@ MonoBehaviour:
   hand: {fileID: 0}
   buffer: 0.1
   alwaysRun: 0
+  strict: 0
 --- !u!1 &1725775218842682535
 GameObject:
   m_ObjectHideFlags: 0
@@ -416,15 +417,17 @@ MonoBehaviour:
   - {fileID: 3104218448770134146}
   - {fileID: 814065189471789213}
   follow: {fileID: 0}
-  followPositionOffset: {x: 0, y: 0, z: 0}
+  followPosition: {fileID: 0}
+  followRotation: {fileID: 0}
   followPositionStrength: 50
   followRotationStrength: 200
   maxVelocity: 4
   maxFollowDistance: 1
   left: 0
   palmTransform: {fileID: 1815447913620583107}
-  throwPower: 1
   reachDistance: 0.3
+  throwPower: 1
+  throwVelocityExpireTime: 0.2
   disableIK: 0
   swayStrength: 1.5
   gripOffset: 0.15
@@ -455,10 +458,10 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   grabReturnTime: 0.15
+  poseIndex: 0
   grabLayers:
     serializedVersion: 2
     m_Bits: 0
-  useHighlight: 1
   highlightLayers:
     serializedVersion: 2
     m_Bits: 0

@@ -1,31 +1,46 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace Autohand.Demo{
     public class ButtonDemoRespawn : MonoBehaviour{
-        public GameObject[] respawns;
-        Vector3[] startPos;
-        Quaternion[] startRot;
+        public Transform root;
+
+        List<Transform> respawns = new List<Transform>();
+
+        List<Vector3> startPos;
+        List<Quaternion> startRot;
 
 
         void Start(){
-            startPos = new Vector3[respawns.Length];
-            startRot = new Quaternion[respawns.Length];
-            for(int i = 0; i < respawns.Length; i++) {
-                startPos[i] = respawns[i].transform.position;
-                startRot[i] = respawns[i].transform.rotation;
+
+            startPos = new List<Vector3>();
+            startRot = new List<Quaternion>();
+
+            for (int i = 0; i < root.childCount; i++){
+                respawns.Add(root.GetChild(i));
+                startPos.Add(root.GetChild(i).transform.position);
+                startRot.Add(root.GetChild(i).transform.rotation);
+                for (int j = 0; j < root.GetChild(i).childCount; j++){
+                    respawns.Add(root.GetChild(i).GetChild(j));
+                    startPos.Add(root.GetChild(i).GetChild(j).transform.position);
+                    startRot.Add(root.GetChild(i).GetChild(j).transform.rotation);
+                }
             }
         }
 
         public void Respawn() {
-            for(int i = 0; i < respawns.Length; i++) {
-                if(respawns[i].GetComponent<Rigidbody>() != null){
-                    respawns[i].GetComponent<Rigidbody>().velocity = Vector3.zero;
-                    respawns[i].GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
-                    respawns[i].GetComponent<Rigidbody>().ResetInertiaTensor();
+            for(int i = 0; i < respawns.Count; i++) {
+                try {
+                    if (respawns[i].CanGetComponent(out Rigidbody body)){
+                        body.velocity = Vector3.zero;
+                        body.angularVelocity = Vector3.zero;
+                        body.ResetInertiaTensor();
+                    }
+                    respawns[i].transform.position = startPos[i];
+                    respawns[i].transform.rotation = startRot[i];
                 }
-                respawns[i].transform.position = startPos[i];
-                respawns[i].transform.rotation = startRot[i];
+                catch { }
             }
         }
 

@@ -7,13 +7,9 @@ public class TMPSizeProtector : MonoBehaviour{
     public float size;
 
     void Start(){
+#if UNITY_EDITOR
         if(GetComponent<TMPro.TextMeshPro>() != null)
             GetComponent<TMPro.TextMeshPro>().fontSize = size;
-    }
-
-    
-    private void OnDrawGizmos() {
-        if(GetComponent<TMPro.TextMeshPro>() != null)
-            GetComponent<TMPro.TextMeshPro>().fontSize = size;
+#endif
     }
 }
