@@ -42,7 +42,6 @@ public class Tracking_PersonState : PersonState
         // this function will loop untill isAphDone == true
         aph.shouldLoop = false;
         var ap = aph.GetActionPoint(0);
-        var copyOfDon = isAphDone;
         if (isHit)
         {
             var dist = Vector3.Distance(ActorTransform.position, prepareData.target.position);

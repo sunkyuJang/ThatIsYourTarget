@@ -1,10 +1,9 @@
 using UnityEngine;
 
-public class ModelPhysicsConnector : MonoBehaviour
+public class ModelPhysicsConnector : MonoBehaviour, IDamageController
 {
-    Model Model { set; get; }
-    private void Awake()
+    public bool SetDamage(Weapon weapon)
     {
-        Model = transform.parent.GetComponent<Model>();
+        return false;
     }
 }

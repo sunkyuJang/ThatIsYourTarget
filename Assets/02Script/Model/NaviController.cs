@@ -33,20 +33,28 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
             if (CheckingUntilArrive != null)
                 StopCoroutine(CheckingUntilArrive);
 
-            CheckingUntilArrive = StartCoroutine(DoCheckUntilArrive(job));
+            TurnOnNavi(true);
+            if (ShouldNavControllerWorking(job.ap))
+            {
+                CheckingUntilArrive = StartCoroutine(DoCheckUntilArrive(job));
+            }
+            else
+            {
+                TurnOnNavi(false);
+                job.EndJob();
+            }
         }
     }
     IEnumerator DoCheckUntilArrive(ModelAnimationPlayerJobManager.ModelHandlerJob job)
     {
         var ap = job.ap;
-        TurnOnNavi(true);
         var lastPosition = ap.transform.position;
-        SetDestination(ap.transform.position, out Vector3 correctiondVector);
+        var correctedVector = lastPosition;
         while (!IsArrivedDestination)
         {
             if (lastPosition != ap.transform.position)
             {
-                SetDestination(ap.transform.position, out correctiondVector);
+                SetDestination(ap.transform.position, out correctedVector);
                 lastPosition = ap.transform.position;
             }
             yield return new WaitForFixedUpdate();
@@ -54,46 +62,14 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
 
         TurnOnNavi(false);
 
-        ap.transform.position = correctiondVector;
+        ap.transform.position = correctedVector;
         job.EndJob();
     }
 
-    Vector3 CorrectPosition(Vector3 position, Vector3 dir)
+    bool ShouldNavControllerWorking(AnimationPoint ap)
     {
-        var collideRadius = navMeshAgent.radius * 1.2f;
-        var maxIterations = 5;
-        var hitPoint = transform.GetSurroundingCastHitPosition(45f, collideRadius);
-        if (hitPoint.Any())
-        {
-            hitPoint.ForEach(x =>
-            {
-
-            });
-        }
-        for (int interation = 0; interation < maxIterations; interation++)
-        {
-            if (!Physics.Raycast(position, dir, out RaycastHit hit, collideRadius))
-            {
-                break;
-            }
-            else
-            {
-                if (Mathf.Abs(hit.normal.y) < 0.1f)
-                {
-                    Vector3 offsetPosition = hit.point - (dir.normalized * collideRadius);
-                    var tempPosition = new Vector3(offsetPosition.x, position.y, offsetPosition.z);
-                    if (tempPosition == position)
-                        interation = maxIterations;
-
-                    position = tempPosition;
-                }
-                else
-                {
-                    break;
-                }
-            }
-        }
-        return position;
+        SetDestination(ap.transform.position, out Vector3 correctiondVector);
+        return !IsArrivedDestination;
     }
 
     bool IsPositionCanReach(Vector3 targetPosition, out NavMeshHit hit)

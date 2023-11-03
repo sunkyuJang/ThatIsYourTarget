@@ -8,7 +8,7 @@ public class PersonAniController : AniController
     protected override void Start()
     {
         base.Start();
-        bodyThreshold = 30f;
+        bodyThreshold = 5f;
     }
     protected override StateModuleHandler GetStateModuleHandler()
     {
@@ -31,7 +31,6 @@ public class PersonAniController : AniController
             {
                 aniModule.SetAP(ap);
                 aniModule.TryEnter<StateModule.PrepareData>();
-                //moduleHandler.EnterModule(ap.State);
 
                 // walk animation should stop for other animation
                 SetWalkModule(AnimationPointHandler.WalkingState.Non);

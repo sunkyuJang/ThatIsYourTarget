@@ -36,7 +36,7 @@ public class Weapon : MonoBehaviour, IObjCollisionDetectorConnector_OnCollisionE
         IDamageController damageController = collision.collider.GetComponent<IDamageController>();
         if (damageController != null)
         {
-            var isDead = damageController.SetDamage(Dmg);
+            var isDead = damageController.SetDamage(this);
             if (isDead)
             {
                 // melee

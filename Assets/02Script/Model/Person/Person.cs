@@ -23,17 +23,13 @@ public partial class Person : Model
     }
     [SerializeField]
     private Renderer modelRenderer;
-
-    object idmgController;
-    new public PersonStateModuleHandler ModuleHandler => base.ModuleHandler as PersonStateModuleHandler;
-
+    new public PersonStateModuleHandler ModuleHandler
+        => base.ModuleHandler as PersonStateModuleHandler;
     new public PersonWeapon Weapon { get { return base.Weapon as PersonWeapon; } }
 
     public PersonInfoUI personInfoUI;
     protected override StateModuleHandler SetStateModuleHandler()
-    {
-        return new PersonStateModuleHandler(this);
-    }
+        => new PersonStateModuleHandler(this);
     protected override IEnumerator Start()
     {
         yield return StartCoroutine(base.Start());
@@ -55,11 +51,6 @@ public partial class Person : Model
         SetSensedState(collider, true);
     }
 
-    //public override void OnRemoved(Collider collider)
-    //{
-    //    SetSensedState(collider, false);
-    //}
-
     void SetSensedState(Collider collider, bool isContected)
     {
         var stateKind = PersonState.StateKinds.Sensed;
@@ -70,7 +61,7 @@ public partial class Person : Model
         }
     }
 
-    protected override void DoDie()
+    protected override void DoDead()
     {
         SetState((int)PersonState.StateKinds.Dead);
     }

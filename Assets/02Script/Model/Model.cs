@@ -4,7 +4,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConnector_OnAll
+public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConnector_OnDetected
 {
     public enum ModelKinds { Person, Player }
     public float HP { set { HP -= value; HP = HP < 0 ? 0 : HP; } get { return HP; } }
@@ -14,6 +14,7 @@ public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConn
     // DMG
     float MaxAcceptableDmgTime { set; get; } = 2f;
     bool CanAcceptableDmg { set; get; } = true;
+    bool canDead = true;
 
     //APH
     protected ModelAnimationPlayer ModelAnimationPlayer { set; get; }
@@ -89,26 +90,25 @@ public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConn
         yield break;
     }
     public bool IsHitToTarget(Transform target, float dist = 0f) => FOVCollider.transform.IsRayHitToTarget(target, dist);
-    public void OnContecting(ObjDetector detector, Collider collider) { if (IsHitToTarget(collider.transform)) OnContecting(collider); }
     public void OnDetected(ObjDetector detector, Collider collider) { if (IsHitToTarget(collider.transform)) OnDetected(collider); }
-    public void OnRemoved(ObjDetector detector, Collider collider) { if (IsHitToTarget(collider.transform)) OnRemoved(collider); }
-    public virtual void OnContecting(Collider collider) { }
     public virtual void OnDetected(Collider collider) { }
-    public virtual void OnRemoved(Collider collider) { }
-    protected virtual void DoDie() { }
-    public bool SetDamage(float damege)
+    protected virtual void DoDead() { }
+    public bool SetDamage(Weapon weapon)
     {
-        if (CanAcceptableDmg)
+        if (canDead)
         {
-            CanAcceptableDmg = false;
-            Action removeTimeData = () => { CanAcceptableDmg = true; };
-            TimeCounter.Instance.SetTimeCounting(MaxAcceptableDmgTime, removeTimeData);
-
-            HP = damege;
-
-            if (HP <= 0)
+            if (CanAcceptableDmg)
             {
-                DoDie();
+                CanAcceptableDmg = false;
+                Action removeTimeData = () => { CanAcceptableDmg = true; };
+                TimeCounter.Instance.SetTimeCounting(MaxAcceptableDmgTime, removeTimeData);
+
+                HP -= weapon.Dmg;
+
+                if (HP <= 0)
+                {
+                    DoDead();
+                }
             }
         }
 

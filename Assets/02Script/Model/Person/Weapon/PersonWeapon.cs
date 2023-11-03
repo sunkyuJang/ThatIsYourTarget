@@ -4,7 +4,7 @@ using UnityEngine;
 public class PersonWeapon : Weapon
 {
     public enum WeaponType { Hands, HandGun, AR, Rifle, Non }
-    public WeaponType weaponType = WeaponType.Non;
+    public WeaponType weaponType { protected set; get; } = WeaponType.Non;
     public Transform grabPosition { private set; get; } = null;
     public Transform LGrab { private set; get; } = null;
     public Transform Last_L_IndexFinger { private set; get; } = null;

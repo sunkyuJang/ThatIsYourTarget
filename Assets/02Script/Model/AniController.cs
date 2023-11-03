@@ -11,10 +11,15 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
     protected Transform headFollowTarget { set; get; } = null;
     float lookAtWeight = 0f;
     protected float animationPlayLimit = 0.85f;
+
+    // reserved Ani
     protected AnimationPoint reservedAP { set; get; }
     protected bool IsAPReserved { get { return reservedAP != null; } }
+
+    // playing Ani
     Coroutine PlayingAni { set; get; }
     protected bool IsPlayingAni { get { return PlayingAni != null; } }
+
     private ModelAnimationPlayerJobManager.ModelHandlerJob modelHandlerJob { set; get; }
     protected AnimationPointHandler.WalkingState walkingState { set; get; }
     protected float bodyThreshold = 0f;

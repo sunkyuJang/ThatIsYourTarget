@@ -1,62 +1,49 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
-public class ModelAnimationPlayer : IJobStarter<ModelAPHJobManger.ModelJob>, IDamageController
+public class ModelAnimationPlayer : IJobStarter<ModelAPHJobManger.ModelJob>
 {
     public Model Model { private set; get; }
-    AnimationPointHandler actionPointHandler { set; get; }
-    NaviController naviController { set; get; }
-    AniController aniController { set; get; }
-    RagDollHandler ragDollHandler { set; get; }
-    ModelAPHJobManger.ModelJob modelJob { set; get; }
-    ModelAnimationPlayerJobManager jobManager { set; get; }
+    AnimationPointHandler ActionPointHandler { set; get; }
+    NaviController NaviController { set; get; }
+    AniController AniController { set; get; }
+    ModelAPHJobManger.ModelJob ModelJob { set; get; }
+    ModelAnimationPlayerJobManager JobManager { set; get; }
 
     public ModelAnimationPlayer(Model model, Transform actorTransform)
     {
         Model = model;
-        naviController = actorTransform.GetComponent<NaviController>();
-        aniController = actorTransform.GetComponent<AniController>();
-        ragDollHandler = actorTransform.GetComponent<RagDollHandler>();
+        NaviController = actorTransform.GetComponent<NaviController>();
+        AniController = actorTransform.GetComponent<AniController>();
 
-        if (naviController == null
-            && aniController == null) { Debug.Log("some of component in actor is missing"); }
+        if (NaviController == null
+            && AniController == null) { Debug.Log("some of component in actor is missing"); }
     }
     public void StartJob(ModelAPHJobManger.ModelJob job)
     {
-        if (actionPointHandler != null)
+        if (ActionPointHandler != null)
         {
-            modelJob?.returnAPH(actionPointHandler);
+            ModelJob?.returnAPH(ActionPointHandler);
         }
 
-        if (jobManager != null)
-            jobManager.CancleJob();
+        if (JobManager != null)
+            JobManager.CancleJob();
 
         StopJob();
 
-        modelJob = job;
-        actionPointHandler = modelJob.aph;
-        jobManager = new ModelAnimationPlayerJobManager(
-                        runAfterJobEnd: () => { modelJob.EndJob(); },
-                        modelJob: modelJob,
-                        naviJobStarter: naviController,
-                        aniJobstarter: aniController);
-        jobManager.StartJob();
+        ModelJob = job;
+        ActionPointHandler = ModelJob.aph;
+        JobManager = new ModelAnimationPlayerJobManager(
+                        runAfterJobEnd: () => { ModelJob.EndJob(); },
+                        modelJob: ModelJob,
+                        naviJobStarter: NaviController,
+                        aniJobstarter: AniController);
+        JobManager.StartJob();
     }
 
     public void StopJob()
     {
-        aniController.StopJob();
-        naviController.StopJob();
+        AniController.StopJob();
+        NaviController.StopJob();
     }
-
-    public void SetDead()
-    {
-        StopJob();
-        ragDollHandler.TrunOnRigid(true);
-    }
-
-    public bool SetDamage(float damege)
-    {
-        return ((IDamageController)Model).SetDamage(damege);
-    }
-
 }

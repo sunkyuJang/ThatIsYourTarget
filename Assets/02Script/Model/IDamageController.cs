@@ -4,5 +4,5 @@ using UnityEngine;
 
 public interface IDamageController
 {
-    bool SetDamage(float damege);
+    bool SetDamage(Weapon weapon);
 }

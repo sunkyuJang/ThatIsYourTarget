@@ -1,14 +1,14 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using JExtentioner;
+using System.Linq;
 // the goal of patrol is, person should be trace the way that player gone.
 public class Patrol_PersonState : PersonState
 {
     enum State { tracingTarget, lookAround, done }
-    State state = State.tracingTarget;
-    const int castCount = 6;
-    const float castDist = 3.0f;
+    const float castDist = 5.0f;
     JobManager jobManager;
     public Patrol_PersonState(Person person) : base(person) { }
 
@@ -19,9 +19,8 @@ public class Patrol_PersonState : PersonState
     public override void EnterToException() { }
     protected override void StartModule()
     {
-        state = State.tracingTarget;
         var objForSection = new object();
-        jobManager = new JobManager(objForSection, DoneJobManager); // after jobManager done, this moduler will be end
+        jobManager = new JobManager(objForSection, DoneJobManager);
         SetJobsAction(jobManager);
         jobManager.StartJob();
     }
@@ -39,10 +38,10 @@ public class Patrol_PersonState : PersonState
             switch (i)
             {
                 case State.tracingTarget:
-                    job.jobAction = () => { TracingTarget(job); };
+                    job.jobAction = () => { TracingTarget(); };
                     break;
                 case State.lookAround:
-                    job.jobAction = () => { LookAroundNearBy(job); };
+                    job.jobAction = () => { LookAroundNearBy(); };
                     break;
             }
 
@@ -52,41 +51,34 @@ public class Patrol_PersonState : PersonState
 
     void DoneJobManager()
     {
-        // if job manager come here means like,
-        // in the patrol state, the person didnt find anything.
-        // so, it should go to normal state.
-        Debug.Log("Go To Normal State");
         SetNormalState();
     }
 
-    void TracingTarget(Job job)
+    void TracingTarget()
     {
-        Debug.Log("TracingTarget");
-
         var position = GetAroundPositionCast(-30f, 30f, 60f, true);
         var aph = GetAPHByPositions(position);
         SetAPH(aph, true);
 
-        StartCoroutine(DoTracingTarget(job, aph, "tracing part"));
+        StartCoroutine(DoTracingTarget(aph));
     }
-    void LookAroundNearBy(Job job)
+    void LookAroundNearBy()
     {
-        Debug.Log("LockAround");
-
-        var positions = GetAroundPositionCast(-160f, 20f, 160f, false);
+        var positions = GetAroundPositionCast(-160f, 80f, 160f, false);
+        positions.Shuffle();
         var aph = GetAPHByPositions(positions);
-        SetAPH(aph);
-        StartCoroutine(DoTracingTarget(job, aph, "Look part"));
+        SetAPH(aph, true);
+
+        StartCoroutine(DoTracingTarget(aph));
     }
 
-    IEnumerator DoTracingTarget(Job job, AnimationPointHandler aph, string part)
+    IEnumerator DoTracingTarget(AnimationPointHandler aph)
     {
         while (!aph.isAPHDone)
         {
             var isInSight = IsInSight(prepareData.target);
             if (isInSight)
             {
-                Debug.Log(part + "is in sight");
                 SetState(StateKinds.Tracking, new PersonPrepareData(prepareData.target));
                 break;
             }
@@ -159,8 +151,6 @@ public class Patrol_PersonState : PersonState
     }
     public override void Exit()
     {
-        Debug.Log("Exit Patrol");
-
         jobManager.CancleJob();
         jobManager = null;
         base.Exit();

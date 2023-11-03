@@ -86,10 +86,7 @@ public class AnimationPointHandlerEditor : Editor
     }
     public override void OnInspectorGUI()
     {
-        // ±âº» ÀÎ½ºÆåÅÍ UI¸¦ ±×¸³´Ï´Ù.
         DrawDefaultInspector();
-
-        // Ãß°¡ÀûÀÎ ÀÎ½ºÆåÅÍ UI¸¦ ¿©±â¿¡ ±×¸± ¼ö ÀÖ½À´Ï´Ù.
     }
     void OnSceneGUI()
     {
@@ -124,13 +121,13 @@ public class AnimationPointHandlerEditor : Editor
                     Handles.DrawLine(ap.transform.position, nextAp.transform.position);
                 }
 
-                if (i == animationPoints.Count - 1) // ¸¶Áö¸·ÀÏ¶§
+                if (i == animationPoints.Count - 1) // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¶ï¿½
                 {
                     var drawPoint = handler.shouldLoop ? animationPoints[0] : animationPoints[i];
                     Handles.SphereHandleCap(0, drawPoint.transform.position + endDrawPosition, Quaternion.identity, sphereRadius, EventType.Repaint);
                 }
 
-                if (i == 0) // ½ÃÀÛÁ¡ÀÏ‹š
+                if (i == 0) // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï‹ï¿½
                 {
                     Handles.color = Color.green;
                     Handles.SphereHandleCap(0, ap.transform.position + startDrawPosition, Quaternion.identity, sphereRadius, EventType.Repaint);
