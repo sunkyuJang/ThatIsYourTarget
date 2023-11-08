@@ -5,6 +5,11 @@ public class PersonAniController : AniController
 {
     public GameObject personNeck;
     PersonAniStateModuleHandler moduleHandler => base.stateModuleHandler as PersonAniStateModuleHandler;
+
+    protected override void Awake()
+    {
+        base.Awake();
+    }
     protected override void Start()
     {
         base.Start();
@@ -12,7 +17,7 @@ public class PersonAniController : AniController
     }
     protected override StateModuleHandler GetStateModuleHandler()
     {
-        return new PersonAniStateModuleHandler(animator);
+        return new PersonAniStateModuleHandler(animator, ragDollHandler);
     }
     protected override bool IsWalkState()
     {

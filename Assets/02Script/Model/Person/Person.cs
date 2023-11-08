@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Resources;
 using UnityEngine;
 
 public partial class Person : Model
@@ -30,6 +32,11 @@ public partial class Person : Model
     public PersonInfoUI personInfoUI;
     protected override StateModuleHandler SetStateModuleHandler()
         => new PersonStateModuleHandler(this);
+    private void Awake()
+    {
+        base.Awake();
+        HP = 10;
+    }
     protected override IEnumerator Start()
     {
         yield return StartCoroutine(base.Start());
@@ -63,6 +70,7 @@ public partial class Person : Model
 
     protected override void DoDead()
     {
-        SetState((int)PersonState.StateKinds.Dead);
+        var stateKind = PersonState.StateKinds.Dead;
+        SetState((int)stateKind, new PersonState.PersonPrepareData(null));
     }
 }

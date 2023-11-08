@@ -10,11 +10,11 @@ public class Sensed_PersonState : PersonState
     readonly public List<StateKinds> PriolityList =
         new List<StateKinds>()
         {
-            StateKinds.Curiousity, // 의심
-            StateKinds.Patrol, // 놓쳤을 때
-            StateKinds.Tracking, // 타겟을 놓치지 전까지
-            StateKinds.DrawWeapon, // 발견 직후 공격 준비
-            StateKinds.Hit, // 타겟이 힛범위 내에
+            StateKinds.Curiousity,
+            StateKinds.Patrol,
+            StateKinds.Tracking,
+            StateKinds.DrawWeapon,
+            StateKinds.Hit,
         };
     public Sensed_PersonState(Person person) : base(person) { }
     public override bool IsReady()

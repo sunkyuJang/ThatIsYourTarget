@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public abstract class PersonState : StateModule
 {
@@ -31,8 +33,14 @@ public abstract class PersonState : StateModule
     protected void HoldWeapon(bool shouldHold) => Person.HoldWeapon(shouldHold);
     new public PersonPrepareData prepareData { set { base.prepareData = value; } get { return base.prepareData as PersonPrepareData; } }
     protected PersonStateModuleHandler ModuleHandler { get { return Person.ModuleHandler; } }
-    protected Coroutine StartCoroutine(IEnumerator doFunction) { return Person.StartCoroutine(doFunction); }
-
+    protected List<Coroutine> Coroutines { set; get; } = new List<Coroutine>();
+    public Coroutine StartCoroutine(IEnumerator doFunction)
+    {
+        var coroutine = Person.StartCoroutine(doFunction);
+        Coroutines.Add(coroutine);
+        return coroutine;
+    }
+    protected void StopAllCoroutine() => Coroutines.ForEach(x => { if (x != null) Person.StopCoroutine(x); });
     // APH
     protected AnimationPointHandler GetNewAPH(int APCounts, AnimationPointHandler.WalkingState walkingState = AnimationPointHandler.WalkingState.Walk)
     {
@@ -59,6 +67,11 @@ public abstract class PersonState : StateModule
     protected void SetAPs(AnimationPoint ap, Transform target, PersonAniState.StateKind kind, float time = 0, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
     {
         SetAPs(ap, target.position, kind, time, shouldReachTargetPosition, shouldLookAtTarget);
+    }
+    protected void SetAPsImmediate(AnimationPoint ap, PersonAniState.StateKind kind, float time = 0)
+    {
+        var dir = ActorTransform.position + ActorTransform.forward;
+        SetAPs(ap, dir, kind, time, false, true);
     }
     protected void SetAPs(AnimationPoint ap, Vector3 target, PersonAniState.StateKind kind, float time = 0, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
     {
@@ -87,15 +100,19 @@ public abstract class PersonState : StateModule
 
     // Sight
     protected bool IsInSight(Transform target) => Person.IsHitToTarget(target);
-    public Coroutine TracingTargetInSightProcess(Transform target, Func<bool> conditionOfEndLoop)
+
+    public void StartTracingTargetInSight(Transform target, Func<bool> conditionOfEndLoop)
     {
-        var thisState = ModuleHandler.GetPlayingModule();
-        return Person.TracingTargetInSight(target, () => conditionOfEndLoop() && thisState != ModuleHandler.GetPlayingModule(), ShouldStopAfterCast);
+        var playingModule = ModuleHandler.GetPlayingModule();
+        var playingKind = ModuleHandler.GetThisKind(playingModule);
+        var thisKind = ModuleHandler.GetThisKind(this);
+        StartCoroutine(Person.DoTracingTargetInSight(target, () => conditionOfEndLoop() && playingKind == thisKind, ShouldStopAfterCast));
     }
 
     public override void Exit()
     {
         prepareData = null;
+        StopAllCoroutine();
     }
 
     protected virtual bool ShouldStopAfterCast(bool isHit) { return false; }

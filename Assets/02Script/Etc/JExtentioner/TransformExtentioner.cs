@@ -112,5 +112,24 @@ namespace JExtentioner
 
             return hits;
         }
+
+        public static Transform FindStartingParentWithSameTag(this Transform target)
+        {
+            Transform lastParent = target;
+            while (lastParent.parent != null)
+            {
+                var targetParent = lastParent.parent;
+                if (targetParent.CompareTag(lastParent.tag))
+                {
+                    lastParent = targetParent;
+                }
+                else
+                {
+                    return lastParent;
+                }
+            }
+
+            return null;
+        }
     }
 }

@@ -1,7 +1,7 @@
 using UnityEngine;
 internal class Standing_PersonAniState : PersonAniState
 {
-    public Standing_PersonAniState(Animator animator) : base(animator)
+    public Standing_PersonAniState(PersonAniStateModuleHandler moduleHandler) : base(moduleHandler)
     {
 
     }

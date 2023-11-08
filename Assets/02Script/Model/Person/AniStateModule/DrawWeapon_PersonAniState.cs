@@ -3,7 +3,7 @@ using UnityEngine;
 internal class DrawWeapon_PersonAniState : PersonAniState
 {
     public string PrepareAttack { get { return "PrepareAttack"; } }
-    public DrawWeapon_PersonAniState(Animator ani) : base(ani) { }
+    public DrawWeapon_PersonAniState(PersonAniStateModuleHandler moduleHandler) : base(moduleHandler) { }
     public override bool IsReady()
     {
         return base.IsReady();

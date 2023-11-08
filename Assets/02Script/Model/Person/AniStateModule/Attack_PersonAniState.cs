@@ -2,7 +2,7 @@ using UnityEngine;
 public class Attack_PersonAniState : PersonAniState
 {
     public string Attack { get { return "Attack"; } }
-    public Attack_PersonAniState(Animator ani) : base(ani)
+    public Attack_PersonAniState(PersonAniStateModuleHandler moduleHandler) : base(moduleHandler)
     {
 
     }

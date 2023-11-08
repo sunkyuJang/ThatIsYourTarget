@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 public class PersonStateModuleHandler : StateModuleHandler
 {
@@ -11,6 +12,23 @@ public class PersonStateModuleHandler : StateModuleHandler
     private int ConvertStateKindToInt(PersonState.StateKinds kinds) => (int)kinds;
     public PersonState.StateKinds GetPlayingModuleStateKind() => (PersonState.StateKinds)GetPlayingModuleIndex();
     new public PersonState GetPlayingModule() => base.GetPlayingModule() as PersonState;
+    public PersonState.StateKinds GetThisKind(PersonState personState)
+    {
+        var index = -1;
+        var count = 0;
+        modules.ForEach(x =>
+        {
+            count++;
+            if (x == personState)
+                index = count;
+        });
+
+        return (PersonState.StateKinds)index;
+    }
+    public void SetLockModuleChange(PersonState.StateKinds requestState, PersonState.StateKinds realseState)
+    {
+        base.SetLockModuleChange(ConvertStateKindToInt(requestState), ConvertStateKindToInt(realseState));
+    }
     public bool isPlayingModuleHasTarget()
     {
         var prepareData = GetPlayingModule<PersonState>().prepareData;

@@ -23,7 +23,7 @@ public class Tracking_PersonState : PersonState
             SetAPH(aph, true);
             isAphDone = false;
 
-            ProcessTracingTarget = TracingTargetInSightProcess(prepareData.target, () => isAphDone);
+            StartTracingTargetInSight(prepareData.target, () => isAphDone);
         }
     }
 

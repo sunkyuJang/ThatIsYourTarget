@@ -14,6 +14,8 @@ public class AnimationPoint : MonoBehaviour
     [HideInInspector]
     public float targetDegree = 0;
     public Action<string> EventTrigger { set; get; }
+    public Action whenAnimationStart { set; get; }
+    public Action whenAnimationEnd { set; get; }
     public bool IsSameState(AnimationPoint other)
     {
         return other.State == State;

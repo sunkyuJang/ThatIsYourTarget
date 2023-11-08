@@ -13,7 +13,6 @@ public class Curiousity_PersonState : PersonState
     Coroutine procCountingIgnoreTime = null;
     AnimationPointHandler PlayingAPH { set; get; }
     public Curiousity_PersonState(Person person) : base(person) { }
-    private delegate Func<bool> conditionOfEndForTracking();
     public override bool IsReady()
     {
         return prepareData != null &&
@@ -38,7 +37,7 @@ public class Curiousity_PersonState : PersonState
         PlayingAPH = GetCuriousityAPH(targetMPH);
         procCountingIgnoreTime = StartCoroutine(IgnoreTimeByAnimation(PlayingAPH));
         SetAPH(PlayingAPH, true);
-        TracingTargetInSightProcess(targetMPH, () => isAPHDone);
+        StartTracingTargetInSight(targetMPH, () => isAPHDone);
     }
     IEnumerator IgnoreTimeByAnimation(AnimationPointHandler aph)
     {
@@ -52,6 +51,7 @@ public class Curiousity_PersonState : PersonState
         if (isHit)
         {
             curiosityDIst = Vector3.Distance(ActorTransform.position, prepareData.target.position);
+
             if (IsCuriousState)
             {
                 curiosityTime += Time.fixedDeltaTime;
@@ -77,6 +77,7 @@ public class Curiousity_PersonState : PersonState
 
     public override void Exit()
     {
+        base.Exit();
         isAPHDone = false;
         curiosityTime = 0f;
         curiosityDIst = 0f;
@@ -84,7 +85,6 @@ public class Curiousity_PersonState : PersonState
     }
     protected override void AfterAPHDone()
     {
-        prepareData = null;
         isAPHDone = true;
         SetNormalState();
     }

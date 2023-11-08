@@ -1,20 +1,24 @@
 using Autohand;
 using UnityEngine;
-public class RagDollHandler : MonoBehaviour
+public class RagDollHandler
 {
-    Rigidbody[] rigidbodies;
-    //Collider[] colliders;
-    void Awake()
+    Rigidbody[] Rigidbodies { set; get; }
+    Rigidbody ActorRigid { set; get; }
+    Collider ActorCollider { set; get; }
+    public RagDollHandler(Transform actor)
     {
-        rigidbodies = GetComponentsInChildren<Rigidbody>();
-        //colliders = GetComponentsInChildren<Collider>();
-
-        TrunOnRigid(false);
+        Rigidbodies = actor.GetComponentsInChildren<Rigidbody>();
+        ActorRigid = actor.GetComponent<Rigidbody>();
+        ActorCollider = actor.GetComponent<Collider>();
+        BeRagDollState(false);
     }
 
-    public void TrunOnRigid(bool shouldTurnOn)
+    public void BeRagDollState(bool shouldTurnOn)
     {
-        foreach (var item in rigidbodies)
+        ActorRigid.isKinematic = shouldTurnOn;
+        //ActorCollider.enabled = !shouldTurnOn;
+
+        foreach (var item in Rigidbodies)
         {
             item.isKinematic = !shouldTurnOn;
             if (shouldTurnOn)

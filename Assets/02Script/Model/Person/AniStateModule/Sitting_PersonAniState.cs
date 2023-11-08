@@ -4,7 +4,7 @@ internal class Sitting_PersonAniState : PersonAniState
 {
     public const string SittingLevel = "SittingLevel";
     public enum SittingState { non, Ground, Low, Middle, High }
-    public Sitting_PersonAniState(Animator aniController) : base(aniController)
+    public Sitting_PersonAniState(PersonAniStateModuleHandler moduleHandler) : base(moduleHandler)
     {
 
     }

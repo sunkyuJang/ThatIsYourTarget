@@ -26,8 +26,8 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
     protected StateModuleHandler stateModuleHandler { set; get; }
     protected virtual void Awake()
     {
-        ragDollHandler = GetComponent<RagDollHandler>();
         naviController = GetComponent<NaviController>();
+        ragDollHandler = new RagDollHandler(transform);
         animator = GetComponent<Animator>();
     }
 
@@ -185,7 +185,10 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
     }
     protected IEnumerator DoAnimationTimeCount(AnimationPoint ap, bool shouldReturnAP, StateModule stateModule, AnimationEvent[] events)
     {
-        if (ap.during < -1) yield return null;
+        if (ap.during < -1) yield break;
+
+        ap.whenAnimationStart?.Invoke();
+
         var maxTime = Mathf.Lerp(0, ap.during, animationPlayLimit);
         int eventsCount = 0;
         for (float time = 0f; time < maxTime; time += Time.fixedDeltaTime)
@@ -204,6 +207,7 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
             yield return new WaitForFixedUpdate();
         }
 
+        ap.whenAnimationEnd?.Invoke();
         MakeResetAni(!shouldReturnAP, stateModule);
 
         if (shouldReturnAP)
@@ -226,14 +230,12 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
         }
         else
         {
-            // in this point,
-            // if is ap was returned, next ap will be played by DoMakeCorrectTransform() function
             if (shouldReadNextAction)
                 modelHandlerJob.EndJob();
         }
         yield return null;
     }
 
-    // this function only exist for hiding console log. basiclly not use. 
+    // this function only exist for hiding console log. basiclly not use. but dont remove.
     public void ExcuteDummyAniamtionEvent(string eventName) { }
 }

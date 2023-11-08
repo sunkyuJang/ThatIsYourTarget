@@ -33,5 +33,8 @@ public class Attack_PersonState : PersonState
     {
         SetState(StateKinds.Tracking, prepareData);
     }
-    public override void Exit() { }
+    public override void Exit()
+    {
+        base.Exit();
+    }
 }

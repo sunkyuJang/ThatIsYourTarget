@@ -4,17 +4,19 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConnector_OnDetected
+public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, IDamagePasser
 {
     public enum ModelKinds { Person, Player }
-    public float HP { set { HP -= value; HP = HP < 0 ? 0 : HP; } get { return HP; } }
+    public float HP { set; get; } = 0;
     public int state { private set; get; } = 0;
     public Transform ActorTransform { private set; get; }
 
     // DMG
-    float MaxAcceptableDmgTime { set; get; } = 2f;
+    float IgnoreDmgTime { set; get; } = 2f;
     bool CanAcceptableDmg { set; get; } = true;
+    [SerializeField]
     bool canDead = true;
+    DamageContorller DamageContorller { set; get; }
 
     //APH
     protected ModelAnimationPlayer ModelAnimationPlayer { set; get; }
@@ -40,6 +42,8 @@ public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConn
         ActorTransform = transform.Find("Actor");
         ModelAnimationPlayer = new ModelAnimationPlayer(this, ActorTransform);
 
+        DamageContorller = new DamageContorller(ActorTransform, this);
+
         APHGroup = transform.Find("APHGroup");
         ModelAPHJobManger = new ModelAPHJobManger(null, null, APHGroup, ModelAnimationPlayer);
 
@@ -61,11 +65,7 @@ public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConn
         ModelAPHJobManger.StartJob();
     }
 
-    public Coroutine TracingTargetInSight(Transform target, Func<bool> conditionOfEndLoop, Func<bool, bool> ShouldStopAfterCast)
-    {
-        return StartCoroutine(DoTracingTargetInSight(target, conditionOfEndLoop, ShouldStopAfterCast));
-    }
-    protected IEnumerator DoTracingTargetInSight(Transform target, Func<bool> conditionOfEndLoop, Func<bool, bool> ShouldStopAfterCast)
+    public IEnumerator DoTracingTargetInSight(Transform target, Func<bool> conditionOfEndLoop, Func<bool, bool> ShouldStopAfterCast)
     {
         var maxTime = 600f;
         var time = 0f;
@@ -93,33 +93,33 @@ public abstract class Model : MonoBehaviour, IDamageController, IObjDetectorConn
     public void OnDetected(ObjDetector detector, Collider collider) { if (IsHitToTarget(collider.transform)) OnDetected(collider); }
     public virtual void OnDetected(Collider collider) { }
     protected virtual void DoDead() { }
-    public bool SetDamage(Weapon weapon)
-    {
-        if (canDead)
-        {
-            if (CanAcceptableDmg)
-            {
-                CanAcceptableDmg = false;
-                Action removeTimeData = () => { CanAcceptableDmg = true; };
-                TimeCounter.Instance.SetTimeCounting(MaxAcceptableDmgTime, removeTimeData);
-
-                HP -= weapon.Dmg;
-
-                if (HP <= 0)
-                {
-                    DoDead();
-                }
-            }
-        }
-
-        return false;
-    }
-
     public void HoldWeapon(bool shouldHold)
     {
         var from = shouldHold ? weaponKeepingHolster : weaponGrabHolster;
         var to = shouldHold ? weaponGrabHolster : weaponKeepingHolster;
 
         to.HoldWeapon(from.GetWeapon());
+    }
+
+    public void SetDamage(object section, object parts, float damage, out bool isDead)
+    {
+        isDead = false;
+        if (canDead)
+        {
+            if (CanAcceptableDmg)
+            {
+                CanAcceptableDmg = false;
+                Action removeTimeData = () => { CanAcceptableDmg = true; };
+                TimeCounter.Instance.SetTimeCounting(IgnoreDmgTime, removeTimeData);
+
+                HP -= damage;
+
+                if (HP <= 0)
+                {
+                    isDead = true;
+                    DoDead();
+                }
+            }
+        }
     }
 }

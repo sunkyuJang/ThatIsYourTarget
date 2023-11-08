@@ -1,7 +1,7 @@
 using UnityEngine;
 public class Reset_PersonAniState : PersonAniState
 {
-    public Reset_PersonAniState(Animator ani) : base(ani)
+    public Reset_PersonAniState(PersonAniStateModuleHandler moduleHandler) : base(moduleHandler)
     {
     }
     protected override void StartModule()

@@ -3,7 +3,7 @@ using UnityEngine;
 internal class Surprize_PersonAniState : PersonAniState
 {
     string Surprize { get { return "ShouldSurprize"; } }
-    public Surprize_PersonAniState(Animator ani) : base(ani)
+    public Surprize_PersonAniState(PersonAniStateModuleHandler moduleHandler) : base(moduleHandler)
     {
     }
 

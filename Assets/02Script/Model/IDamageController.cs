@@ -1,8 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface IDamageController
+public interface IDamageConnector
 {
-    bool SetDamage(Weapon weapon);
+    bool SetDamage(float damage, Action afterRagdollOn = null);
 }

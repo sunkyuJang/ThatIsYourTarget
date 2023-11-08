@@ -41,6 +41,7 @@ public class PersonAnimationPoint : AnimationPoint
             SetAPWithDuring(from, to, state, time, shouldReachTargetPosition, shouldLookAtTarget);
         }
     }
+
     void SetAPWithDuring(Vector3 from, Vector3 to, PersonAniState.StateKind state, float time, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
                         => SetAPWithDuring(from, to, (int)state, time, shouldReachTargetPosition, shouldLookAtTarget);
 

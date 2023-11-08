@@ -5,7 +5,7 @@ internal class Walk_PersonAniState : PersonAniState
     string walkLevel { get { return "WalkAroundLevel"; } }
     AnimationPointHandler.WalkingState state = AnimationPointHandler.WalkingState.Walk;
     public void SetWalkState(AnimationPointHandler.WalkingState state) => this.state = state;
-    public Walk_PersonAniState(Animator ani) : base(ani)
+    public Walk_PersonAniState(PersonAniStateModuleHandler moduleHandler) : base(moduleHandler)
     {
 
     }

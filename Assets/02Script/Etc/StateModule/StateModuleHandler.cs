@@ -1,11 +1,25 @@
+using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 
 public partial class StateModuleHandler
 {
     protected List<StateModule> modules = new List<StateModule>();
     protected int playingModuleIndex = -1;
+    protected ModuleHandlerLock HandlerLock { set; get; }
+    protected void SetLockModuleChange(int requestStateNum, int realseStateNum)
+    {
+        HandlerLock = new ModuleHandlerLock() { RequestStateNum = requestStateNum, RealseStateNum = realseStateNum };
+    }
     public void EnterModule(int targetModuleIndex, StateModule.PrepareData prepareData = null)
     {
+        if (HandlerLock != null)
+        {
+            if (targetModuleIndex == HandlerLock.RealseStateNum)
+                HandlerLock = null;
+            else return;
+        }
+
         var playingModule = GetModule(playingModuleIndex);
         var targetModule = GetModule(targetModuleIndex);
 
@@ -49,6 +63,12 @@ public partial class StateModuleHandler
     {
         var playingModule = GetPlayingModule();
         return playingModule != null && playingModule.prepareData != null;
+    }
+
+    public class ModuleHandlerLock
+    {
+        public int RequestStateNum { set; get; } = -1;
+        public int RealseStateNum { set; get; } = -1;
     }
 }
 

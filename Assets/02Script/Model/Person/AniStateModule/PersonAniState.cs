@@ -17,21 +17,21 @@ public abstract class PersonAniState : StateModule
         Attack,
         // Avoid,
         TurnAround,
-        //TurnHead,
+        Dead,
         Non,
     }
+    public PersonAniState(PersonAniStateModuleHandler moduleHandler) => ModuleHandler = moduleHandler;
+    protected PersonAniStateModuleHandler ModuleHandler { set; get; }
+    protected Animator Animator { get { return ModuleHandler.Animator; } }
     readonly public static List<StateKind> FixedDuringStateKinds = new List<StateKind>() { StateKind.LookAround, StateKind.Surprize, StateKind.DrawWeapon, StateKind.Attack, StateKind.TurnAround };
     public static bool IsStateDuringFixed(StateKind kind) => FixedDuringStateKinds.Contains(kind);
-    public static int ConverStateToInt(StateKind stateKind) => (int)stateKind;
-    public PersonAniState(Animator aniController) => this.Animator = aniController;
-    public override bool IsReady() { return ap != null && Animator != null; }
-    protected Animator Animator { set; get; }
     protected PersonAnimationPoint ap;
+    public override bool IsReady() { return ap != null && Animator != null; }
     public void SetAP(PersonAnimationPoint ap) => this.ap = ap;
 
-    public static List<StateModule> GetStatesList(Animator animator)
+    public static List<StateModule> GetStatesList(PersonAniStateModuleHandler moduleHandler)
     {
-        if (animator != null)
+        if (moduleHandler != null)
         {
             var stateList = new List<StateModule>();
 
@@ -40,16 +40,17 @@ public abstract class PersonAniState : StateModule
             {
                 switch (stateKind)
                 {
-                    case StateKind.Non: state = new Non_PersonAniState(animator); break;
-                    case StateKind.Reset: state = new Reset_PersonAniState(animator); break;
-                    case StateKind.Walk: state = new Walk_PersonAniState(animator); break;
-                    case StateKind.Standing: state = new Standing_PersonAniState(animator); break;
-                    case StateKind.LookAround: state = new LookAround_PersonAniState(animator); break;
-                    case StateKind.Sitting: state = new Sitting_PersonAniState(animator); break;
-                    case StateKind.Surprize: state = new Surprize_PersonAniState(animator); break;
-                    case StateKind.DrawWeapon: state = new DrawWeapon_PersonAniState(animator); break;
-                    case StateKind.Attack: state = new Attack_PersonAniState(animator); break;
-                    case StateKind.TurnAround: state = new TurnAround_PersonAniState(animator); break;
+                    case StateKind.Non: state = new Non_PersonAniState(moduleHandler); break;
+                    case StateKind.Reset: state = new Reset_PersonAniState(moduleHandler); break;
+                    case StateKind.Walk: state = new Walk_PersonAniState(moduleHandler); break;
+                    case StateKind.Standing: state = new Standing_PersonAniState(moduleHandler); break;
+                    case StateKind.LookAround: state = new LookAround_PersonAniState(moduleHandler); break;
+                    case StateKind.Sitting: state = new Sitting_PersonAniState(moduleHandler); break;
+                    case StateKind.Surprize: state = new Surprize_PersonAniState(moduleHandler); break;
+                    case StateKind.DrawWeapon: state = new DrawWeapon_PersonAniState(moduleHandler); break;
+                    case StateKind.Attack: state = new Attack_PersonAniState(moduleHandler); break;
+                    case StateKind.TurnAround: state = new TurnAround_PersonAniState(moduleHandler); break;
+                    case StateKind.Dead: state = new Dead_PersonAniState(moduleHandler); break;
                 }
 
                 stateList.Add(state);
