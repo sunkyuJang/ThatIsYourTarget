@@ -27,12 +27,14 @@ public partial class Person : Model
     private Renderer modelRenderer;
     new public PersonStateModuleHandler ModuleHandler
         => base.ModuleHandler as PersonStateModuleHandler;
-    new public PersonWeapon Weapon { get { return base.Weapon as PersonWeapon; } }
-
-    public PersonInfoUI personInfoUI;
     protected override StateModuleHandler SetStateModuleHandler()
         => new PersonStateModuleHandler(this);
-    private void Awake()
+    protected override ConversationHandler SetConversationHandler()
+        => new PersonConversationHandler();
+    new public PersonWeapon Weapon { get { return base.Weapon as PersonWeapon; } }
+    public PersonInfoUI personInfoUI;
+
+    new private void Awake()
     {
         base.Awake();
         HP = 10;

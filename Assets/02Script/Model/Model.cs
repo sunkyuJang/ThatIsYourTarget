@@ -37,6 +37,9 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
     private WeaponHolster weaponGrabHolster;
     public Weapon Weapon { get { return weaponKeepingHolster.GetWeapon(); } }
 
+    // Coversation
+    protected ConversationHandler ConversationHandler { set; get; }
+
     protected virtual void Awake()
     {
         ActorTransform = transform.Find("Actor");
@@ -48,8 +51,11 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
         ModelAPHJobManger = new ModelAPHJobManger(null, null, APHGroup, ModelAnimationPlayer);
 
         ModuleHandler = SetStateModuleHandler();
+
+        ConversationHandler = SetConversationHandler();
     }
     protected abstract StateModuleHandler SetStateModuleHandler();
+    protected abstract ConversationHandler SetConversationHandler();
     protected virtual IEnumerator Start()
     {
         yield return new WaitUntil(() => APHManager.Instance.IsReady);
@@ -59,7 +65,7 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
     {
         ModuleHandler.EnterModule(newState, prepareData);
     }
-    public void SetAPH(AnimationPointHandler handler, Action nextActionFromState = null)
+    public void SetAPH(AnimationPointHandler handler = null, Action nextActionFromState = null)
     {
         ModelAPHJobManger.SetAPH(handler, nextActionFromState);
         ModelAPHJobManger.StartJob();

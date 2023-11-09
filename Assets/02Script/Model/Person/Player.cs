@@ -16,9 +16,14 @@ public class Player : Model
     {
         throw new System.NotImplementedException();
     }
-
+    protected override ConversationHandler SetConversationHandler()
+    {
+        throw new System.NotImplementedException();
+    }
     protected override IEnumerator Start()
     {
         yield break;
     }
+
+
 }

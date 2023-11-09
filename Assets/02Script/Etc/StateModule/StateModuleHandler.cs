@@ -6,12 +6,13 @@ public partial class StateModuleHandler
 {
     protected List<StateModule> modules = new List<StateModule>();
     protected int playingModuleIndex = -1;
+    protected Action WhenStateChanged { set; get; }
     protected ModuleHandlerLock HandlerLock { set; get; }
     protected void SetLockModuleChange(int requestStateNum, int realseStateNum)
     {
         HandlerLock = new ModuleHandlerLock() { RequestStateNum = requestStateNum, RealseStateNum = realseStateNum };
     }
-    public void EnterModule(int targetModuleIndex, StateModule.PrepareData prepareData = null)
+    public void EnterModule(int targetModuleIndex, StateModule.PrepareData prepareData = null, Action whenStateChanged = null)
     {
         if (HandlerLock != null)
         {
@@ -31,8 +32,25 @@ public partial class StateModuleHandler
         {
             playingModule?.Exit();
             playingModuleIndex = targetModuleIndex;
+
+            WhenStateChanged?.Invoke();
+            WhenStateChanged = whenStateChanged;
         }
     }
+
+    public void InterruptStateModule(StateModule targetModule, StateModule.PrepareData prepareData = null, Action whenStateChanged = null)
+    {
+        if (targetModule.TryEnter(prepareData))
+        {
+            StopPlayingModule();
+            playingModuleIndex = -1;
+
+            WhenStateChanged?.Invoke();
+            WhenStateChanged = whenStateChanged;
+        }
+    }
+
+    public void SetWhenStateChange(Action action) => WhenStateChanged = action;
 
     public void StopPlayingModule()
     {

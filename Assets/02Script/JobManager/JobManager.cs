@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 public class JobManager
 {
-    private Action RunAfterJobEnd;
+    private Action AfterFinishJobManager;
     private Queue<Job> jobList = new Queue<Job>();
     private object section = null;
     public bool IsSameSection(object section) => this.section.Equals(section);
-    public JobManager(object section, Action runAfterJobEnd)
+    public JobManager(object section, Action afterFinishJobManager)
     {
         this.section = section;
-        this.RunAfterJobEnd = runAfterJobEnd;
+        this.AfterFinishJobManager = afterFinishJobManager;
     }
-    public JobManager(Action runAfterJobEnd)
+    public JobManager(Action afterFinishJobManager)
     {
-        this.RunAfterJobEnd = runAfterJobEnd;
+        this.AfterFinishJobManager = afterFinishJobManager;
     }
 
     public virtual void StartJob()
@@ -34,7 +34,7 @@ public class JobManager
     }
     public virtual void EndJob()
     {
-        RunAfterJobEnd.Invoke();
+        AfterFinishJobManager.Invoke();
     }
     public virtual void CancleJob()
     {
