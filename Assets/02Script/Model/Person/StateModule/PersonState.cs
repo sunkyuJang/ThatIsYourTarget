@@ -42,21 +42,22 @@ public abstract class PersonState : StateModule
     }
     protected void StopAllCoroutine() => Coroutines.ForEach(x => { if (x != null) Person.StopCoroutine(x); });
     // APH
-    protected AnimationPointHandler GetNewAPH(int APCounts, AnimationPointHandler.WalkingState walkingState = AnimationPointHandler.WalkingState.Walk)
+    public AnimationPointHandler GetNewAPH(int APCounts, AnimationPointHandler.WalkingState walkingState = AnimationPointHandler.WalkingState.Walk)
     {
         var requireAPCount = APCounts;
-        var apPooler = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP);
-        var APs = new List<AnimationPoint>();
-        APs.Capacity = requireAPCount;
+        var APs = new List<AnimationPoint>
+        {
+            Capacity = requireAPCount
+        };
 
         for (int i = 0; i < requireAPCount; i++)
         {
-            var ap = apPooler.GetNewOne<PersonAnimationPoint>();
+            var ap = APHManager.Instance.GetNewAP<PersonAnimationPoint>();
             ap.gameObject.SetActive(true);
             APs.Add(ap);
         }
 
-        var aph = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.APH).GetNewOne<AnimationPointHandler>();
+        var aph = APHManager.Instance.GetNewAPH();
         aph.transform.SetParent(Person.APHGroup);
         aph.gameObject.SetActive(true);
         aph.SetAPs(APs);

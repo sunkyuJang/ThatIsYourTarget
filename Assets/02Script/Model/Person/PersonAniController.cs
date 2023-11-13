@@ -88,7 +88,7 @@ public class PersonAniController : AniController
 
     protected override float GetMakeTurnDuring(float degree, out AnimationPoint ap)
     {
-        ap = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP).GetNewOne<PersonAnimationPoint>();
+        ap = APHManager.Instance.GetNewAP<PersonAnimationPoint>();
         (ap as PersonAnimationPoint).State = PersonAniState.StateKind.TurnAround;
         ap.targetDegree = degree;
         ap.during = ap.GetAnimationClipLength(GetStateNameByDegree(ap.targetDegree));

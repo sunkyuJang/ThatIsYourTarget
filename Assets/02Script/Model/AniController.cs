@@ -211,7 +211,7 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
         MakeResetAni(!shouldReturnAP, stateModule);
 
         if (shouldReturnAP)
-            APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP).ReturnTargetObj(ap.gameObject);
+            APHManager.Instance.ReturnAP(ap.gameObject);
     }
     protected void MakeResetAni(bool shouldReadNextAction, StateModule stateModule)
     {

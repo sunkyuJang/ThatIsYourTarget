@@ -11,11 +11,12 @@ public class AnimationPointHandler : MonoBehaviour
     public int index = 0;
     public bool shouldLoop = true;
     public bool isAPHDone { get { return !shouldLoop && index >= GetActionCount; } }
+    public bool shouldReturnAPH { set; get; } = true;
     public void Awake()
     {
-        SetAPs();
+        SetAPs<AnimationPoint>();
     }
-    public void SetAPs(List<AnimationPoint> list = null)
+    public void SetAPs<T>(List<T> list = null) where T : AnimationPoint
     {
         if (list != null)
         {
@@ -43,7 +44,9 @@ public class AnimationPointHandler : MonoBehaviour
         if (shouldLoop)
             index %= GetActionCount;
         else if (isAPHDone)
+        {
             return null;
+        }
 
         return GetActionPoint(index);
     }
@@ -61,17 +64,9 @@ public class AnimationPointHandler : MonoBehaviour
 
     public void ResetIndex() => index = 0;
 
-    public void ChangeAPPositionAndLookAt(int index, Vector3 from, Vector3 to)
-    {
-        animationPoints[index].ChangePosition(to);
-        animationPoints[index].MakeLookAtTo(to);
-    }
-
-    public void ResetData()
+    private void OnDisable()
     {
         ResetIndex();
-        shouldLoop = true;
-
     }
 }
 
@@ -121,13 +116,13 @@ public class AnimationPointHandlerEditor : Editor
                     Handles.DrawLine(ap.transform.position, nextAp.transform.position);
                 }
 
-                if (i == animationPoints.Count - 1) // �������϶�
+                if (i == animationPoints.Count - 1)
                 {
                     var drawPoint = handler.shouldLoop ? animationPoints[0] : animationPoints[i];
                     Handles.SphereHandleCap(0, drawPoint.transform.position + endDrawPosition, Quaternion.identity, sphereRadius, EventType.Repaint);
                 }
 
-                if (i == 0) // �������ϋ�
+                if (i == 0)
                 {
                     Handles.color = Color.green;
                     Handles.SphereHandleCap(0, ap.transform.position + startDrawPosition, Quaternion.identity, sphereRadius, EventType.Repaint);

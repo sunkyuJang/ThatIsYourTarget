@@ -25,6 +25,8 @@ public class ObjPooler : MonoBehaviour
         }
     }
 
+    public bool IsTarget<T>() { return TargetObj.GetComponent<T>() != null; }
+
     public void MakeNewOne()
     {
         instantiatedObj.Enqueue(Instantiate(TargetObj, transform).gameObject);

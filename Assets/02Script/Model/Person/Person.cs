@@ -30,7 +30,7 @@ public partial class Person : Model
     protected override StateModuleHandler SetStateModuleHandler()
         => new PersonStateModuleHandler(this);
     protected override ConversationHandler SetConversationHandler()
-        => new PersonConversationHandler();
+        => new PersonConversationHandler(this);
     new public PersonWeapon Weapon { get { return base.Weapon as PersonWeapon; } }
     public PersonInfoUI personInfoUI;
 
