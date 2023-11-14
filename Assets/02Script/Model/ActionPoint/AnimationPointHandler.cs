@@ -11,7 +11,6 @@ public class AnimationPointHandler : MonoBehaviour
     public int index = 0;
     public bool shouldLoop = true;
     public bool isAPHDone { get { return !shouldLoop && index >= GetActionCount; } }
-    public bool shouldReturnAPH { set; get; } = true;
     public void Awake()
     {
         SetAPs<AnimationPoint>();
@@ -55,6 +54,12 @@ public class AnimationPointHandler : MonoBehaviour
     {
         var ap = animationPoints[index];
         return ap;
+    }
+
+    public T GetActionPoint<T>(int index) where T : AnimationPoint
+    {
+        var ap = GetActionPoint(index);
+        return ap as T;
     }
 
     public AnimationPoint GetEndActionPoint

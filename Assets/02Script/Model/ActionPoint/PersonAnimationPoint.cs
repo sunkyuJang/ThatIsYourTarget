@@ -1,7 +1,7 @@
+using JExtentioner;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
-
 public class PersonAnimationPoint : AnimationPoint
 {
     new public PersonAniState.StateKind State
@@ -29,25 +29,6 @@ public class PersonAnimationPoint : AnimationPoint
     public float GetLength() => GetAnimationClipLength(((PersonAniState.StateKind)base.State).ToString());
     public PersonWeapon Weapon { get; set; }
 
-    public void SetAP(Vector3 from, Vector3 to, PersonAniState.StateKind state, float time = 0f, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
-    {
-        var isFixed = PersonAniState.IsStateDuringFixed(state);
-        if (isFixed)
-        {
-            SetAPWithFixedDuring(from, to, state, shouldReachTargetPosition, shouldLookAtTarget);
-        }
-        else
-        {
-            SetAPWithDuring(from, to, state, time, shouldReachTargetPosition, shouldLookAtTarget);
-        }
-    }
-
-    void SetAPWithDuring(Vector3 from, Vector3 to, PersonAniState.StateKind state, float time, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
-                        => SetAPWithDuring(from, to, (int)state, time, shouldReachTargetPosition, shouldLookAtTarget);
-
-    void SetAPWithFixedDuring(Vector3 from, Vector3 to, PersonAniState.StateKind state, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
-                        => SetAPWithFixedDuring(from, to, (int)state, state.ToString(), shouldReachTargetPosition, shouldLookAtTarget);
-
     public ChildAnimatorState GetState()
     {
         return GetState(State.ToString());
@@ -62,6 +43,16 @@ public class PersonAnimationPoint : AnimationPoint
     public AnimationEvent[] GetAnimationEvent()
     {
         return GetAnimationEvent(State.ToString());
+    }
+
+    public override bool IsFixedDuring(int state)
+    {
+        return PersonAniState.IsStateDuringFixed((PersonAniState.StateKind)state);
+    }
+
+    public override string GetStateName(int state)
+    {
+        return state.GetEnumVal<PersonAniState.StateKind>()?.ToString();
     }
 }
 

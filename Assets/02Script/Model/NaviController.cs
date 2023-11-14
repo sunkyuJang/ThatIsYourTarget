@@ -34,9 +34,9 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
                 StopCoroutine(CheckingUntilArrive);
 
             TurnOnNavi(true);
-            if (ShouldNavControllerWorking(job.ap))
+            if (ShouldNavControllerWorking(job.ap, out Vector3 correctVector))
             {
-                CheckingUntilArrive = StartCoroutine(DoCheckUntilArrive(job));
+                CheckingUntilArrive = StartCoroutine(DoCheckUntilArrive(job, correctVector));
             }
             else
             {
@@ -45,11 +45,10 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
             }
         }
     }
-    IEnumerator DoCheckUntilArrive(ModelAnimationPlayerJobManager.ModelHandlerJob job)
+    IEnumerator DoCheckUntilArrive(ModelAnimationPlayerJobManager.ModelHandlerJob job, Vector3 correctedVector)
     {
         var ap = job.ap;
         var lastPosition = ap.transform.position;
-        var correctedVector = lastPosition;
         while (!IsArrivedDestination)
         {
             if (lastPosition != ap.transform.position)
@@ -66,9 +65,9 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
         job.EndJob();
     }
 
-    bool ShouldNavControllerWorking(AnimationPoint ap)
+    bool ShouldNavControllerWorking(AnimationPoint ap, out Vector3 correctiondVector)
     {
-        SetDestination(ap.transform.position, out Vector3 correctiondVector);
+        SetDestination(ap.transform.position, out correctiondVector);
         return !IsArrivedDestination;
     }
 

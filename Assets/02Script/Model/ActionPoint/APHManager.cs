@@ -45,7 +45,9 @@ public class APHManager : MonoBehaviour
     {
         if (APDictionary.ContainsKey(typeof(AnimationPointHandler)))
         {
-            return APDictionary[typeof(AnimationPointHandler)].GetNewOne<AnimationPointHandler>();
+            var aph = APDictionary[typeof(AnimationPointHandler)].GetNewOne<AnimationPointHandler>();
+            aph.gameObject.SetActive(true);
+            return aph;
         }
 
         return null;
@@ -54,7 +56,12 @@ public class APHManager : MonoBehaviour
     public T GetNewAP<T>() where T : AnimationPoint
     {
         var APPooler = GetAPPooler<T>();
-        if (APPooler != null) return APPooler.GetNewOne<T>();
+        if (APPooler != null)
+        {
+            var ap = APPooler.GetNewOne<T>();
+            ap.gameObject.SetActive(true);
+            return ap;
+        }
 
         return null;
     }

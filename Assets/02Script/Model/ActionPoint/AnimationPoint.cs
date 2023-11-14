@@ -3,7 +3,7 @@ using UnityEditor.Animations;
 using UnityEngine;
 
 [System.Serializable]
-public class AnimationPoint : MonoBehaviour
+public abstract class AnimationPoint : MonoBehaviour
 {
     public AnimatorController animatorController;
     public virtual bool HasAction { get { return true; } }
@@ -73,12 +73,12 @@ public class AnimationPoint : MonoBehaviour
         var clip = GetAnimationClip(state);
         return clip == null ? null : clip.events;
     }
-    public void ChangePosition(Vector3 position)
+    private void ChangePosition(Vector3 position)
     {
         transform.position = position;
     }
-    public void MakeLookAtTo(Vector3 to) => transform.LookAt(to - (Vector3.up * to.y + Vector3.up * transform.position.y));
-    public void SetPositionForTracking(Vector3 from, Vector3 to, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
+    private void MakeLookAtTo(Vector3 to) => transform.LookAt(to - (Vector3.up * to.y + Vector3.up * transform.position.y));
+    private void SetPositionForTracking(Vector3 from, Vector3 to, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
     {
         ChangePosition(from);
         MakeLookAtTo(shouldLookAtTarget ? to : from);
@@ -97,7 +97,22 @@ public class AnimationPoint : MonoBehaviour
 
     protected void SetAPWithFixedDuring(Vector3 from, Vector3 to, int state, string kind, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
     {
+        if (kind == null) Debug.Log("the animation fixed kind is null");
         SetAPWithDuring(from, to, state, GetAnimationClipLength(kind), shouldReachTargetPosition, shouldLookAtTarget);
     }
+
+    public void SetAP(Vector3 from, Vector3 to, int state, float time, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
+    {
+        if (IsFixedDuring(state))
+        {
+            SetAPWithFixedDuring(from, to, state, GetStateName(state), shouldReachTargetPosition, shouldLookAtTarget);
+        }
+        else
+        {
+            SetAPWithDuring(from, to, state, time, shouldReachTargetPosition, shouldLookAtTarget);
+        }
+    }
+    public abstract bool IsFixedDuring(int state);
+    public abstract string GetStateName(int state);
 }
 

@@ -42,44 +42,21 @@ public abstract class PersonState : StateModule
     }
     protected void StopAllCoroutine() => Coroutines.ForEach(x => { if (x != null) Person.StopCoroutine(x); });
     // APH
+
     public AnimationPointHandler GetNewAPH(int APCounts, AnimationPointHandler.WalkingState walkingState = AnimationPointHandler.WalkingState.Walk)
     {
-        var requireAPCount = APCounts;
-        var APs = new List<AnimationPoint>
-        {
-            Capacity = requireAPCount
-        };
-
-        for (int i = 0; i < requireAPCount; i++)
-        {
-            var ap = APHManager.Instance.GetNewAP<PersonAnimationPoint>();
-            ap.gameObject.SetActive(true);
-            APs.Add(ap);
-        }
-
-        var aph = APHManager.Instance.GetNewAPH();
-        aph.transform.SetParent(Person.APHGroup);
-        aph.gameObject.SetActive(true);
-        aph.SetAPs(APs);
-        aph.shouldLoop = false;
-        aph.walkingState = walkingState;
-        return aph;
-    }
-    protected void SetAPs(AnimationPoint ap, Transform target, PersonAniState.StateKind kind, float time = 0, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
-    {
-        SetAPs(ap, target.position, kind, time, shouldReachTargetPosition, shouldLookAtTarget);
+        return APHManager.Instance.GetNewAPH<PersonAnimationPoint>(Person.APHGroup, APCounts, walkingState);
     }
     protected void SetAPsImmediate(AnimationPoint ap, PersonAniState.StateKind kind, float time = 0)
     {
         var dir = ActorTransform.position + ActorTransform.forward;
         SetAPs(ap, dir, kind, time, false, true);
     }
+    protected void SetAPs(AnimationPoint ap, Transform target, PersonAniState.StateKind kind, float time = 0, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
+        => SetAPs(ap, target.position, kind, time, shouldReachTargetPosition, shouldLookAtTarget);
     protected void SetAPs(AnimationPoint ap, Vector3 target, PersonAniState.StateKind kind, float time = 0, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
     {
-        if (ap is PersonAnimationPoint)
-        {
-            (ap as PersonAnimationPoint).SetAP(Person.ActorTransform.position, target, kind, time, shouldReachTargetPosition, shouldLookAtTarget);
-        }
+        ap.SetAP(Person.ActorTransform.position, target, (int)kind, time, shouldReachTargetPosition, shouldLookAtTarget);
     }
     protected void SetAPH(AnimationPointHandler aph = null, bool needFuncAfterAPH = false)
     {
