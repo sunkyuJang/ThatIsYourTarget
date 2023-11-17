@@ -7,8 +7,10 @@ public class ConversationEntryData
 {
     public Collider targetCollider;
     public IConversationEntrySequence conversationEntrySequence;
-    public AnimationPointHandler waitingAph;
-    public AnimationPointHandler startAph;
+    public AnimationPointHandler waitingAPH;
+    public AnimationPointHandler startAPH;
     public bool isIn = false;
     public bool isAPHEnd = false;
+    public Action<IConversationEntrySequence> AlertAPHDone { set; get; }
+    public Action<IConversationEntrySequence, ConversationEntry.SuddenEndedState> AlertSuddenEnded { set; get; }
 }

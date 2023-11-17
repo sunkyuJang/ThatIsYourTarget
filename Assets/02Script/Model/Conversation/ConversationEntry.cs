@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
@@ -7,7 +8,7 @@ using UnityEngine;
 
 public class ConversationEntry : MonoBehaviour, IObjDetectorConnector_OnDetected
 {
-    public enum State { ResetData, Prepare, Start, End, SuddenEnded, Non }
+    public enum SuddenEndedState { Hold, UnHold, Combat, No_Response, Non }
     [SerializeField]
     protected List<ConversationEntryData> conversationEntryDatas = new List<ConversationEntryData>();
     public ConversationEntryData GetData(IConversationEntrySequence target) => conversationEntryDatas.Find(x => x.conversationEntrySequence == target);
@@ -38,7 +39,7 @@ public class ConversationEntry : MonoBehaviour, IObjDetectorConnector_OnDetected
 
         if (find.conversationEntrySequence.CanEnterConversation())
         {
-            find.conversationEntrySequence.PrepaerConversation(this);
+            find.conversationEntrySequence.PrepaerConversation(find.waitingAPH, find.startAPH, AlertEndedAPH, AlertSuddenEnded);
             find.isIn = true;
 
             var isInCount = 0;
@@ -60,7 +61,7 @@ public class ConversationEntry : MonoBehaviour, IObjDetectorConnector_OnDetected
     {
         conversationEntryDatas.ForEach(x =>
         {
-            x.conversationEntrySequence.StartConversation(AlertEndedAPH, AlertSuddenEnded);
+            x.conversationEntrySequence.StartConversation();
         });
     }
 
@@ -84,8 +85,24 @@ public class ConversationEntry : MonoBehaviour, IObjDetectorConnector_OnDetected
             EndConversation();
     }
 
-    private void AlertSuddenEnded(IConversationEntrySequence conversationEntrySequence, bool canResponding)
+    private void AlertSuddenEnded(IConversationEntrySequence requestedTarget, SuddenEndedState suddenEndedState)
     {
-
+        var find = conversationEntryDatas.Find(x => x.conversationEntrySequence == requestedTarget);
+        conversationEntryDatas.ForEach(x =>
+        {
+            if (x.conversationEntrySequence != requestedTarget)
+                if (x.isIn)
+                {
+                    var eachTarget = x.conversationEntrySequence;
+                    switch (suddenEndedState)
+                    {
+                        case SuddenEndedState.Hold: eachTarget.AlertHold(); break;
+                        case SuddenEndedState.UnHold: eachTarget.AlertUnHold(); break;
+                        case SuddenEndedState.Combat: eachTarget.AlertCombat(find.targetCollider.transform.position); break;
+                        case SuddenEndedState.No_Response: eachTarget.AlertNonResponce(find.targetCollider.transform.position); break;
+                        case SuddenEndedState.Non: break;
+                    }
+                }
+        });
     }
 }

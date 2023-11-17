@@ -4,25 +4,41 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-public class ConversationHandler : IConversationEntrySequence
+public abstract class ConversationHandler : IConversationEntrySequence
 {
-    public Model Model { set; get; }
-    public StateModuleHandler ModuleHandler { get { return Model.ModuleHandler; } }
-    protected ConversationEntry ConversationEntry { set; get; }
+    private Model Model { set; get; }
+    protected void SetAPH(AnimationPointHandler aph = null, Action whenAPHDone = null) => Model.SetAPH(aph, whenAPHDone);
+    protected Coroutine StartCoroutine(IEnumerator enumerator) => Model.StartCoroutine(enumerator);
+    protected StateModuleHandler ModuleHandler { get { return Model.ModuleHandler; } }
+    protected AnimationPointHandler OriginalWaitingAPH { set; get; }
+    protected AnimationPointHandler OriginalStartAPH { set; get; }
+    protected AnimationPointHandler PlayingAPH { set; get; }
+    protected Action<IConversationEntrySequence> AlertAPHDone { set; get; }
+    protected Action<IConversationEntrySequence, ConversationEntry.SuddenEndedState> AlertSuddenEnded { set; get; }
+    public ConversationHandler(Model model)
+    {
+        Model = model;
+    }
     public bool CanEnterConversation()
     {
         return OnCanEnterConversation();
     }
 
-    public void PrepaerConversation(ConversationEntry conversationEntryInfo)
+    public void PrepaerConversation(AnimationPointHandler waitingAPH, AnimationPointHandler startAPH, Action<IConversationEntrySequence> alertAPHDone, Action<IConversationEntrySequence, ConversationEntry.SuddenEndedState> alertsuddenEnded)
     {
-        ConversationEntry = conversationEntryInfo;
+        OriginalWaitingAPH = waitingAPH;
+        OriginalStartAPH = startAPH;
+        AlertAPHDone = alertAPHDone;
+        AlertSuddenEnded = alertsuddenEnded;
+
+        PlayingAPH = OriginalWaitingAPH;
         OnPrepaerConversation();
     }
 
-    public void StartConversation(Action<IConversationEntrySequence> APHDoneAlert, Action<IConversationEntrySequence, bool> suddenEndedAlert)
+    public void StartConversation()
     {
-        OnStartConversation(APHDoneAlert, suddenEndedAlert);
+        PlayingAPH = OriginalStartAPH;
+        OnStartConversation();
     }
 
     public void EndConversation()
@@ -30,14 +46,48 @@ public class ConversationHandler : IConversationEntrySequence
         OnEndConversation();
     }
 
-    public void SuddenEndedConversation(Model model, bool canResponding)
+    public void AlertHold()
     {
-        SuddenEndedConversation(model, canResponding);
+        OnAlertHold();
     }
 
-    protected virtual bool OnCanEnterConversation() { return false; }
-    protected virtual void OnPrepaerConversation() { }
-    protected virtual void OnStartConversation(Action<IConversationEntrySequence> APHDoneAlert, Action<IConversationEntrySequence, bool> SuddenEndedAlert) { }
-    protected virtual void OnEndConversation() { }
-    protected virtual void OnSuddenEndedConversation(IConversationEntrySequence model, bool canResponding) { }
+    public void AlertUnHold()
+    {
+        OnAlertUnHold();
+    }
+
+    public void AlertCombat(Vector3 targetPosition)
+    {
+        OnAlertCombat(targetPosition);
+    }
+
+    public void AlertNonResponce(Vector3 targetPosition)
+    {
+        OnAlertNonResponce(targetPosition);
+    }
+
+    protected AnimationPointHandler GetNewAnipointHandler<T>(int count, AnimationPointHandler.WalkingState walkingState) where T : AnimationPoint
+    {
+        var aph = APHManager.Instance.GetNewAPH<T>(Model.APHGroup, count, walkingState);
+        return aph;
+    }
+
+    protected void SetAPImmidiate(AnimationPoint ap, int state, float time = 0f)
+    {
+        var dir = Model.ActorTransform.position + Model.ActorTransform.forward;
+        ap.SetAP(Model.ActorTransform.position, dir, state, time, false, false);
+    }
+    protected void SetAP(AnimationPoint ap, Vector3 to, int state, float time = 0f, bool shouldChangePosition = false, bool shouldChangeRotation = false)
+    {
+        ap.SetAP(Model.ActorTransform.position, to, state, time, shouldChangePosition, shouldChangeRotation);
+    }
+
+    protected abstract bool OnCanEnterConversation();
+    protected abstract void OnPrepaerConversation();
+    protected abstract void OnStartConversation();
+    protected abstract void OnEndConversation();
+    protected abstract void OnAlertHold();
+    protected abstract void OnAlertUnHold();
+    protected abstract void OnAlertCombat(Vector3 targetPosition);
+    protected abstract void OnAlertNonResponce(Vector3 targetPosition);
 }

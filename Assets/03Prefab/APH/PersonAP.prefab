@@ -129,7 +129,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animatorController: {fileID: 9100000, guid: e7f0104a350a4d440abde9133090a485, type: 2}
-  during: 0
+  during: -1
   targetDegree: 0
   shouldReadyForBattle: 0
   subState_int: 0
