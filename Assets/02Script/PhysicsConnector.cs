@@ -11,6 +11,6 @@ public class PhysicsHandler
     {
         var rigidbodies = actor.GetComponentsInChildren<Rigidbody>();
         //RagDollHandler = new RagDollHandler(rigidbodies);
-        DamageContorller = new DamageContorller(actor, damagePasser);
+        DamageContorller = new DamageContorller(damagePasser, actor);
     }
 }

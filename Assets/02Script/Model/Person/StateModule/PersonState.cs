@@ -47,16 +47,16 @@ public abstract class PersonState : StateModule
     {
         return APHManager.Instance.GetNewAPH<PersonAnimationPoint>(Person.APHGroup, APCounts, walkingState);
     }
-    protected void SetAPsImmediate(AnimationPoint ap, PersonAniState.StateKind kind, float time = 0)
+    protected void SetAPsImmediate(AnimationPoint ap, PersonAniState.StateKind kind, float time = 0, bool canYield = true)
     {
         var dir = ActorTransform.position + ActorTransform.forward;
-        SetAPs(ap, dir, kind, time, false, true);
+        SetAPs(ap, dir, kind, time, canYield, false, true);
     }
-    protected void SetAPs(AnimationPoint ap, Transform target, PersonAniState.StateKind kind, float time = 0, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
-        => SetAPs(ap, target.position, kind, time, shouldReachTargetPosition, shouldLookAtTarget);
-    protected void SetAPs(AnimationPoint ap, Vector3 target, PersonAniState.StateKind kind, float time = 0, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
+    protected void SetAPs(AnimationPoint ap, Transform target, PersonAniState.StateKind kind, float time = 0, bool canYield = true, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
+        => SetAPs(ap, target.position, kind, time, canYield, shouldReachTargetPosition, shouldLookAtTarget);
+    protected void SetAPs(AnimationPoint ap, Vector3 target, PersonAniState.StateKind kind, float time = 0, bool canYield = true, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
     {
-        ap.SetAP(Person.ActorTransform.position, target, (int)kind, time, shouldReachTargetPosition, shouldLookAtTarget);
+        ap.SetAP(Person.ActorTransform.position, target, (int)kind, time, canYield, shouldReachTargetPosition, shouldLookAtTarget);
     }
     protected void SetAPH(AnimationPointHandler aph = null, bool needFuncAfterAPH = false)
     {

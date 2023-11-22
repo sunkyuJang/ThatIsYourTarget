@@ -23,8 +23,6 @@ public abstract class PersonAniState : StateModule
     public PersonAniState(PersonAniStateModuleHandler moduleHandler) => ModuleHandler = moduleHandler;
     protected PersonAniStateModuleHandler ModuleHandler { set; get; }
     protected Animator Animator { get { return ModuleHandler.Animator; } }
-    readonly public static List<StateKind> FixedDuringStateKinds = new List<StateKind>() { StateKind.LookAround, StateKind.Surprize, StateKind.DrawWeapon, StateKind.Attack, StateKind.TurnAround };
-    public static bool IsStateDuringFixed(StateKind kind) => FixedDuringStateKinds.Contains(kind);
     protected PersonAnimationPoint ap;
     public override bool IsReady() { return ap != null && Animator != null; }
     public void SetAP(PersonAnimationPoint ap) => this.ap = ap;

@@ -98,7 +98,7 @@ public class Patrol_PersonState : PersonState
         positions.ForEach(x =>
         {
             var ap = aph.GetActionPoint(count++);
-            SetAPs(ap, x, PersonAniState.StateKind.LookAround, 0f, true, true);
+            SetAPs(ap, x, PersonAniState.StateKind.LookAround, 0f, true, true, true);
         });
 
         return aph;

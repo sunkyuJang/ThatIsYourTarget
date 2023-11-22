@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-public abstract class ConversationHandler : IConversationEntrySequence
+public abstract class ConversationHandler : IConversationSequence
 {
     private Model Model { set; get; }
     protected void SetAPH(AnimationPointHandler aph = null, Action whenAPHDone = null) => Model.SetAPH(aph, whenAPHDone);
@@ -13,8 +13,8 @@ public abstract class ConversationHandler : IConversationEntrySequence
     protected AnimationPointHandler OriginalWaitingAPH { set; get; }
     protected AnimationPointHandler OriginalStartAPH { set; get; }
     protected AnimationPointHandler PlayingAPH { set; get; }
-    protected Action<IConversationEntrySequence> AlertAPHDone { set; get; }
-    protected Action<IConversationEntrySequence, ConversationEntry.SuddenEndedState> AlertSuddenEnded { set; get; }
+    protected Action<IConversationSequence> AlertAPHDone { set; get; }
+    protected Action<IConversationSequence, ConversationEntry.SuddenEndedState> AlertSuddenEnded { set; get; }
     public ConversationHandler(Model model)
     {
         Model = model;
@@ -24,7 +24,7 @@ public abstract class ConversationHandler : IConversationEntrySequence
         return OnCanEnterConversation();
     }
 
-    public void PrepaerConversation(AnimationPointHandler waitingAPH, AnimationPointHandler startAPH, Action<IConversationEntrySequence> alertAPHDone, Action<IConversationEntrySequence, ConversationEntry.SuddenEndedState> alertsuddenEnded)
+    public void PrepaerConversation(AnimationPointHandler waitingAPH, AnimationPointHandler startAPH, Action<IConversationSequence> alertAPHDone, Action<IConversationSequence, ConversationEntry.SuddenEndedState> alertsuddenEnded)
     {
         OriginalWaitingAPH = waitingAPH;
         OriginalStartAPH = startAPH;

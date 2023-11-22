@@ -24,13 +24,6 @@ public class PersonConversationHandler : ConversationHandler
         PlayAPH();
     }
 
-    protected void PlayAPH()
-    {
-        var copyAPH = APHManager.Instance.GetCopyAPH<PersonAnimationPoint>(PlayingAPH);
-        SetAPH(copyAPH, () => { WhenAPHDone(); });
-        ModuleHandler.SetWhenStateChange(WhenSuddenEndedConversation);
-    }
-
     protected override void OnEndConversation()
     {
         SetAPH();
@@ -44,6 +37,13 @@ public class PersonConversationHandler : ConversationHandler
             AlertAPHDone?.Invoke(this);
 
         AlertSuddenEnded?.Invoke(this, conversationState);
+    }
+
+    protected void PlayAPH()
+    {
+        var copiedAPH = APHManager.Instance.GetCopyAPH<PersonAnimationPoint>(PlayingAPH);
+        SetAPH(copiedAPH, () => { WhenAPHDone(copiedAPH); });
+        ModuleHandler.SetWhenStateChange(WhenSuddenEndedConversation);
     }
 
     protected void WhenAPHDone(AnimationPointHandler copiedAPH = null)

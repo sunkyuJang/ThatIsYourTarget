@@ -9,7 +9,7 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
     public enum ModelKinds { Person, Player }
     public float HP { set; get; } = 0;
     public int state { private set; get; } = 0;
-    public Transform ActorTransform { private set; get; }
+    public Transform ActorTransform;
 
     // DMG
     float IgnoreDmgTime { set; get; } = 2f;
@@ -38,14 +38,13 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
     public Weapon Weapon { get { return weaponKeepingHolster.GetWeapon(); } }
 
     // Coversation
-    protected ConversationHandler ConversationHandler { set; get; }
+    public ConversationHandler ConversationHandler { protected set; get; }
 
     protected virtual void Awake()
     {
-        ActorTransform = transform.Find("Actor");
         ModelAnimationPlayer = new ModelAnimationPlayer(this, ActorTransform);
 
-        DamageContorller = new DamageContorller(ActorTransform, this);
+        DamageContorller = new DamageContorller(this, ActorTransform);
 
         APHGroup = transform.Find("APHGroup");
         ModelAPHJobManger = new ModelAPHJobManger(null, null, APHGroup, ModelAnimationPlayer);
@@ -53,6 +52,9 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
         ModuleHandler = SetStateModuleHandler();
 
         ConversationHandler = SetConversationHandler();
+
+        var physicalModelConnector = GetComponentInChildren<PhysicalModelConnector>();
+        physicalModelConnector.SetPhysicalModelConnector(this, ConversationHandler);
     }
     protected abstract StateModuleHandler SetStateModuleHandler();
     protected abstract ConversationHandler SetConversationHandler();

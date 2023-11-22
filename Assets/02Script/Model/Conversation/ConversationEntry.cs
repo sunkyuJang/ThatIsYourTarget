@@ -6,22 +6,15 @@ using System.Linq;
 using System.Runtime.Remoting.Messaging;
 using UnityEngine;
 
+[RequireComponent(typeof(ObjDetector))]
 public class ConversationEntry : MonoBehaviour, IObjDetectorConnector_OnDetected
 {
     public enum SuddenEndedState { Hold, UnHold, Combat, No_Response, Non }
-    [SerializeField]
-    protected List<ConversationEntryData> conversationEntryDatas = new List<ConversationEntryData>();
-    public ConversationEntryData GetData(IConversationEntrySequence target) => conversationEntryDatas.Find(x => x.conversationEntrySequence == target);
+    private List<ConversationEntryData> conversationEntryDatas = new List<ConversationEntryData>();
+
     private void Awake()
     {
-        if (conversationEntryDatas.Any())
-        {
-            conversationEntryDatas.ForEach(x =>
-            {
-                x.conversationEntrySequence = x.targetCollider.GetComponent<PhysicalModelConnector>().ConversationEntrySequence;
-            });
-        }
-
+        conversationEntryDatas = transform.GetComponentsInChildren<ConversationEntryData>().ToList();
         ResetConversationData();
     }
     private void ResetConversationData()
@@ -34,7 +27,10 @@ public class ConversationEntry : MonoBehaviour, IObjDetectorConnector_OnDetected
     }
     public void OnDetected(ObjDetector detector, Collider collider)
     {
-        var find = conversationEntryDatas.Find(x => x.targetCollider == collider);
+        var physicalModelConnector = collider.GetComponent<PhysicalModelConnector>();
+        if (physicalModelConnector == null) return;
+
+        var find = conversationEntryDatas.Find(x => x.physicalModelConnector == physicalModelConnector);
         if (find == null) return;
 
         if (find.conversationEntrySequence.CanEnterConversation())
@@ -70,7 +66,7 @@ public class ConversationEntry : MonoBehaviour, IObjDetectorConnector_OnDetected
         conversationEntryDatas.ForEach(x => x.conversationEntrySequence.EndConversation());
     }
 
-    private void AlertEndedAPH(IConversationEntrySequence target)
+    private void AlertEndedAPH(IConversationSequence target)
     {
         var data = conversationEntryDatas.Find(x => x.conversationEntrySequence == target);
         var count = 0;
@@ -85,7 +81,7 @@ public class ConversationEntry : MonoBehaviour, IObjDetectorConnector_OnDetected
             EndConversation();
     }
 
-    private void AlertSuddenEnded(IConversationEntrySequence requestedTarget, SuddenEndedState suddenEndedState)
+    private void AlertSuddenEnded(IConversationSequence requestedTarget, SuddenEndedState suddenEndedState)
     {
         var find = conversationEntryDatas.Find(x => x.conversationEntrySequence == requestedTarget);
         conversationEntryDatas.ForEach(x =>
@@ -98,8 +94,8 @@ public class ConversationEntry : MonoBehaviour, IObjDetectorConnector_OnDetected
                     {
                         case SuddenEndedState.Hold: eachTarget.AlertHold(); break;
                         case SuddenEndedState.UnHold: eachTarget.AlertUnHold(); break;
-                        case SuddenEndedState.Combat: eachTarget.AlertCombat(find.targetCollider.transform.position); break;
-                        case SuddenEndedState.No_Response: eachTarget.AlertNonResponce(find.targetCollider.transform.position); break;
+                        case SuddenEndedState.Combat: eachTarget.AlertCombat(find.physicalModelConnector.transform.position); break;
+                        case SuddenEndedState.No_Response: eachTarget.AlertNonResponce(find.physicalModelConnector.transform.position); break;
                         case SuddenEndedState.Non: break;
                     }
                 }

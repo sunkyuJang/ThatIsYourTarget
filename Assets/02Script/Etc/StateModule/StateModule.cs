@@ -18,6 +18,5 @@ public abstract class StateModule
     protected abstract void StartModule();
     public abstract void EnterToException();
     public abstract void Exit();
-
     public abstract class PrepareData { }
 }

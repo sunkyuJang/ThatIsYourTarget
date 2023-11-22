@@ -3,10 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface IConversationEntrySequence
+public interface IConversationSequence
 {
     public bool CanEnterConversation();
-    public void PrepaerConversation(AnimationPointHandler waitingAPH, AnimationPointHandler startAPH, Action<IConversationEntrySequence> APHDoneAlert, Action<IConversationEntrySequence, ConversationEntry.SuddenEndedState> suddenEndedAlert);
+    public void PrepaerConversation(AnimationPointHandler waitingAPH, AnimationPointHandler startAPH, Action<IConversationSequence> APHDoneAlert, Action<IConversationSequence, ConversationEntry.SuddenEndedState> suddenEndedAlert);
     public void StartConversation();
     public void EndConversation();
     public void AlertHold();

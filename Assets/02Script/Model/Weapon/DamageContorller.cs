@@ -9,7 +9,7 @@ public class DamageContorller
     DamageConnector[] DamageConnectors { set; get; }
     IDamagePasser DamagePasser { set; get; }
 
-    public DamageContorller(Transform actor, IDamagePasser damagePasser)
+    public DamageContorller(IDamagePasser damagePasser, Transform actor)
     {
         var rigidbodies = actor.GetComponentsInChildren<Rigidbody>();
         DamageConnectors = new DamageConnector[rigidbodies.Length];
