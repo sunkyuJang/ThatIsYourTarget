@@ -20,6 +20,34 @@ public abstract class PersonAniState : StateModule
         Dead,
         Non,
     }
+    // fixed duration list
+    readonly public static List<StateKind> FixedDuringStateKinds = new List<StateKind>()
+    {
+        PersonAniState.StateKind.LookAround,
+        PersonAniState.StateKind.Surprize,
+        PersonAniState.StateKind.DrawWeapon,
+        PersonAniState.StateKind.Attack,
+        PersonAniState.StateKind.TurnAround
+        };
+
+    public static bool IsStateDuringFixed(StateKind kind) => FixedDuringStateKinds.Contains(kind);
+
+    // fixed position list
+    readonly public static List<StateKind> shouldPlaySamePositions = new List<StateKind>()
+    {
+        PersonAniState.StateKind.Sitting,
+    };
+    readonly public static StateKind replacebleState = StateKind.Standing;
+
+    // // immediate play
+    // readonly public static List<StateKind> immediatePlayList = new List<StateKind>()
+    // {
+    //     StateKind.Surprize,
+    //     StateKind.DrawWeapon,
+    //     StateKind.Attack,
+    //     StateKind.Dead,
+    // };
+
     public PersonAniState(PersonAniStateModuleHandler moduleHandler) => ModuleHandler = moduleHandler;
     protected PersonAniStateModuleHandler ModuleHandler { set; get; }
     protected Animator Animator { get { return ModuleHandler.Animator; } }

@@ -54,7 +54,7 @@ public class Tracking_PersonState : PersonState
             else
             {
                 stateKinds = StateKinds.Tracking;
-                SetAPs(ap, prepareData.target, PersonAniState.StateKind.LookAround, 0, true, true);
+                SetAPs(ap, prepareData.target, PersonAniState.StateKind.Non, 0, true, true);
                 aph.shouldLoop = true;
             }
         }
@@ -62,6 +62,7 @@ public class Tracking_PersonState : PersonState
         {
             stateKinds = StateKinds.Patrol;
             SetAPs(ap, prepareData.target, PersonAniState.StateKind.LookAround, 0, false, true);
+            return true;
         }
 
         return false;

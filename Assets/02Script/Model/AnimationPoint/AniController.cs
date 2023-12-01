@@ -1,6 +1,7 @@
 using JExtentioner;
 using System;
 using System.Collections;
+using Unity.Mathematics;
 using UnityEngine;
 
 public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJobManager.ModelHandlerJob>
@@ -87,7 +88,6 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
         modelHandlerJob = job;
         walkingState = modelHandlerJob.walkingState;
         var ap = modelHandlerJob.ap;
-
         MakeCorrectTransform(ap);
     }
     void MakeCorrectTransform(AnimationPoint ap)
@@ -137,12 +137,13 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
     protected virtual IEnumerator DoRotationCorrectly(Vector3 dir, Action done)
     {
         var isLeft = IsRatationDirLeft(dir);
-        var rotateDir = transform.forward.GetRotationDir(dir);
+        var lookat = transform.forward;
+        var rotateDir = MathF.Abs(transform.forward.GetRotationDir(dir));
         var shouldBodyTurnWithAnimation = rotateDir >= bodyThreshold;
 
         if (shouldBodyTurnWithAnimation)
         {
-            var during = GetMakeTurnDuring(rotateDir, out AnimationPoint playingAP);
+            var during = GetMakeTurnDuring(rotateDir);
             var totalAngle = Vector3.Angle(transform.forward, dir);
             var eachFrameAngle = totalAngle / (during / Time.fixedDeltaTime);
             for (float t = 0; t < during; t += Time.fixedDeltaTime)
@@ -150,7 +151,9 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
                 transform.Rotate(isLeft ? Vector3.down : Vector3.up, eachFrameAngle);
                 yield return new WaitForFixedUpdate();
             }
+            transform.Rotate(isLeft ? Vector3.down : Vector3.up, eachFrameAngle);
         }
+
 
         done?.Invoke();
         yield return null;
@@ -177,7 +180,7 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
         }
     }
 
-    protected virtual float GetMakeTurnDuring(float degree, out AnimationPoint playingAP) { playingAP = null; return 0; }
+    protected virtual float GetMakeTurnDuring(float degree) { return 0; }
     protected abstract void StartAni(AnimationPoint actionPoint, bool shouldReturnAP = false);
     protected void StartAniTimeCount(AnimationPoint ap, bool shouldReturnAP, StateModule stateModule, AnimationEvent[] events)
     {

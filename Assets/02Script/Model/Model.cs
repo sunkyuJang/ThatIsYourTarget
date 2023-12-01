@@ -97,8 +97,8 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
 
         yield break;
     }
-    public bool IsHitToTarget(Transform target, float dist = 0f) => FOVCollider.transform.IsRayHitToTarget(target, dist);
-    public void OnDetected(ObjDetector detector, Collider collider) { if (IsHitToTarget(collider.transform)) OnDetected(collider); }
+    public bool IsHitToTarget(Transform target, float dist = 0f) => FOVCollider.transform.IsRayHitToTarget(target, dist, FOVCollider.FOVAngle);
+    public void OnDetected(ObjDetector detector, Collider collider) { OnDetected(collider); }
     public virtual void OnDetected(Collider collider) { }
     protected virtual void DoDead() { }
     public void HoldWeapon(bool shouldHold)

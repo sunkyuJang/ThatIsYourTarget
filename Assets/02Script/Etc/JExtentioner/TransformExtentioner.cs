@@ -16,7 +16,7 @@ namespace JExtentioner
             return Physics.RaycastAll(from, dir, dist, 0, QueryTriggerInteraction.Ignore);
         }
 
-        public static bool IsRayHit(this Transform center, Transform target, out RaycastHit hit, float dist = 0f)
+        public static bool IsRayHit(this Transform center, Transform target, out RaycastHit hit, float dist = 0f, float limitedAngle = 180f)
         {
             var from = center.position;
             var to = target.position;
@@ -27,16 +27,22 @@ namespace JExtentioner
             {
                 if (Physics.Raycast(from, dir, out hit, dist))
                 {
-                    if (hit.transform != center &&
-                        !hit.transform.IsChildOf(center.root))
+                    float angle = Vector3.Angle(center.forward, hit.point - center.position);
+                    if (angle <= limitedAngle)
                     {
-                        return true;
+                        if (hit.transform != center && !hit.transform.IsChildOf(center.root))
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            from = hit.point + dir * 0.01f;
+                            dist = Vector3.Distance(from, to);
+                        }
                     }
                     else
                     {
-                        //Debug.DrawLine(from, hit.point + dir * 0.01f, Color.magenta, 2f);
-                        from = hit.point + dir * 0.01f;
-                        dist = Vector3.Distance(from, to);
+                        break;
                     }
                 }
                 else
@@ -76,9 +82,9 @@ namespace JExtentioner
             return false;
         }
 
-        public static bool IsRayHitToTarget(this Transform center, Transform target, float dist = 0f)
+        public static bool IsRayHitToTarget(this Transform center, Transform target, float dist = 0f, float limitedAngle = 180f)
         {
-            if (IsRayHit(center, target, out RaycastHit hit, dist))
+            if (IsRayHit(center, target, out RaycastHit hit, dist, limitedAngle))
             {
                 if (hit.transform.CompareTag(target.tag))
                 {

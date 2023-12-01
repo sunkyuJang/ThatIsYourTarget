@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class TimeCounter : MonoBehaviour
@@ -20,11 +21,11 @@ public class TimeCounter : MonoBehaviour
             print("there has two TimeCounter Exist");
         }
     }
-    public TimeCountData SetTimeCounting(float maxTime, Action function)
+    public TimeCountData SetTimeCounting(float maxTime, Action function, object sequenceKey = null, Func<object, bool> sequnceMatch = null)
     {
-        return SetTimeCounting(maxTime, maxTime, function);
+        return SetTimeCounting(maxTime, maxTime, function, sequenceKey, sequnceMatch);
     }
-    public TimeCountData SetTimeCounting(float maxTime, float timeUnit, Action function)
+    TimeCountData SetTimeCounting(float maxTime, float timeUnit, Action function, object sequenceKey, Func<object, bool> sequnceMatch)
     {
         var find = countingList.Find(x => x.requestFunction.Equals(function));
         if (find != null)
@@ -32,7 +33,7 @@ public class TimeCounter : MonoBehaviour
             find.nowTime = find.maxTime;
             print("in TimeCount, the Key already exist, this key name is : " + function);
         }
-        var timeData = new TimeCountData(maxTime, timeUnit, function);
+        var timeData = new TimeCountData(maxTime, timeUnit, function, sequenceKey, sequnceMatch);
         var processingTimeCounting = StartCoroutine(DoTimeCounting(timeData));
         timeData.processingTimeCounting = processingTimeCounting;
 
@@ -47,7 +48,17 @@ public class TimeCounter : MonoBehaviour
             data.nowTime += data.timeUnit;
         }
 
-        data.requestFunction.Invoke();
+        if (data.sequence != null)
+        {
+            if (data.sequnceMatch(data.sequence))
+            {
+                data.requestFunction.Invoke();
+            }
+        }
+        else
+        {
+            data.requestFunction.Invoke();
+        }
         RemoveProcessCounting(data);
         yield return null;
     }
@@ -68,12 +79,16 @@ public class TimeCounter : MonoBehaviour
 
         public Action requestFunction;
         public Coroutine processingTimeCounting;
+        public object sequence = null;
+        public Func<object, bool> sequnceMatch = null;
 
-        public TimeCountData(float maxTime, float timeUnit, Action requestFunc)
+        public TimeCountData(float maxTime, float timeUnit, Action requestFunc, object sequence = null, Func<object, bool> sequenceMatfch = null)
         {
             this.maxTime = maxTime;
             this.timeUnit = timeUnit;
             this.requestFunction = requestFunc;
+            this.sequence = sequence;
+            this.sequnceMatch = sequenceMatfch;
         }
     }
 }

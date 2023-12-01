@@ -86,10 +86,10 @@ public class PersonAniController : AniController
         yield return null;
     }
 
-    protected override float GetMakeTurnDuring(float degree, out AnimationPoint ap)
+    protected override float GetMakeTurnDuring(float degree)
     {
-        ap = APHManager.Instance.GetNewAP<PersonAnimationPoint>();
-        (ap as PersonAnimationPoint).State = PersonAniState.StateKind.TurnAround;
+        var ap = APHManager.Instance.GetNewAP<PersonAnimationPoint>();
+        ap.state = (int)PersonAniState.StateKind.TurnAround;
         ap.targetDegree = degree;
         ap.during = ap.GetAnimationClipLength(GetStateNameByDegree(ap.targetDegree));
         StartAni(ap, true);

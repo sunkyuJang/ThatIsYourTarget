@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+
+// JobManager는 순차적으로 정해진 일을 처리하는 Manager.
 public class JobManager
 {
     private Action AfterFinishJobManager;

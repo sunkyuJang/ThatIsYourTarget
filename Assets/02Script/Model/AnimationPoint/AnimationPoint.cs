@@ -8,7 +8,7 @@ public abstract class AnimationPoint : MonoBehaviour
     public AnimatorController animatorController;
     public virtual bool HasAction { get { return true; } }
     [HideInInspector]
-    protected int state = 0;
+    public int state = 0;
     [HideInInspector]
     public float during = 0;
     public bool IsUnLimited { get { return during <= -1; } }
@@ -19,6 +19,7 @@ public abstract class AnimationPoint : MonoBehaviour
     public Action whenAnimationStart { set; get; }
     public Action whenAnimationEnd { set; get; }
     public bool CanYield { set; get; } = true;
+    // public abstract bool IsImmediatePlay { get; }
     public abstract bool ShouldPlaySamePosition { get; }
     public abstract void ReplaceExpectionState();
     public bool IsSameState(AnimationPoint other)
@@ -81,9 +82,13 @@ public abstract class AnimationPoint : MonoBehaviour
     private void ChangePosition(Vector3 position)
     {
         transform.position = position;
+        CorrectedPosition = position;
     }
-    private void MakeLookAtTo(Vector3 to) => transform.LookAt(to - (Vector3.up * to.y + Vector3.up * transform.position.y));
-    private void SetPositionForTracking(Vector3 from, Vector3 to, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
+    private void MakeLookAtTo(Vector3 to)
+    {
+        transform.LookAt(to - (Vector3.up * to.y + Vector3.up * transform.position.y));
+    }
+    private void SetPositionForTracking(Vector3 from, Vector3 to, bool shouldReachTargetPosition, bool shouldLookAtTarget)
     {
         ChangePosition(from);
         MakeLookAtTo(shouldLookAtTarget ? to : from);
@@ -93,20 +98,20 @@ public abstract class AnimationPoint : MonoBehaviour
         }
     }
 
-    protected void SetAPWithDuring(Vector3 from, Vector3 to, int state, float time, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
+    protected void SetAPWithDuring(Vector3 from, Vector3 to, int state, float time, bool shouldReachTargetPosition, bool shouldLookAtTarget)
     {
         this.state = state;
         during = time;
         SetPositionForTracking(from, to, shouldReachTargetPosition, shouldLookAtTarget);
     }
 
-    protected void SetAPWithFixedDuring(Vector3 from, Vector3 to, int state, string kind, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
+    protected void SetAPWithFixedDuring(Vector3 from, Vector3 to, int state, string kind, bool shouldReachTargetPosition, bool shouldLookAtTarget)
     {
         if (kind == null) Debug.Log("the animation fixed kind is null");
         SetAPWithDuring(from, to, state, GetAnimationClipLength(kind), shouldReachTargetPosition, shouldLookAtTarget);
     }
 
-    public void SetAP(Vector3 from, Vector3 to, int state, float time, bool canYield = true, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
+    public void SetAP(Vector3 from, Vector3 to, int state, float time, bool canYield, bool shouldReachTargetPosition, bool shouldLookAtTarget)
     {
         CanYield = canYield;
         if (IsFixedDuring(state))

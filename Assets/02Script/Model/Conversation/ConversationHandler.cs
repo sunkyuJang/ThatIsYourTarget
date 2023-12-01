@@ -74,12 +74,12 @@ public abstract class ConversationHandler : IConversationSequence
 
     protected void SetAPImmidiate(AnimationPoint ap, int state, float time = 0f)
     {
-        var dir = Model.ActorTransform.position + Model.ActorTransform.forward;
-        ap.SetAP(Model.ActorTransform.position, dir, state, time, false, false);
+        // var dir = Model.ActorTransform.position + Model.ActorTransform.forward;
+        // ap.SetAP(Model.ActorTransform.position, dir, state, time, false, false);
     }
     protected void SetAP(AnimationPoint ap, Vector3 to, int state, float time = 0f, bool shouldChangePosition = false, bool shouldChangeRotation = false)
     {
-        ap.SetAP(Model.ActorTransform.position, to, state, time, shouldChangePosition, shouldChangeRotation);
+        // ap.SetAP(Model.ActorTransform.position, to, state, time, shouldChangePosition, shouldChangeRotation);
     }
 
     protected abstract bool OnCanEnterConversation();

@@ -8,11 +8,10 @@ public class ObjDetector : MonoBehaviour
     public GameObject connectedObj;
     public List<string> targetTags = new List<string>();
     public bool shouldFindByName = false;
-    public bool ignoreTriggerCollider = false;
-
+    public bool ignoreTriggerCollider = true;
     protected Collider DectectCollider { set; get; }
+    [SerializeField]
     protected IObjDetectorConnector_OnDetected I_OnDetected { set; get; }
-    protected IObjDetectorConnector_OnContecting I_OnContecting { set; get; }
     protected IObjDetectorConnector_OnRemoved I_OnRemoved { set; get; }
 
 
@@ -39,7 +38,6 @@ public class ObjDetector : MonoBehaviour
         else
         {
             I_OnDetected = connectedObj.GetComponent<IObjDetectorConnector_OnDetected>();
-            I_OnContecting = connectedObj.GetComponent<IObjDetectorConnector_OnContecting>();
             I_OnRemoved = connectedObj.GetComponent<IObjDetectorConnector_OnRemoved>();
         }
     }
@@ -53,15 +51,13 @@ public class ObjDetector : MonoBehaviour
     {
         if (IsFind(other))
         {
+            if (other.CompareTag("Avoid"))
+            {
+                Debug.Log("isIN");
+            }
             SetTarget(other, true);
+            Debug.Log(I_OnDetected == null);
             I_OnDetected?.OnDetected(this, other);
-        }
-    }
-    protected virtual void OnTriggerStay(Collider other)
-    {
-        if (IsFind(other))
-        {
-            I_OnContecting?.OnContecting(this, other);
         }
     }
 
@@ -76,6 +72,7 @@ public class ObjDetector : MonoBehaviour
 
     protected bool IsFind(Collider other)
     {
+
         if (other.isTrigger && ignoreTriggerCollider) return false;
         var nowString = shouldFindByName ? other.gameObject.name : other.tag;
         foreach (var item in targetTags)

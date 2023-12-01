@@ -1,18 +1,12 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using JExtentioner;
-using UnityEngine.AI;
-using System.Linq;
-using UnityEditor;
-using Unity.VisualScripting;
 
 public class NaviTrafficManager : MonoBehaviour
 {
-    public static NaviTrafficManager Instance { set; get; }
-    List<TrafficData> TrafficDatas { set; get; } = new List<TrafficData>();
-    float CastRadius = 2f;
+    public static NaviTrafficManager Instance { private set; get; }
+    private MetaphysicsTrafficHandler metaphysicsTrafficHandler;
+    private PhysicsTrafficHandler physicsTrafficHandler;
+    private float castRadius { get { return NaviController.eachStateDist[(int)NaviController.State.Close].Value; } }
+    public int NaviAvoidance = 0;
     private void Awake()
     {
         if (Instance == null)
@@ -21,83 +15,30 @@ public class NaviTrafficManager : MonoBehaviour
         }
         else
         {
-            Destroy(this);
+            Destroy(gameObject);
         }
+
+        metaphysicsTrafficHandler = new MetaphysicsTrafficHandler();
+        physicsTrafficHandler = new PhysicsTrafficHandler();
+        // 기타 초기화 로직
     }
 
-    public bool AddCasePoint(Vector3 targetPosition, NaviController naviController, AnimationPoint ap)
+    public bool IsCongested(Vector3 targetPosition, NaviController naviController, out MetaphysicsTrafficHandler.TrafficData trafficData)
     {
-        var targetData = TrafficDatas.Find(x =>
-        {
-            var dist = Vector3.Distance(x.Position, targetPosition);
-            return dist < CastRadius;
-        });
-
-        if (targetData == null)
-        {
-            var data = new TrafficData();
-            data.AddingControllers(naviController, ap);
-            TrafficDatas.Add(data);
-            StartCoroutine(HandlingTraffic(data));
-
-            return true;
-        }
-
-        return targetData.AddingControllers(naviController, ap);
+        return
+            // MetaphysicsTrafficHandler를 통한 체크
+            metaphysicsTrafficHandler.IsCongested(targetPosition, naviController, castRadius, out trafficData) ||
+            // PhysicsTrafficHandler를 통한 체크
+            physicsTrafficHandler.IsCongested(targetPosition, castRadius, naviController);
     }
 
-    IEnumerator HandlingTraffic(TrafficData trafficData)
+    public void AddTrafficPointForPhysics(Vector3 position)
     {
-        while (trafficData.NaviPairAP.Count > 0)
-        {
-            var pair = trafficData.NaviPairAP.Dequeue();
-            var naviController = pair.Key;
-            var agent = naviController.navMeshAgent;
-            var ap = pair.Value;
-
-            if (Vector3.Distance(ap.transform.position, agent.nextPosition) > CastRadius * 2f)
-                continue;
-
-            agent.isStopped = false;
-            agent.avoidancePriority = 0;
-            yield return new WaitUntil(() => Vector3.Distance(trafficData.Position, agent.transform.position) > CastRadius * 1f);
-        }
-
-        TrafficDatas.Remove(trafficData);
-        yield return null;
+        physicsTrafficHandler.IsCongested(position, castRadius, null);
     }
 
-    public class TrafficData
+    public void AddTrafficPoint(MetaphysicsTrafficHandler.TrafficData trafficData)
     {
-        public Vector3 Position { set; get; }
-        public Queue<KeyValuePair<NaviController, AnimationPoint>> NaviPairAP { set; get; } = new Queue<KeyValuePair<NaviController, AnimationPoint>>();
-        public bool isUnlimitedPlayingExist = false;
-        public bool AddingControllers(NaviController naviController, AnimationPoint ap)
-        {
-            if (NaviPairAP.Count > 3)
-                return false;
-            if (isUnlimitedPlayingExist)
-                return false;
-
-            if (NaviPairAP.Any(pair => pair.Key == naviController))
-            {
-                return false;
-            }
-            else
-            {
-                Position = ap.transform.position;
-                NaviPairAP.Enqueue(new KeyValuePair<NaviController, AnimationPoint>(naviController, ap));
-                var agent = naviController.navMeshAgent;
-                agent.avoidancePriority = NaviPairAP.Count;
-                agent.isStopped = true;
-
-                if (ap.IsUnLimited)
-                {
-                    isUnlimitedPlayingExist = true;
-                }
-
-                return true;
-            }
-        }
+        metaphysicsTrafficHandler.AddData(trafficData);
     }
 }

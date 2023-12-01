@@ -29,10 +29,10 @@ public class GizmosDrawer : MonoBehaviour
         AddGizmoInfo(gizmoInfo);
     }
 
-    public void DrawChangePoint(Vector3 startPoint, Vector3 endPoint, float duration)
+    public void DrawChangePoint(Vector3 startPoint, Vector3 endPoint, float duration, Color color)
     {
-        DrawSphere(endPoint, 0.5f, duration, Color.red);
-        DrawLine(startPoint, endPoint, duration, Color.red);
+        DrawSphere(endPoint, 0.5f, duration, color);
+        DrawLine(startPoint, endPoint, duration, color);
     }
 
     void AddGizmoInfo(GizmoInfo info)

@@ -23,7 +23,7 @@ public class DrawWeapon_PersonState : PersonState
     {
         var aph = GetNewAPH(1, AnimationPointHandler.WalkingState.Run);
         (aph.GetActionPoint(0) as PersonAnimationPoint).Weapon = Weapon;
-        SetAPs(aph.GetActionPoint(0), prepareData.target, PersonAniState.StateKind.DrawWeapon, 0, false, true);
+        SetAPsImmediate(aph.GetActionPoint(0), PersonAniState.StateKind.DrawWeapon, 0);
         HoldWeapon(true);
         return aph;
     }

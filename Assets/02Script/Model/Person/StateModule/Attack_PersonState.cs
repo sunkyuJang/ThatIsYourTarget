@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Attack_PersonState : PersonState
 {
@@ -31,7 +32,10 @@ public class Attack_PersonState : PersonState
 
     protected override void AfterAPHDone()
     {
-        SetState(StateKinds.Tracking, prepareData);
+        if (IsInSight(prepareData.target))
+            StartModule();
+        else
+            SetState(StateKinds.Tracking, prepareData);
     }
     public override void Exit()
     {

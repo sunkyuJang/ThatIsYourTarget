@@ -24,6 +24,7 @@ public abstract class PersonState : StateModule
         Dead,
         Non
     }
+    public static List<StateKinds> CanYeildList = new List<StateKinds>() { StateKinds.Normal, StateKinds.Sensed, StateKinds.Curiousity, StateKinds.Patrol, };
     public static int ConvertStateKindToInt(StateKinds kinds) => (int)kinds;
     private Person Person { get; set; }
     public PersonState(Person person) => Person = person;
@@ -47,15 +48,19 @@ public abstract class PersonState : StateModule
     {
         return APHManager.Instance.GetNewAPH<PersonAnimationPoint>(Person.APHGroup, APCounts, walkingState);
     }
-    protected void SetAPsImmediate(AnimationPoint ap, PersonAniState.StateKind kind, float time = 0, bool canYield = true)
+    protected void SetAPsImmediate(AnimationPoint ap, PersonAniState.StateKind kind, float time)
     {
         var dir = ActorTransform.position + ActorTransform.forward;
-        SetAPs(ap, dir, kind, time, canYield, false, true);
+        SetAPs(ap, dir, kind, time, false, true);
     }
-    protected void SetAPs(AnimationPoint ap, Transform target, PersonAniState.StateKind kind, float time = 0, bool canYield = true, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
-        => SetAPs(ap, target.position, kind, time, canYield, shouldReachTargetPosition, shouldLookAtTarget);
-    protected void SetAPs(AnimationPoint ap, Vector3 target, PersonAniState.StateKind kind, float time = 0, bool canYield = true, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
+    protected void SetAPs(AnimationPoint ap, Transform target, PersonAniState.StateKind kind, float time, bool shouldReachTargetPosition, bool shouldLookAtTarget)
+        => SetAPs(ap, target.position, kind, time, shouldReachTargetPosition, shouldLookAtTarget);
+    protected void SetAPs(AnimationPoint ap, Vector3 target, PersonAniState.StateKind kind, float time, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
     {
+        var canYield = CanYeildList.Contains(ModuleHandler.GetPlayingModuleStateKind());
+        // var dist = Vector3.Distance(ap.transform.position, target);
+        // var tooShort = dist < 0.1f;
+        // if (tooShort) { SetAPsImmediate(ap, kind, time); return; }
         ap.SetAP(Person.ActorTransform.position, target, (int)kind, time, canYield, shouldReachTargetPosition, shouldLookAtTarget);
     }
     protected void SetAPH(AnimationPointHandler aph = null, bool needFuncAfterAPH = false)
@@ -77,7 +82,7 @@ public abstract class PersonState : StateModule
     }
 
     // Sight
-    protected bool IsInSight(Transform target) => Person.IsHitToTarget(target);
+    protected bool IsInSight(Transform target) => Person.IsHitToTarget(target, Person.SightLength);
 
     public void StartTracingTargetInSight(Transform target, Func<bool> conditionOfEndLoop)
     {

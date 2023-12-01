@@ -10,6 +10,7 @@ TagManager:
   - PlayerHead
   - PersonModel
   - Chair
+  - Avoid
   layers:
   - Default
   - TransparentFX
@@ -17,7 +18,7 @@ TagManager:
   - 
   - Water
   - UI
-  - 
+  - Hand
   - 
   - 
   - 
@@ -36,9 +37,9 @@ TagManager:
   - 
   - 
   - Weapon
-  - Person
+  - Model
   - HandPlayer
-  - Hand
+  - Actor
   - HandHolding
   - Grabbable
   - Grabbing

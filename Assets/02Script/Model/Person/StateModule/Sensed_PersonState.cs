@@ -42,7 +42,7 @@ public class Sensed_PersonState : PersonState
     IEnumerator DoSelectTrackingModel()
     {
         var trackingList = new List<Transform>();
-        while (sensedPrepareDatas.Any())
+        while (sensedPrepareDatas.Count > 0)
         {
             for (int i = 0; i < sensedPrepareDatas.Count; i++)
             {
@@ -57,7 +57,7 @@ public class Sensed_PersonState : PersonState
                 }
             }
 
-            if (trackingList.Any())
+            if (trackingList.Count > 0)
             {
                 var playingTargetModel = ModuleHandler.GetPlayingModuleTarget(StateKinds.Sensed);
                 var selectedModel = SelectModel(trackingList, playingTargetModel);
@@ -74,7 +74,7 @@ public class Sensed_PersonState : PersonState
             }
 
             sensedPrepareDatas.RemoveAll(x => !x.isInSight);
-            yield return new WaitForFixedUpdate();
+            yield return new WaitForSeconds(0.5f);
         }
 
         trackingBySensedPrepareData = null;

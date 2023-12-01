@@ -7,41 +7,11 @@ public class PersonAnimationPoint : AnimationPoint
 {
     public PersonAniState.StateKind State
     {
-        set
-        {
-            var state = (int)value;
-            if (0 <= state && state <= (int)PersonAniState.StateKind.Non)
-            {
-                base.state = state;
-            }
-            else
-            {
-                Debug.Log("Out of PersonAniKind");
-                base.state = (int)PersonAniState.StateKind.Non;
-            }
-        }
         get { return (PersonAniState.StateKind)base.state; }
     }
-    readonly public static List<PersonAniState.StateKind> FixedDuringStateKinds = new List<PersonAniState.StateKind>()
-    {
-        PersonAniState.StateKind.LookAround,
-        PersonAniState.StateKind.Surprize,
-        PersonAniState.StateKind.DrawWeapon,
-        PersonAniState.StateKind.Attack,
-        PersonAniState.StateKind.TurnAround
-        };
 
-    public static bool IsStateDuringFixed(PersonAniState.StateKind kind) => FixedDuringStateKinds.Contains(kind);
-
-    readonly public static List<PersonAniState.StateKind> ShouldPlaySamePositions = new List<PersonAniState.StateKind>()
-    {
-        PersonAniState.StateKind.Sitting,
-    };
-
-    readonly public static PersonAniState.StateKind ReplacebleState = PersonAniState.StateKind.Standing;
-
-    public override bool ShouldPlaySamePosition { get => ShouldPlaySamePositions.Contains(State); }
-    public override void ReplaceExpectionState() => State = ReplacebleState;
+    public override bool ShouldPlaySamePosition { get => PersonAniState.shouldPlaySamePositions.Contains(State); }
+    public override void ReplaceExpectionState() => state = (int)PersonAniState.replacebleState;
     public override bool HasAction { get { return base.state != (int)PersonAniState.StateKind.Non; } }
     public bool shouldReadyForBattle;
     public int subState_int = 0;
@@ -49,6 +19,7 @@ public class PersonAnimationPoint : AnimationPoint
     public float subState_float = 0f;
     public float GetLength() => GetAnimationClipLength(((PersonAniState.StateKind)base.state).ToString());
     public PersonWeapon Weapon { get; set; }
+    // public override bool IsImmediatePlay => PersonAniState.immediatePlayList.Contains((PersonAniState.StateKind)state);
 
     public ChildAnimatorState GetState()
     {
@@ -68,7 +39,7 @@ public class PersonAnimationPoint : AnimationPoint
 
     public override bool IsFixedDuring(int state)
     {
-        return IsStateDuringFixed((PersonAniState.StateKind)state);
+        return PersonAniState.IsStateDuringFixed((PersonAniState.StateKind)state);
     }
 
     public override string GetStateName(int state)
@@ -102,9 +73,7 @@ public class PersonActionPointEditor : Editor
         }
         ExpresseDuring(ap);
 
-        ap.during = 0f;
-
-        ap.State = kind;
+        ap.state = (int)kind;
         ap.animatorController = animatorController;
         EditorUtility.SetDirty(target);
     }
@@ -116,7 +85,7 @@ public class PersonActionPointEditor : Editor
 
     void ExpresseDuring(PersonAnimationPoint ap)
     {
-        var find = PersonAnimationPoint.FixedDuringStateKinds.Find(x => x == ap.State);
+        var find = PersonAniState.FixedDuringStateKinds.Find(x => x == ap.State);
         ap.during = find == ap.State ? (float)EditorGUILayout.DelayedFloatField("FixedDuring", ap.GetLength())
                                         : (float)EditorGUILayout.FloatField("during", ap.during);
     }

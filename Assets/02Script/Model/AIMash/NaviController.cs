@@ -2,40 +2,64 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 using JExtentioner;
-using System.Linq;
-using UnityEditor.Experimental.GraphView;
+using System.Collections.Generic;
+using UnityEngine.PlayerLoop;
+using Unity.VisualScripting;
 
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(NavMeshObstacle))]
 public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJobManager.ModelHandlerJob>
 {
+    public enum State { Reached, Near, Close, MiddleWay }
     public NavMeshAgent navMeshAgent { private set; get; }
     NavMeshObstacle navMeshObstacle { set; get; }
-    float permissibleRangeToDestinationXZ = 0.01f;
-    float alomstArrived = 1f;
-    bool IsArrivedDestination
+    Collider Collider { set; get; }
+    Coroutine CheckingUntilArrive;
+    public AnimationPoint playingAP { private set; get; }
+    TimeCounter.TimeCountData TimeCountData { set; get; }
+    readonly public static List<KeyValuePair<State, float>> eachStateDist = new List<KeyValuePair<State, float>>()
+    {
+        new KeyValuePair<State, float>(State.Reached, 0.01f),
+        new KeyValuePair<State, float>(State.Near, 1f),
+        new KeyValuePair<State, float>(State.Close, 2f),
+    };
+    float GetDistByState(State state)
+    {
+        foreach (var item in eachStateDist)
+        {
+            if (item.Key.Equals(state)) return item.Value;
+        }
+
+        return -1f;
+    }
+    State GetStateByDist
     {
         get
         {
             var distXZ = Vector2.Distance(transform.position.ConvertVector3To2(1), navMeshAgent.destination.ConvertVector3To2(1));
-            return distXZ < permissibleRangeToDestinationXZ;
+            for (int i = 0; i < eachStateDist.Count; i++)
+            {
+                var pair = eachStateDist[i];
+                if (distXZ <= pair.Value)
+                    return pair.Key;
+            }
+
+            return State.MiddleWay;
         }
     }
 
-    bool IsAlmostArrivedDestination
-    {
-        get
-        {
-            var distXZ = Vector2.Distance(transform.position.ConvertVector3To2(1), navMeshAgent.destination.ConvertVector3To2(1));
-            return distXZ < alomstArrived;
-        }
-    }
-    Coroutine CheckingUntilArrive;
     void Awake()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
         navMeshObstacle = GetComponent<NavMeshObstacle>();
         navMeshObstacle.enabled = false;
+        Collider = GetComponent<Collider>();
+    }
+
+    private void Start()
+    {
+        navMeshAgent.avoidancePriority = NaviTrafficManager.Instance.NaviAvoidance++;
+        TurnOnNavi(true);
     }
     public void StartJob(ModelAnimationPlayerJobManager.ModelHandlerJob job)
     {
@@ -44,83 +68,103 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
             if (CheckingUntilArrive != null)
                 StopCoroutine(CheckingUntilArrive);
 
-            TurnOnNavi(true);
-            if (ShouldNavControllerWorking(job.ap, out Vector3 correctVector))
+            TimeCountData = null;
+            var correctVector = job.ap.transform.position;
+            navMeshAgent.avoidancePriority = 0;
+            playingAP = job.ap;
+            var needNavi = Vector3.Distance(job.ap.transform.position, transform.position) > eachStateDist[(int)State.Reached].Value;
+            if (needNavi)
             {
+                navMeshAgent.stoppingDistance = eachStateDist[(int)State.Reached].Value; ;
                 CheckingUntilArrive = StartCoroutine(DoCheckUntilArrive(job, correctVector));
             }
             else
             {
                 TurnOnNavi(false);
+                navMeshAgent.stoppingDistance = 99f;
                 job.EndJob();
             }
         }
     }
     IEnumerator DoCheckUntilArrive(ModelAnimationPlayerJobManager.ModelHandlerJob job, Vector3 correctedVector)
     {
-        navMeshAgent.isStopped = false;
-        var shouldAlertTraffic = false;
+        TurnOnNavi(true);
         var ap = job.ap;
-        var lastPosition = ap.transform.position;
+        ap.CorrectedPosition = correctedVector;
 
-        while (!IsArrivedDestination)
+        var lastPosition = ap.transform.position;
+        System.Func<bool> IsAPPositionChanged = () => { return lastPosition != ap.transform.position; };
+        TimeCounter.TimeCountData timeCountData = null;
+
+        SetDestination(ap.transform.position, ref correctedVector);
+        while (GetStateByDist != State.Reached)
         {
-            if (lastPosition != ap.transform.position)
+            var state = GetStateByDist;
+            if (IsAPPositionChanged())
             {
-                SetDestination(ap.transform.position, out correctedVector);
                 lastPosition = ap.transform.position;
+                SetDestination(ap.transform.position, ref correctedVector);
             }
 
-            if (!shouldAlertTraffic
-                    && IsAlmostArrivedDestination)
+            if (timeCountData == null)
             {
-                shouldAlertTraffic = true;
-                var colliders = Physics.OverlapSphere(correctedVector, alomstArrived * 1.5f).ToList();
-                var find = colliders.Find(x =>
+                TimeCountData = timeCountData = TimeCounter.Instance.SetTimeCounting(0.5f, () =>
                 {
-                    var agent = x.GetComponent<NavMeshAgent>();
-                    return agent != null && agent != navMeshAgent;
-                });
+                    if (timeCountData == null || TimeCountData == null) return;
+                    if (!TimeCountData.Equals(timeCountData)) return;
 
-                if (find != null)
-                {
-                    var canYield = true;
-                    if (ap.CanYield)
-                        canYield = NaviTrafficManager.Instance.AddCasePoint(correctedVector, this, job.ap);
-
-                    if (!canYield)
-                    {
-                        var shouldGoLeft = Random.Range(0, 2) == 1;
-                        var point = correctedVector + Quaternion.Euler(0f, 90f * (shouldGoLeft ? -1 : 1), 0f) * transform.forward * 2f;
-                        Debug.Log(point + "//" + correctedVector);
-                        SetDestination(point, out correctedVector);
-
-                        if (ap.ShouldPlaySamePosition)
-                        {
-                            ap.ReplaceExpectionState();
-                            Debug.Log("Targeting place is very Busy now. Will Playing Expaction AniState // Targeting Position : " + correctedVector);
-                        }
-
-                        GizmosDrawer.instanse.DrawChangePoint(transform.position, correctedVector, 2f);
-                    }
-                }
+                    navMeshAgent.obstacleAvoidanceType = IsCrowededNear() ? ObstacleAvoidanceType.NoObstacleAvoidance : ObstacleAvoidanceType.HighQualityObstacleAvoidance;
+                    timeCountData = null;
+                },
+                playingAP,
+                (addedSeqeunce) => addedSeqeunce.Equals(playingAP));
             }
 
             yield return new WaitForFixedUpdate();
         }
 
+        ap.CorrectedPosition = correctedVector;
+        navMeshAgent.avoidancePriority = 99;
+        navMeshAgent.stoppingDistance = 100f;
         TurnOnNavi(false);
 
-        ap.CorrectedPosition = correctedVector;
+        playingAP = null;
         job.EndJob();
     }
 
-    bool ShouldNavControllerWorking(AnimationPoint ap, out Vector3 correctiondVector)
+    bool IsCrowededNear()
     {
-        SetDestination(ap.transform.position, out correctiondVector);
-        return !IsArrivedDestination;
-    }
+        var isCroweded = false;
+        var distByState = GetDistByState(State.Close);
+        GizmosDrawer.instanse.DrawSphere(transform.position, distByState, 2f, Color.red - new Color(0, 0, 0, 0.7f));
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, distByState, LayerMask.GetMask("Actor"));
+        var count = 0;
+        var maxCount = 4;
+        foreach (var collider in hitColliders)
+        {
+            if (collider.Equals(Collider))
+                continue;
+            count++;
 
+            if (count > maxCount)
+            {
+                isCroweded = true;
+                break;
+            }
+        }
+
+        return isCroweded;
+    }
+    void SetDestination(Vector3 targetPosition, ref Vector3 correctiondVector)
+    {
+        if (IsPositionCanReach(targetPosition, out NavMeshHit hit))
+        {
+            correctiondVector = hit.position;
+            navMeshAgent.SetDestination(correctiondVector);
+            GizmosDrawer.instanse.DrawLine(transform.position, correctiondVector, 2f, Color.magenta);
+            GizmosDrawer.instanse.DrawSphere(correctiondVector, 0.05f, 2f, Color.magenta);
+        }
+    }
     bool IsPositionCanReach(Vector3 targetPosition, out NavMeshHit hit)
     {
         hit = new NavMeshHit();
@@ -140,19 +184,6 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
 
         return false;
     }
-
-    void SetDestination(Vector3 targetPosition, out Vector3 correctiondVector)
-    {
-        correctiondVector = Vector3.zero;
-        if (IsPositionCanReach(targetPosition, out NavMeshHit hit))
-        {
-            correctiondVector = hit.position;
-            navMeshAgent.SetDestination(correctiondVector);
-            GizmosDrawer.instanse.DrawLine(targetPosition, correctiondVector, 2f, Color.magenta);
-            GizmosDrawer.instanse.DrawSphere(correctiondVector, 0.05f, 2f, Color.magenta);
-        }
-    }
-
     public void StopJob()
     {
         if (CheckingUntilArrive != null)
