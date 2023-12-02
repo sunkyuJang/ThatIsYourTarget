@@ -4,7 +4,7 @@ public class NaviTrafficManager : MonoBehaviour
 {
     public static NaviTrafficManager Instance { private set; get; }
     private MetaphysicsTrafficHandler metaphysicsTrafficHandler;
-    private PhysicsTrafficHandler physicsTrafficHandler;
+    //private PhysicsTrafficHandler physicsTrafficHandler;
     private float castRadius { get { return NaviController.eachStateDist[(int)NaviController.State.Close].Value; } }
     public int NaviAvoidance = 0;
     private void Awake()
@@ -19,7 +19,7 @@ public class NaviTrafficManager : MonoBehaviour
         }
 
         metaphysicsTrafficHandler = new MetaphysicsTrafficHandler();
-        physicsTrafficHandler = new PhysicsTrafficHandler();
+        //physicsTrafficHandler = new PhysicsTrafficHandler();
         // 기타 초기화 로직
     }
 
@@ -27,15 +27,16 @@ public class NaviTrafficManager : MonoBehaviour
     {
         return
             // MetaphysicsTrafficHandler를 통한 체크
-            metaphysicsTrafficHandler.IsCongested(targetPosition, naviController, castRadius, out trafficData) ||
-            // PhysicsTrafficHandler를 통한 체크
-            physicsTrafficHandler.IsCongested(targetPosition, castRadius, naviController);
+            metaphysicsTrafficHandler.IsCongested(targetPosition, naviController, castRadius, out trafficData);
+        //||
+        // PhysicsTrafficHandler를 통한 체크
+        //physicsTrafficHandler.IsCongested(targetPosition, castRadius, naviController);
     }
 
-    public void AddTrafficPointForPhysics(Vector3 position)
-    {
-        physicsTrafficHandler.IsCongested(position, castRadius, null);
-    }
+    // public void AddTrafficPointForPhysics(Vector3 position)
+    // {
+    //     physicsTrafficHandler.IsCongested(position, castRadius, null);
+    // }
 
     public void AddTrafficPoint(MetaphysicsTrafficHandler.TrafficData trafficData)
     {

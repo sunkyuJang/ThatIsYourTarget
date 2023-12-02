@@ -16,12 +16,11 @@ namespace JExtentioner
             return Physics.RaycastAll(from, dir, dist, 0, QueryTriggerInteraction.Ignore);
         }
 
-        public static bool IsRayHit(this Transform center, Transform target, out RaycastHit hit, float dist = 0f, float limitedAngle = 180f)
+        public static bool IsRayHit(this Transform center, Transform target, out RaycastHit hit, float dist, float limitedAngle = 180f)
         {
             var from = center.position;
             var to = target.position;
             var dir = from.GetDirection(to);
-            dist = dist == 0f ? Vector3.Distance(from, to) : dist;
             hit = new RaycastHit();
             for (bool isSelf = false; isSelf == false;)
             {
@@ -36,8 +35,9 @@ namespace JExtentioner
                         }
                         else
                         {
-                            from = hit.point + dir * 0.01f;
-                            dist = Vector3.Distance(from, to);
+                            var hitPoint = hit.point + dir * 0.01f;
+                            dist -= Vector3.Distance(from, hitPoint);
+                            from = hitPoint;
                         }
                     }
                     else

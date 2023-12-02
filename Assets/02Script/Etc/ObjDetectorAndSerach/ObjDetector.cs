@@ -137,7 +137,8 @@ public class ObjDetector : MonoBehaviour
                 for (int i = 0; i < Targets.Count; i++)
                 {
                     var target = Targets[i];
-                    transform.IsRayHit(target, out RaycastHit hit);
+                    var dist = Vector3.Distance(transform.position, target.position);
+                    transform.IsRayHit(target, out RaycastHit hit, dist);
                     Debug.DrawLine(transform.position, hit.point, hit.transform == target ? Color.green : Color.red, 2f);
 
                     if (drawTarget == DrawTarget.OnlyClosedOne)

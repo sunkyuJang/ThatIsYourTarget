@@ -61,6 +61,7 @@ public class MetaphysicsTrafficHandler
             }
             agent.avoidancePriority = 0;
 
+            yield return new WaitUntil(() => Vector3.Distance(agent.transform.position, trafficData.Position) > 0.5f);
             yield return new WaitUntil(() => !trafficData.nowAdding);
         }
 
@@ -114,7 +115,7 @@ public class MetaphysicsTrafficHandler
             //     var navi = pair.Key;
             //     if (navi.Equals(naviController)) return i != 0;
             // }
-            if (AddingCount > 4) return false;
+            if (AddingCount > 3) return false;
             if (isUnlimitedPlayingExist) return false;
             if (NaviPairAP.Any(pair => pair.Key == naviController)) return false;
 

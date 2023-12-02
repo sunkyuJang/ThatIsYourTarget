@@ -3,8 +3,6 @@ using UnityEngine;
 using UnityEngine.AI;
 using JExtentioner;
 using System.Collections.Generic;
-using UnityEngine.PlayerLoop;
-using Unity.VisualScripting;
 
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(NavMeshObstacle))]
@@ -16,7 +14,6 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
     Collider Collider { set; get; }
     Coroutine CheckingUntilArrive;
     public AnimationPoint playingAP { private set; get; }
-    TimeCounter.TimeCountData TimeCountData { set; get; }
     readonly public static List<KeyValuePair<State, float>> eachStateDist = new List<KeyValuePair<State, float>>()
     {
         new KeyValuePair<State, float>(State.Reached, 0.01f),
@@ -68,10 +65,10 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
             if (CheckingUntilArrive != null)
                 StopCoroutine(CheckingUntilArrive);
 
-            TimeCountData = null;
             var correctVector = job.ap.transform.position;
             navMeshAgent.avoidancePriority = 0;
             playingAP = job.ap;
+            navMeshAgent.obstacleAvoidanceType = ObstacleAvoidanceType.HighQualityObstacleAvoidance;
             var needNavi = Vector3.Distance(job.ap.transform.position, transform.position) > eachStateDist[(int)State.Reached].Value;
             if (needNavi)
             {
@@ -93,28 +90,77 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
         ap.CorrectedPosition = correctedVector;
 
         var lastPosition = ap.transform.position;
-        System.Func<bool> IsAPPositionChanged = () => { return lastPosition != ap.transform.position; };
-        TimeCounter.TimeCountData timeCountData = null;
+        TimeCounter.TimeCountData crowededTimeData = null;
+        TimeCounter.TimeCountData deadLockTimeData = null;
+        MetaphysicsTrafficHandler.TrafficData trafficData = null;
+
+        var hasBeenCheckNearBy = false;
 
         SetDestination(ap.transform.position, ref correctedVector);
         while (GetStateByDist != State.Reached)
         {
             var state = GetStateByDist;
-            if (IsAPPositionChanged())
+            if (lastPosition != ap.transform.position)
             {
                 lastPosition = ap.transform.position;
                 SetDestination(ap.transform.position, ref correctedVector);
+                trafficData?.RemoveControllers(this);
+                hasBeenCheckNearBy = false;
             }
 
-            if (timeCountData == null)
+            // can yield when it get close to AP
+            if (state == State.Close || state == State.Near)
             {
-                TimeCountData = timeCountData = TimeCounter.Instance.SetTimeCounting(0.5f, () =>
+                if (!hasBeenCheckNearBy)
                 {
-                    if (timeCountData == null || TimeCountData == null) return;
-                    if (!TimeCountData.Equals(timeCountData)) return;
+                    hasBeenCheckNearBy = true;
+                    if (ap.CanYield)
+                    {
+                        if (!NaviTrafficManager.Instance.IsCongested(correctedVector, this, out trafficData))
+                        {
+                            trafficData.AddingControllers(this, ap, correctedVector);
+                            NaviTrafficManager.Instance.AddTrafficPoint(trafficData);
+                        }
+                    }
+                    else
+                    {
+                        if (IsCrowededNear(out Collider[] hitCollider))
+                        {
+                            if (ap.ShouldPlaySamePosition || hitCollider.Length > 1)
+                                navMeshAgent.obstacleAvoidanceType = ObstacleAvoidanceType.NoObstacleAvoidance;
+                        }
+                    }
+                }
+            }
 
-                    navMeshAgent.obstacleAvoidanceType = IsCrowededNear() ? ObstacleAvoidanceType.NoObstacleAvoidance : ObstacleAvoidanceType.HighQualityObstacleAvoidance;
-                    timeCountData = null;
+            // checking Croweded
+            if (crowededTimeData == null)
+            {
+                crowededTimeData = TimeCounter.Instance.SetTimeCounting(0.5f, () =>
+                {
+                    navMeshAgent.obstacleAvoidanceType = IsCrowededNear(out Collider[] hitCollider) ? ObstacleAvoidanceType.NoObstacleAvoidance : ObstacleAvoidanceType.HighQualityObstacleAvoidance;
+                    crowededTimeData = null;
+                },
+                playingAP,
+                (addedSeqeunce) => addedSeqeunce.Equals(playingAP));
+            }
+
+            // checking DeadLock
+            if (deadLockTimeData == null)
+            {
+                var eachTime = 0.1f;
+                var lastStanding = transform.position;
+                var speedCorrection = 0.8f;
+                var expectingDist = navMeshAgent.velocity.magnitude * speedCorrection * eachTime;
+                deadLockTimeData = TimeCounter.Instance.SetTimeCounting(eachTime, () =>
+                {
+                    var dist = Vector3.Distance(transform.position, lastStanding);
+                    if (dist < expectingDist)
+                    {
+                        navMeshAgent.obstacleAvoidanceType = ObstacleAvoidanceType.NoObstacleAvoidance;
+                    }
+
+                    deadLockTimeData = null;
                 },
                 playingAP,
                 (addedSeqeunce) => addedSeqeunce.Equals(playingAP));
@@ -123,6 +169,7 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
             yield return new WaitForFixedUpdate();
         }
 
+        navMeshAgent.obstacleAvoidanceType = ObstacleAvoidanceType.HighQualityObstacleAvoidance;
         ap.CorrectedPosition = correctedVector;
         navMeshAgent.avoidancePriority = 99;
         navMeshAgent.stoppingDistance = 100f;
@@ -132,18 +179,16 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
         job.EndJob();
     }
 
-    bool IsCrowededNear()
+    bool IsCrowededNear(out Collider[] hitColliders)
     {
         var isCroweded = false;
         var distByState = GetDistByState(State.Close);
         GizmosDrawer.instanse.DrawSphere(transform.position, distByState, 2f, Color.red - new Color(0, 0, 0, 0.7f));
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, distByState, LayerMask.GetMask("Actor"));
+        hitColliders = Physics.OverlapSphere(transform.position, distByState, LayerMask.GetMask("Actor"));
         var count = 0;
-        var maxCount = 4;
+        var maxCount = 3;
         foreach (var collider in hitColliders)
         {
-            if (collider.Equals(Collider))
-                continue;
             count++;
 
             if (count > maxCount)
