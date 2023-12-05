@@ -26,10 +26,6 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
     // Module
     public StateModuleHandler ModuleHandler { protected set; get; }
 
-    // Sight
-    public FOVCollider FOVCollider;
-    public float SightLength { get { return FOVCollider.Length * FOVCollider.transform.lossyScale.x; } }
-
     // Weapon
     [SerializeField]
     private WeaponHolster weaponKeepingHolster;
@@ -72,32 +68,6 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
         ModelAPHJobManger.SetAPH(handler, nextActionFromState);
         ModelAPHJobManger.StartJob();
     }
-
-    public IEnumerator DoTracingTargetInSight(Transform target, Func<bool> conditionOfEndLoop, Func<bool, bool> ShouldStopAfterCast)
-    {
-        var maxTime = 600f;
-        var time = 0f;
-        while (time < maxTime && !conditionOfEndLoop())
-        {
-            var isHit = IsHitToTarget(target, SightLength);
-            if (ShouldStopAfterCast.Invoke(isHit))
-            {
-                yield break;
-            }
-
-            time += Time.fixedDeltaTime;
-            yield return new WaitForFixedUpdate();
-        }
-
-        if (!conditionOfEndLoop())
-            ShouldStopAfterCast?.Invoke(false);
-
-        if (time > maxTime)
-            Debug.Log("DoTracingTargetInSight closed by force : its over than " + maxTime + "sec.\n" + "instanceID : " + transform.GetInstanceID());
-
-        yield break;
-    }
-    public bool IsHitToTarget(Transform target, float dist = 0f) => FOVCollider.transform.IsRayHitToTarget(target, dist, FOVCollider.FOVAngle);
     public void OnDetected(ObjDetector detector, Collider collider) { OnDetected(collider); }
     public virtual void OnDetected(Collider collider) { }
     protected virtual void DoDead() { }

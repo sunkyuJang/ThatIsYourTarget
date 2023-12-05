@@ -137,13 +137,12 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
     protected virtual IEnumerator DoRotationCorrectly(Vector3 dir, Action done)
     {
         var isLeft = IsRatationDirLeft(dir);
-        var lookat = transform.forward;
         var rotateDir = MathF.Abs(transform.forward.GetRotationDir(dir));
         var shouldBodyTurnWithAnimation = rotateDir >= bodyThreshold;
 
         if (shouldBodyTurnWithAnimation)
         {
-            var during = GetMakeTurnDuring(rotateDir);
+            var during = GetMakeTurnDuring(rotateDir * (isLeft ? -1 : 1));
             var totalAngle = Vector3.Angle(transform.forward, dir);
             var eachFrameAngle = totalAngle / (during / Time.fixedDeltaTime);
             for (float t = 0; t < during; t += Time.fixedDeltaTime)
@@ -168,18 +167,22 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
     }
 
     public void StopJob() { }
-    private void OnAnimatorIK(int layer)
-    {
-        if (animator)
-        {
-            if (headFollowTarget != null)
-            {
-                animator.SetLookAtWeight(lookAtWeight);
-                animator.SetLookAtPosition(headFollowTarget.transform.position);
-            }
-        }
-    }
+    // void OnAnimatorIK(int layerIndex)
+    // {
+    //     if (animator)
+    //     {
+    //         // markUp의 위치를 가져옴
+    //         Vector3 markUpPosition = markUp.position;
 
+    //         // 몸통을 markUp 위치로 향하게 하는 IK 타겟 설정
+    //         animator.SetIKPositionWeight(, 1);
+    //         animator.SetIKRotationWeight(AvatarIKGoal.Spine, 1);
+
+    //         // IK 위치 및 회전 설정
+    //         animator.SetIKPosition(AvatarIKGoal.Spine, markUpPosition);
+    //         animator.SetIKRotation(AvatarIKGoal.Spine, Quaternion.LookRotation(markUpPosition - transform.position));
+    //     }
+    // }
     protected virtual float GetMakeTurnDuring(float degree) { return 0; }
     protected abstract void StartAni(AnimationPoint actionPoint, bool shouldReturnAP = false);
     protected void StartAniTimeCount(AnimationPoint ap, bool shouldReturnAP, StateModule stateModule, AnimationEvent[] events)
@@ -194,7 +197,7 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
 
         var maxTime = Mathf.Lerp(0, ap.during, animationPlayLimit);
         int eventsCount = 0;
-        for (float time = 0f; time < maxTime; time += Time.fixedDeltaTime)
+        for (float time = 0f; time < maxTime && !IsAPReserved; time += Time.fixedDeltaTime)
         {
             if (events != null &&
                 eventsCount < events.Length)

@@ -104,7 +104,7 @@ public class PersonAniController : AniController
         }
         else
         {
-            return degree < -135f ? "TurnL" : "LongTurnL";
+            return degree > -135f ? "TurnL" : "LongTurnL";
         }
     }
 

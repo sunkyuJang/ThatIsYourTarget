@@ -29,7 +29,6 @@ public abstract class PersonState : StateModule
     private Person Person { get; set; }
     public PersonState(Person person) => Person = person;
     protected Transform ActorTransform { get { return Person.ActorTransform; } }
-    protected Transform FovTransform { get { return Person.FOVCollider.transform; } }
     protected PersonWeapon Weapon { get { return Person.Weapon; } }
     protected void HoldWeapon(bool shouldHold) => Person.HoldWeapon(shouldHold);
     new public PersonPrepareData prepareData { set { base.prepareData = value; } get { return base.prepareData as PersonPrepareData; } }
@@ -82,16 +81,44 @@ public abstract class PersonState : StateModule
     }
 
     // Sight
-    protected bool IsInSight(Transform target) => Person.IsHitToTarget(target, Person.SightLength);
+    protected bool IsInSight(Transform target)
+    {
+        var sensed = ModuleHandler.GetModule<Sensed_PersonState>(StateKinds.Sensed);
+        return sensed.target?.Equals(target) ?? false;
+    }
 
     public void StartTracingTargetInSight(Transform target, Func<bool> conditionOfEndLoop)
     {
         var playingModule = ModuleHandler.GetPlayingModule();
         var playingKind = ModuleHandler.GetThisKind(playingModule);
         var thisKind = ModuleHandler.GetThisKind(this);
-        StartCoroutine(Person.DoTracingTargetInSight(target, () => conditionOfEndLoop() && playingKind == thisKind, ShouldStopAfterCast));
+        StartCoroutine(DoTracingTargetInSight(target, () => conditionOfEndLoop() && playingKind == thisKind, ShouldStopAfterCast));
     }
+    public IEnumerator DoTracingTargetInSight(Transform target, Func<bool> conditionOfEndLoop, Func<bool, bool> ShouldStopAfterCast)
+    {
+        var maxTime = 600f;
+        var time = 0f;
+        var loopTime = 0.1f;
+        while (time < maxTime && !conditionOfEndLoop())
+        {
+            var isInSight = IsInSight(target);
+            if (ShouldStopAfterCast.Invoke(isInSight))
+            {
+                yield break;
+            }
 
+            time += loopTime;
+            yield return new WaitForSeconds(loopTime);
+        }
+
+        if (!conditionOfEndLoop())
+            ShouldStopAfterCast?.Invoke(false);
+
+        if (time > maxTime)
+            Debug.Log("DoTracingTargetInSight closed by force : its over than " + maxTime + "sec.\n" + "instanceID : " + ActorTransform.GetInstanceID());
+
+        yield break;
+    }
     public override void Exit()
     {
         prepareData = null;

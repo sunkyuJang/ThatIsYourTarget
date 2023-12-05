@@ -60,6 +60,21 @@ namespace JExtentioner
                 default: return new Vector2(target.x, target.y);
             }
         }
+        public static Vector3 ExceptVector3Property(this Vector3 target, int expectedIndex)
+        {
+            switch (expectedIndex)
+            {
+                case 0: // X 속성을 0으로 설정
+                    return new Vector3(0, target.y, target.z);
+                case 1: // Y 속성을 0으로 설정
+                    return new Vector3(target.x, 0, target.z);
+                case 2: // Z 속성을 0으로 설정
+                    return new Vector3(target.x, target.y, 0);
+                default:
+                    Debug.LogError("something wrong while doing except vector3");
+                    return Vector3.zero;
+            }
+        }
 
         public static Vector2 ReverseVector2(this Vector2 target)
         {

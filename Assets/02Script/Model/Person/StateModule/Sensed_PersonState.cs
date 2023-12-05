@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class Sensed_PersonState : PersonState
 {
+    public Transform target { private set; get; }
     public List<SensedPrepareData> sensedPrepareDatas { private set; get; } = new List<SensedPrepareData>();
     Coroutine trackingBySensedPrepareData = null;
     readonly public List<StateKinds> PriolityList =
@@ -39,11 +40,13 @@ public class Sensed_PersonState : PersonState
         if (trackingBySensedPrepareData == null)
             trackingBySensedPrepareData = StartCoroutine(DoSelectTrackingModel());
     }
+
     IEnumerator DoSelectTrackingModel()
     {
         var trackingList = new List<Transform>();
         while (sensedPrepareDatas.Count > 0)
         {
+            // making TrackingList
             for (int i = 0; i < sensedPrepareDatas.Count; i++)
             {
                 var prepareData = sensedPrepareDatas[i];
@@ -63,8 +66,10 @@ public class Sensed_PersonState : PersonState
                 var selectedModel = SelectModel(trackingList, playingTargetModel);
                 if (selectedModel != playingTargetModel)
                 {
+                    // is new target?
                     var dist = Vector3.Distance(ActorTransform.transform.position, selectedModel.position);
                     var shouldAttack = dist < DrawWeapon_PersonState.AbsoluteAttackDist;
+                    target = selectedModel;
                     SetState(shouldAttack ? StateKinds.DrawWeapon : StateKinds.Curiousity, new PersonPrepareData(selectedModel));
                     var selectedModelIndex = sensedPrepareDatas.FindIndex(x => x.target == selectedModel);
                     sensedPrepareDatas.RemoveAt(selectedModelIndex);
@@ -73,14 +78,16 @@ public class Sensed_PersonState : PersonState
                 trackingList.Clear();
             }
 
+            // as long as target is in sight, this func will keep running.
             sensedPrepareDatas.RemoveAll(x => !x.isInSight);
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(0.1f);
         }
 
         trackingBySensedPrepareData = null;
         yield break;
     }
 
+    // select Model by priolity
     Transform SelectModel(List<Transform> targets, Transform playingTarget)
     {
         List<(Transform target, int priolity, float dist)> eachModelPriolity = new List<(Transform target, int priolity, float dist)>();
