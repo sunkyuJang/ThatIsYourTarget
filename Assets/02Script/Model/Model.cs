@@ -26,12 +26,16 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
     // Module
     public StateModuleHandler ModuleHandler { protected set; get; }
 
-    // Weapon
-    [SerializeField]
-    private WeaponHolster weaponKeepingHolster;
-    [SerializeField]
-    private WeaponHolster weaponGrabHolster;
-    public Weapon Weapon { get { return weaponKeepingHolster.GetWeapon(); } }
+    // InteractionObjManager
+    private InteractionObjHolsterHandler interactionManager { set; get; }
+    public Weapon Weapon
+    {
+        get
+        {
+            var weapons = interactionManager.GetInteractionObj<Weapon>();
+            return weapons?[0] ?? null;
+        }
+    }
 
     // Coversation
     public ConversationHandler ConversationHandler { protected set; get; }
@@ -39,16 +43,12 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
     protected virtual void Awake()
     {
         ModelAnimationPlayer = new ModelAnimationPlayer(this, ActorTransform);
-
         DamageContorller = new DamageContorller(this, ActorTransform);
-
+        interactionManager = ActorTransform.GetComponent<InteractionObjHolsterHandler>();
         APHGroup = transform.Find("APHGroup");
         ModelAPHJobManger = new ModelAPHJobManger(null, null, APHGroup, ModelAnimationPlayer);
-
         ModuleHandler = SetStateModuleHandler();
-
         ConversationHandler = SetConversationHandler();
-
         var physicalModelConnector = GetComponentInChildren<PhysicalModelConnector>();
         physicalModelConnector.SetPhysicalModelConnector(this, ConversationHandler);
     }
@@ -71,12 +71,16 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
     public void OnDetected(ObjDetector detector, Collider collider) { OnDetected(collider); }
     public virtual void OnDetected(Collider collider) { }
     protected virtual void DoDead() { }
-    public void HoldWeapon(bool shouldHold)
+    public void HoldWeapon(bool shouldHold, InteractionObjGrabRig.State grabbingState)
     {
-        var from = shouldHold ? weaponKeepingHolster : weaponGrabHolster;
-        var to = shouldHold ? weaponGrabHolster : weaponKeepingHolster;
-
-        to.HoldWeapon(from.GetWeapon());
+        if (shouldHold)
+        {
+            interactionManager.SetHold(Weapon, grabbingState);
+        }
+        else
+        {
+            interactionManager.SetKeep(Weapon);
+        }
     }
 
     public void SetDamage(object section, object parts, float damage, out bool isDead)

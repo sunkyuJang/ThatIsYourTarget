@@ -30,7 +30,7 @@ public abstract class PersonState : StateModule
     public PersonState(Person person) => Person = person;
     protected Transform ActorTransform { get { return Person.ActorTransform; } }
     protected PersonWeapon Weapon { get { return Person.Weapon; } }
-    protected void HoldWeapon(bool shouldHold) => Person.HoldWeapon(shouldHold);
+    protected void HoldWeapon(bool shouldHold) => Person.HoldWeapon(shouldHold, shouldHold ? InteractionObjGrabRig.State.Using : InteractionObjGrabRig.State.Holding);
     new public PersonPrepareData prepareData { set { base.prepareData = value; } get { return base.prepareData as PersonPrepareData; } }
     protected PersonStateModuleHandler ModuleHandler { get { return Person.ModuleHandler; } }
     protected List<Coroutine> Coroutines { set; get; } = new List<Coroutine>();

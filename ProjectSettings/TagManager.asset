@@ -11,6 +11,7 @@ TagManager:
   - PersonModel
   - Chair
   - Avoid
+  - clip
   layers:
   - Default
   - TransparentFX
@@ -37,7 +38,7 @@ TagManager:
   - 
   - 
   - Weapon
-  - Model
+  - ActorRag
   - HandPlayer
   - Actor
   - HandHolding

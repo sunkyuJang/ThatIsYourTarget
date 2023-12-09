@@ -19,11 +19,7 @@ public class PersonWeapon : Weapon
     {
         grabPosition = transform.Find("GrabPosition");
         LGrab = grabPosition.Find("LGrab");
-        //Last_L_IndexFinger = LGrab.Find("IndexFinger");
-        //Last_L_OtherFinger = LGrab.Find("OtherFinger");
         RGrab = grabPosition.Find("RGrab");
-        //Last_R_IndexFinger = RGrab.Find("IndexFinger");
-        //Last_R_OtherFinger = RGrab.Find("OtherFinger");
     }
 
     public virtual void AttachToHand(Animator HumanoidAnimator) { }

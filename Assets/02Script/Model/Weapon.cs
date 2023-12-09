@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class Weapon : MonoBehaviour, IObjCollisionDetectorConnector_OnCollisionEnter
+public class Weapon : InteractionObj, IObjCollisionDetectorConnector_OnCollisionEnter
 {
     public float Dmg { set; get; } = 1;
     public float Range { set; get; } = 0;

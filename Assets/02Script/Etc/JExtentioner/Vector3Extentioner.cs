@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -29,6 +30,36 @@ namespace JExtentioner
                 Debug.Log("array size is problem");
                 return null;
             }
+        }
+        public static RaycastHit GetObjByDist(this Transform center, List<RaycastHit> arry, bool isMostFar)
+        {
+            var baseOne = arry[0];
+            for (int i = 1; i < arry.Count; i++)
+            {
+                var targetOne = arry[i];
+                var distFromBase = Vector3.Distance(center.position, baseOne.point);
+                var distFromTarget = Vector3.Distance(center.position, targetOne.point);
+
+                baseOne = isMostFar ? (distFromTarget > distFromBase ? targetOne : baseOne)
+                                        : (distFromTarget < distFromBase ? targetOne : baseOne);
+            }
+
+            return baseOne;
+        }
+        public static Collider GetObjByDist(this Transform center, List<Collider> arry, bool isMostFar)
+        {
+            var baseOne = arry[0];
+            for (int i = 1; i < arry.Count; i++)
+            {
+                var targetOne = arry[i];
+                var distFromBase = Vector3.Distance(center.position, baseOne.ClosestPoint(center.position));
+                var distFromTarget = Vector3.Distance(center.position, targetOne.ClosestPoint(center.position));
+
+                baseOne = isMostFar ? (distFromTarget > distFromBase ? targetOne : baseOne)
+                                        : (distFromTarget < distFromBase ? targetOne : baseOne);
+            }
+
+            return baseOne;
         }
         public static bool IsArrived(this Transform center, Transform target, float allowableRange = 0f) => Vector3.Distance(center.position, target.position) <= allowableRange;
         public static float GetRotationDir(this Vector3 from, Vector3 to)
