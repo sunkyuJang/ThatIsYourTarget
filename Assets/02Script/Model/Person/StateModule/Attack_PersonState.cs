@@ -1,9 +1,17 @@
+using System;
 using UnityEngine;
+using UnityEditor.Animations;
 using UnityEngine.AI;
+using System.Collections.Generic;
+using Unity.VisualScripting;
 
 public class Attack_PersonState : PersonState
 {
-    public Attack_PersonState(Person person) : base(person) { }
+    PersonAttackConditionHandler AttackConditioner { set; get; }
+    public Attack_PersonState(Person person) : base(person)
+    {
+        AttackConditioner = new PersonAttackConditionHandler(ActorTransform.GetComponent<Animator>().runtimeAnimatorController as AnimatorController);
+    }
     public override bool IsReady()
     {
         return prepareData != null;
@@ -11,24 +19,59 @@ public class Attack_PersonState : PersonState
     public override void EnterToException() { }
     protected override void StartModule()
     {
+        if (Weapon == null)
+        {
+            // cant attack
+            SetNormalState();
+        }
+
+        if (Weapon.CanAttack(out Weapon.CanAttackStateError attackError))
+        {
+            SetAttack(null);
+        }
+        else if (attackError == global::Weapon.CanAttackStateError.OverMaxCount)
+        {
+            // reloading
+        }
+    }
+
+    void SetAttack(AnimationComboStateNode loopNode)
+    {
         var aph = GetNewAPH(1, AnimationPointHandler.WalkingState.Run);
-        SetAPs(aph.animationPoints[0], prepareData.target, PersonAniState.StateKind.Attack, 0, false, true);
-        aph.animationPoints[0].EventTrigger = AttackTrigger;
+        var AttackAP = aph.GetAnimationPoint<PersonAnimationPoint>(0);
+        SetAPs(AttackAP, prepareData.target, PersonAniState.StateKind.Attack, 0, false, true);
+        AttackAP.EventTrigger = AttackTrigger; // for actual attack timing
+        var ConditionRequireData = new PersonAttackConditionHandler.PersonRequireData(Weapon);
+        var node = loopNode == null ? AttackConditioner.GetInitiatedNode(ConditionRequireData) : loopNode; // if its loop, keep using old one
+        node.loopCount++;
+        AttackAP.AttackComboStateNode = node;
+        AttackAP.whenAnimationExitTime = () => { WhenExitTime(AttackAP); }; // every exit time, the attack state will issue an AP
         SetAPH(aph, true);
     }
 
-    public void IsPlayingTargetAnimation(AnimationClip targetClip)
+    public void AttackTrigger(int num)
     {
-
+        Debug.Log("isIn");
     }
 
-    public void AttackTrigger(string code)
+    public void WhenExitTime(AnimationPoint ap)
     {
-        if (code == "Attack")
+        // checking loop
+        if (ap.Weapon == Weapon)
         {
-            Debug.Log("call In");
+            var node = ap.AttackComboStateNode;
+            if (node.maxLoop != 0)
+            {
+                if (node.loopCount <= node.maxLoop)
+                {
+                    SetAttack(node);
+                    return;
+                }
+            }
         }
+        StartModule();
     }
+
 
     protected override void AfterAPHDone()
     {

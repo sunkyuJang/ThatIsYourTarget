@@ -85,6 +85,15 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
     }
     IEnumerator DoCheckUntilArrive(ModelAnimationPlayerJobManager.ModelHandlerJob job, Vector3 correctedVector)
     {
+        var jobEnded = false;
+        var loopEndByAniDone = false;
+        if (job.ap.TargetingTarsform != null)
+        {
+            job.EndJob();
+            jobEnded = true;
+            job.ap.whenAnimationEnd += () => { loopEndByAniDone = true; };
+        }
+
         TurnOnNavi(true);
         var ap = job.ap;
         ap.CorrectedPosition = correctedVector;
@@ -97,7 +106,7 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
         var hasBeenCheckNearBy = false;
 
         SetDestination(ap.transform.position, ref correctedVector);
-        while (GetStateByDist != State.Reached)
+        while (GetStateByDist != State.Reached && !loopEndByAniDone)
         {
             var state = GetStateByDist;
             if (lastPosition != ap.transform.position)
@@ -176,7 +185,9 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
         TurnOnNavi(false);
 
         playingAP = null;
-        job.EndJob();
+
+        if (!jobEnded)
+            job.EndJob();
     }
 
     bool IsCrowededNear(out Collider[] hitColliders)

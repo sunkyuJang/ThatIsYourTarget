@@ -3,6 +3,10 @@ using System;
 using System.Collections;
 using Unity.Mathematics;
 using UnityEngine;
+using RootMotion;
+using RootMotion.FinalIK;
+using System.Collections.Generic;
+using JExtentioner;
 
 public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJobManager.ModelHandlerJob>
 {
@@ -12,6 +16,12 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
     protected Transform headFollowTarget { set; get; } = null;
     float lookAtWeight = 0f;
     protected float animationPlayLimit = 0.85f;
+
+    // IK
+    protected AimIK aimIK;
+    protected LookAtIK lookAtIK;
+    [SerializeField] private float IK_bodyThreshold = 45f;
+    protected Coroutine DoTrackingBody { set; get; }
 
     // reserved Ani
     protected AnimationPoint reservedAP { set; get; }
@@ -30,6 +40,8 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
         naviController = GetComponent<NaviController>();
         ragDollHandler = new RagDollHandler(transform);
         animator = GetComponent<Animator>();
+        aimIK = GetComponent<AimIK>();
+        lookAtIK = GetComponent<LookAtIK>();
     }
 
     protected virtual void Start()
@@ -94,26 +106,41 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
     {
         if (!IsPlayingAni)
         {
-            StartCoroutine(DoMakeCorrectTransform(ap));
+            PlayingAni = StartCoroutine(DoMakeCorrectTransform(ap));
         }
         else
         {
             reservedAP = ap;
-            print("reservatiedAP");
         }
     }
     protected virtual IEnumerator DoMakeCorrectTransform(AnimationPoint ap)
     {
-        var isPositionDone = false;
-        var isRotationDone = false;
-        var positionCorrect = StartCoroutine(DoPositionCorrectly(ap.CorrectedPosition, () => { isPositionDone = true; }));
-        var rotationCorrect = StartCoroutine(DoRotationCorrectly(ap.transform.forward, () => { isRotationDone = true; }));
+        if (ap.TargetingTarsform == null)
+        {
+            var isPositionDone = false;
+            var isRotationDone = false;
+            var positionCorrect = StartCoroutine(DoPositionCorrectly(ap.CorrectedPosition, () => { isPositionDone = true; }));
+            var rotationCorrect = StartCoroutine(DoRotationCorrectly(ap.transform.forward, () => { isRotationDone = true; }));
 
-        yield return new WaitUntil(() => isPositionDone && isRotationDone);
-        yield return new WaitUntil(() => IsWalkState() || IsAPReserved);
+            yield return new WaitUntil(() => isPositionDone && isRotationDone);
+            yield return new WaitUntil(() => IsWalkState() || IsAPReserved);
+        }
+        else
+        {
+            if (DoTrackingBody != null)
+                StopCoroutine(DoTrackingBody);
 
-        if (!IsAPReserved)
+            DoTrackingBody = StartCoroutine(DoTracking(ap));
+        }
+
+        if (IsAPReserved)
+        {
+            RunReservedAP();
+        }
+        else
+        {
             StartAni(ap);
+        }
         yield return null;
     }
 
@@ -124,7 +151,7 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
         var t = 0f;
         var maxT = 0.05f;
         var beforePosition = transform.position;
-        while (t < maxT)
+        while (t < maxT && !IsAPReserved)
         {
             yield return new WaitForFixedUpdate();
             t += Time.fixedDeltaTime;
@@ -145,7 +172,7 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
             var during = GetMakeTurnDuring(rotateDir * (isLeft ? -1 : 1));
             var totalAngle = Vector3.Angle(transform.forward, dir);
             var eachFrameAngle = totalAngle / (during / Time.fixedDeltaTime);
-            for (float t = 0; t < during; t += Time.fixedDeltaTime)
+            for (float t = 0; t < during && !IsAPReserved; t += Time.fixedDeltaTime)
             {
                 transform.Rotate(isLeft ? Vector3.down : Vector3.up, eachFrameAngle);
                 yield return new WaitForFixedUpdate();
@@ -153,9 +180,46 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
             transform.Rotate(isLeft ? Vector3.down : Vector3.up, eachFrameAngle);
         }
 
-
         done?.Invoke();
         yield return null;
+    }
+
+    IEnumerator DoTracking(AnimationPoint ap)
+    {
+        var rotationSpeed = 2f;
+        var animationEnded = false;
+        var aimTarget = ap.AimTarget;
+        var target = ap.TargetingTarsform;
+        aimIK.solver.transform = aimTarget;
+        aimIK.solver.target = target;
+        aimIK.solver.IKPositionWeight = 1;
+        aimIK.enabled = true;
+        ap.whenAnimationEnd += () => { animationEnded = true; };
+
+        while (true)
+        {
+            var limit = IK_bodyThreshold;
+            var targetDir = target.transform.position.ExceptVector3Property(1) - transform.position.ExceptVector3Property(1);
+            var targetAngle = transform.forward.GetRotationDir(targetDir);
+            if (Mathf.Abs(targetAngle) >= limit)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(targetDir);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime);
+            }
+
+            if (animationEnded)
+            {
+                if (!IsAPReserved
+                    || IsAPReserved && !(reservedAP.AimTarget == ap.AimTarget && reservedAP.TargetingTarsform == ap.TargetingTarsform))
+                    break;
+            }
+            yield return new WaitForFixedUpdate();
+        }
+
+        ap.AimTarget = null;
+        ap.TargetingTarsform = null;
+        aimIK.solver.IKPositionWeight = 0;
+        aimIK.enabled = false;
     }
 
     bool IsRatationDirLeft(Vector3 targetDir)
@@ -167,46 +231,52 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
     }
 
     public void StopJob() { }
-    // void OnAnimatorIK(int layerIndex)
-    // {
-    //     if (animator)
-    //     {
-    //         // markUp의 위치를 가져옴
-    //         Vector3 markUpPosition = markUp.position;
-
-    //         // 몸통을 markUp 위치로 향하게 하는 IK 타겟 설정
-    //         animator.SetIKPositionWeight(, 1);
-    //         animator.SetIKRotationWeight(AvatarIKGoal.Spine, 1);
-
-    //         // IK 위치 및 회전 설정
-    //         animator.SetIKPosition(AvatarIKGoal.Spine, markUpPosition);
-    //         animator.SetIKRotation(AvatarIKGoal.Spine, Quaternion.LookRotation(markUpPosition - transform.position));
-    //     }
-    // }
     protected virtual float GetMakeTurnDuring(float degree) { return 0; }
     protected abstract void StartAni(AnimationPoint actionPoint, bool shouldReturnAP = false);
-    protected void StartAniTimeCount(AnimationPoint ap, bool shouldReturnAP, StateModule stateModule, AnimationEvent[] events)
+    protected void StartAniTimeCount(AnimationPoint ap, bool shouldReturnAP, StateModule stateModule, List<float> events)
     {
-        PlayingAni = StartCoroutine(DoAnimationTimeCount(ap, shouldReturnAP, stateModule, events));
+        StartCoroutine(DoAnimationTimeCount(ap, shouldReturnAP, stateModule, events));
     }
-    protected IEnumerator DoAnimationTimeCount(AnimationPoint ap, bool shouldReturnAP, StateModule stateModule, AnimationEvent[] events)
+    protected IEnumerator DoAnimationTimeCount(AnimationPoint ap, bool shouldReturnAP, StateModule stateModule, List<float> events)
     {
         if (ap.IsUnLimited) yield break;
 
         ap.whenAnimationStart?.Invoke();
 
-        var maxTime = Mathf.Lerp(0, ap.during, animationPlayLimit);
+        // // attack during is depending on weapon.
+        // // cause of this, some during should be change on runtime.
+        // var isFixedInRuntime = ap.IsFixedDuringInRuntime(ap.state);
+        // var maxTime = isFixedInRuntime ?
+        //                     ap.GetAnimationClipLength(ap.GetRuntimeStateName(ap.state)) :
+        //                     Mathf.Lerp(0, ap.during, animationPlayLimit);
+
+        List<KeyValuePair<float, string>> exitEvent = null;
+        if (ap.AttackComboStateNode != null)
+            exitEvent = ap.GetExitAniEvent(ap.AttackComboStateNode.nowAnimation);
+
+        var triggeredExitEvent = false;
+
         int eventsCount = 0;
-        for (float time = 0f; time < maxTime && !IsAPReserved; time += Time.fixedDeltaTime)
+        for (float time = 0f; time < ap.during && !IsAPReserved; time += Time.fixedDeltaTime)
         {
             if (events != null &&
-                eventsCount < events.Length)
+                eventsCount < events.Count)
             {
                 var targetEvent = events[eventsCount];
-                if (targetEvent.time > time)
+                if (targetEvent < time)
                 {
-                    ap.EventTrigger?.Invoke(targetEvent.stringParameter);
+                    ap.EventTrigger?.Invoke(eventsCount);
                     eventsCount++;
+                }
+            }
+
+            if (exitEvent != null && !triggeredExitEvent)
+            {
+                var exitTime = exitEvent[0].Key;
+                if (exitTime < time)
+                {
+                    triggeredExitEvent = true;
+                    ap.whenAnimationExitTime?.Invoke();
                 }
             }
 
@@ -230,9 +300,7 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
         PlayingAni = null;
         if (IsAPReserved)
         {
-            var ap = reservedAP;
-            reservedAP = null;
-            MakeCorrectTransform(ap);
+            RunReservedAP();
         }
         else
         {
@@ -240,6 +308,14 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
                 modelHandlerJob.EndJob();
         }
         yield return null;
+    }
+
+    protected void RunReservedAP()
+    {
+        var ap = reservedAP;
+        reservedAP = null;
+        PlayingAni = null;
+        MakeCorrectTransform(ap);
     }
 
     // this function only exist for hiding console log. basiclly not use. but dont remove.

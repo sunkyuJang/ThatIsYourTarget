@@ -4,5 +4,5 @@ using UnityEngine;
 
 public abstract class InteractionObj : MonoBehaviour
 {
-
+    public GameObject originalPrefab;
 }

@@ -1,3 +1,5 @@
+using UnityEngine;
+
 public abstract class StateModule
 {
     public PrepareData prepareData { protected set; get; }

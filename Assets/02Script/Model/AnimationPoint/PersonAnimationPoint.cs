@@ -18,23 +18,14 @@ public class PersonAnimationPoint : AnimationPoint
     public bool subState_bool = false;
     public float subState_float = 0f;
     public float GetLength() => GetAnimationClipLength(((PersonAniState.StateKind)base.state).ToString());
-    public PersonWeapon Weapon { get; set; }
-    // public override bool IsImmediatePlay => PersonAniState.immediatePlayList.Contains((PersonAniState.StateKind)state);
-
-    public ChildAnimatorState GetState()
-    {
-        return GetState(State.ToString());
-    }
-
-    public AnimationClip GetAnimationClip()
-    {
-        var state = GetState();
-        return GetAnimationClip(state);
-    }
-
-    public AnimationEvent[] GetAnimationEvent()
+    new public PersonWeapon Weapon { get { return base.Weapon as PersonWeapon; } }
+    public List<float> GetAnimationEvent()
     {
         return GetAnimationEvent(State.ToString());
+    }
+    public List<KeyValuePair<float, string>> GetExitEvent(string animationName)
+    {
+        return GetExitAniEvent(animationName);
     }
 
     public override bool IsFixedDuring(int state)
@@ -42,10 +33,32 @@ public class PersonAnimationPoint : AnimationPoint
         return PersonAniState.IsStateDuringFixed((PersonAniState.StateKind)state);
     }
 
+    // public override bool IsFixedDuringInRuntime(int state)
+    // {
+    //     return PersonAniState.IsStateDuringFixedAfterRuntime((PersonAniState.StateKind)state);
+    // }
+
     public override string GetStateName(int state)
     {
         return state.GetEnumVal<PersonAniState.StateKind>()?.ToString();
     }
+
+    public override string GetRuntimeStateName(int state)
+    {
+        var aniState = (PersonAniState.StateKind)state;
+        // if (PersonAniState.IsWeaponRuntimeState(aniState))
+        // {
+        //     return Weapon.weaponType.ToString() + aniState.ToString();
+        // }
+        // else 
+        if (PersonAniState.IsAttackKind(aniState))
+        {
+            return Weapon.GetWeaponType.ToString() + aniState.ToString() + subState_int.ToString();
+        }
+
+        return "";
+    }
+
 }
 
 [CustomEditor(typeof(PersonAnimationPoint))]

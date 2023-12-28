@@ -13,7 +13,9 @@ public abstract class PersonAniState : StateModule
         LookAround,
         Sitting,
         Surprize,
-        DrawWeapon,
+        KeepingWeapon,
+        HoldingWeapon,
+        UsingWeapon,
         Attack,
         // Avoid,
         TurnAround,
@@ -25,12 +27,24 @@ public abstract class PersonAniState : StateModule
     {
         PersonAniState.StateKind.LookAround,
         PersonAniState.StateKind.Surprize,
-        PersonAniState.StateKind.DrawWeapon,
         PersonAniState.StateKind.Attack,
         PersonAniState.StateKind.TurnAround
-        };
+    };
+
+    readonly public static List<StateKind> FixedDuringAfterRuntime = new List<StateKind>()
+    {
+        PersonAniState.StateKind.Attack,
+    };
+
+    readonly public static List<StateKind> AttackKind = new List<StateKind>()
+    {
+        PersonAniState.StateKind.Attack,
+    };
 
     public static bool IsStateDuringFixed(StateKind kind) => FixedDuringStateKinds.Contains(kind);
+    // public static bool IsStateDuringFixedAfterRuntime(StateKind kind) => FixedDuringAfterRuntime.Contains(kind);
+    //public static bool IsWeaponRuntimeState(StateKind kind) => WeaponRuntimState.Contains(kind);
+    public static bool IsAttackKind(StateKind kind) => AttackKind.Contains(kind);
 
     // fixed position list
     readonly public static List<StateKind> shouldPlaySamePositions = new List<StateKind>()
@@ -39,20 +53,14 @@ public abstract class PersonAniState : StateModule
     };
     readonly public static StateKind replacebleState = StateKind.Standing;
 
-    // // immediate play
-    // readonly public static List<StateKind> immediatePlayList = new List<StateKind>()
-    // {
-    //     StateKind.Surprize,
-    //     StateKind.DrawWeapon,
-    //     StateKind.Attack,
-    //     StateKind.Dead,
-    // };
-
     public PersonAniState(PersonAniStateModuleHandler moduleHandler) => ModuleHandler = moduleHandler;
     protected PersonAniStateModuleHandler ModuleHandler { set; get; }
     protected Animator Animator { get { return ModuleHandler.Animator; } }
     protected PersonAnimationPoint ap;
-    public override bool IsReady() { return ap != null && Animator != null; }
+    public override bool IsReady()
+    {
+        return ap != null && Animator != null;
+    }
     public void SetAP(PersonAnimationPoint ap) => this.ap = ap;
 
     public static List<StateModule> GetStatesList(PersonAniStateModuleHandler moduleHandler)
@@ -73,7 +81,9 @@ public abstract class PersonAniState : StateModule
                     case StateKind.LookAround: state = new LookAround_PersonAniState(moduleHandler); break;
                     case StateKind.Sitting: state = new Sitting_PersonAniState(moduleHandler); break;
                     case StateKind.Surprize: state = new Surprize_PersonAniState(moduleHandler); break;
-                    case StateKind.DrawWeapon: state = new DrawWeapon_PersonAniState(moduleHandler); break;
+                    case StateKind.KeepingWeapon: state = new KeepingWeapon_PersonAniState(moduleHandler); break;
+                    case StateKind.HoldingWeapon: state = new HoldingWeapon_PersonAniState(moduleHandler); break;
+                    case StateKind.UsingWeapon: state = new UsingWeapon_PersonAniState(moduleHandler); break;
                     case StateKind.Attack: state = new Attack_PersonAniState(moduleHandler); break;
                     case StateKind.TurnAround: state = new TurnAround_PersonAniState(moduleHandler); break;
                     case StateKind.Dead: state = new Dead_PersonAniState(moduleHandler); break;

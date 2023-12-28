@@ -3,15 +3,43 @@ using UnityEngine;
 
 public class Weapon : InteractionObj, IObjCollisionDetectorConnector_OnCollisionEnter
 {
-    public float Dmg { set; get; } = 1;
-    public float Range { set; get; } = 0;
-    public bool IsMelee { get { return Range == 0; } }
-    public bool IsSingleTarget { set; get; }
-    public float HitPower { set; get; } = 1;
-    public int HitPerCycle { set; get; } = 0;
-    public float CoolPerHit { set; get; } = 0;
-    public float CoolPerCycle { set; get; } = 0;
-    public int CurHitCount { set; get; } = 0;
+    public enum WeaponType
+    {
+        Fist,
+        HandGun,
+        Rifle,
+        Stick,
+        Non
+    }
+    [SerializeField] public float Dmg { set; get; } = 1;
+    [SerializeField] public float Range { set; get; } = 0;
+    [SerializeField] public bool IsMelee { get { return Range == 0; } }
+    [SerializeField] public float HitPower { set; get; } = 1;
+
+    // 1 Cycle == 1 MaxCount
+    public enum CanAttackStateError { OverMaxCount, Non }
+    [SerializeField] protected int curHitCount = 0;
+    [SerializeField] protected int maxHitCountPerCycle = 0;
+    public int LeftHitCount => maxHitCountPerCycle - curHitCount;
+    [SerializeField] protected WeaponType weaponType = WeaponType.Non;
+    public WeaponType GetWeaponType => weaponType;
+
+
+    public bool CanAttack(out CanAttackStateError canAttackStateError)
+    {
+        canAttackStateError = CanAttackStateError.Non;
+        if (curHitCount < maxHitCountPerCycle)
+        {
+            return true;
+        }
+        else
+            canAttackStateError = CanAttackStateError.OverMaxCount;
+
+        if (canAttackStateError != CanAttackStateError.Non)
+            Debug.Log(canAttackStateError.ToString());
+
+        return false;
+    }
 
     public void Attack()
     {

@@ -75,7 +75,7 @@ public class PersonConversationHandler : ConversationHandler
     {
         var aph = GetNewAnipointHandler<PersonAnimationPoint>(1, AnimationPointHandler.WalkingState.Walk);
         aph.shouldLoop = true;
-        var ap = aph.GetActionPoint<PersonAnimationPoint>(1);
+        var ap = aph.GetAnimationPoint<PersonAnimationPoint>(1);
         SetAPImmidiate(ap, (int)PersonAniState.StateKind.Standing, -1f);
         SetAPH(aph);
     }
@@ -93,7 +93,7 @@ public class PersonConversationHandler : ConversationHandler
     protected override void OnAlertNonResponce(Vector3 targetPosition)
     {
         var aph = GetNewAnipointHandler<PersonAnimationPoint>(1, AnimationPointHandler.WalkingState.Walk);
-        var ap = aph.GetActionPoint<PersonAnimationPoint>(1);
+        var ap = aph.GetAnimationPoint<PersonAnimationPoint>(1);
         SetAP(ap, targetPosition, (int)PersonAniState.StateKind.LookAround);
         SetAPH(aph);
     }

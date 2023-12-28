@@ -4,6 +4,7 @@ using UnityEngine;
 public class ModelAPHJobManger : JobManager
 {
     enum State { CreatingAnimationPlayerJob, End, Non }
+    Model Model { set; get; }
     IJobStarter<ModelJob> TargetJobStarter { get; set; }
     AnimationPointHandler OriginalAPH { get; set; }
     AnimationPointHandler TargetAPH { get; set; }
@@ -11,11 +12,13 @@ public class ModelAPHJobManger : JobManager
     JobManager JobManager { get; set; }
 
     public ModelAPHJobManger(
+                Model model,
                 object section,
                 Action runAfterJobEnd,
                 Transform originalAPHGroup,
                 IJobStarter<ModelJob> targetJobStarter) : base(section, runAfterJobEnd)
     {
+        Model = model;
         OriginalAPH = originalAPHGroup.Find("OriginalAPH").GetComponent<AnimationPointHandler>();
         TargetJobStarter = targetJobStarter;
         SetAPH();
@@ -24,6 +27,8 @@ public class ModelAPHJobManger : JobManager
     public void SetAPH(AnimationPointHandler targetAPH = null, Action ReservatedAction = null)
     {
         TargetAPH = targetAPH == null ? OriginalAPH : targetAPH;
+        var weapon = Model.Weapon;
+        TargetAPH.animationPoints.ForEach(x => x.InteractionObj = weapon);
         this.ReservatedAction = ReservatedAction;
     }
 

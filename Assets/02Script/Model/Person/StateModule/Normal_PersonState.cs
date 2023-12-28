@@ -11,6 +11,17 @@ public class Normal_PersonState : PersonState
     public override void EnterToException() { }
     protected override void StartModule()
     {
+        // handle weapon state
+        var aph = GetNewAPH(1, AnimationPointHandler.WalkingState.Walk);
+        var ap = aph.GetAnimationPoint(0);
+        var state = shouldOnGuard ? PersonAniState.StateKind.HoldingWeapon : PersonAniState.StateKind.KeepingWeapon;
+        SetAPsImmediate(ap, state, 0);
+        ap.whenAnimationStart += () => { HandleWeapon(state); };
+        SetAPH(aph, true);
+    }
+
+    protected override void AfterAPHDone()
+    {
         SetAPH();
     }
     public override void Exit()

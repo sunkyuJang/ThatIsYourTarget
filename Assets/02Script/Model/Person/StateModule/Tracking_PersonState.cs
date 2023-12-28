@@ -1,7 +1,10 @@
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class Tracking_PersonState : PersonState
 {
+    enum State { UsingWeapon, Tracking, Non }
+    State state = State.Non;
     bool isAphDone = false;
     bool shouldFixedLookAt = false;
     StateKinds stateKinds;
@@ -10,29 +13,52 @@ public class Tracking_PersonState : PersonState
     public Tracking_PersonState(Person person) : base(person) { }
     public override bool IsReady()
     {
-        return prepareData != null;
+        return prepareData != null && Weapon != null;
     }
     public override void EnterToException() { }
     protected override void StartModule()
     {
-        var weapon = Weapon;
-
-        if (weapon != null && ProcessTracingTarget == null)
+        if (ProcessTracingTarget == null)
         {
-            aph = GetTrackingAPH();
-            SetAPH(aph, true);
-            isAphDone = false;
-
-            StartTracingTargetInSight(prepareData.target, () => isAphDone);
+            if (state == State.Non)
+            {
+                Debug.Log(GetHoldState.ToString());
+                if (GetHoldState != InteractionObjGrabRig.State.Using)
+                {
+                    Debug.Log("isin");
+                    state = State.UsingWeapon;
+                    var aph = GetNewAPH(1, AnimationPointHandler.WalkingState.Run);
+                    SetAPsImmediate(aph.GetAnimationPoint(0), PersonAniState.StateKind.UsingWeapon, 0f);
+                    aph.GetAnimationPoint(0).whenAnimationStart += () => HandleWeapon(PersonAniState.StateKind.UsingWeapon);
+                    Debug.Log("isin  " + aph.GetAnimationPoint(0).state);
+                    SetAPH(aph, true);
+                    return;
+                }
+                else
+                {
+                    Debug.Log("isin2");
+                    state = State.Tracking;
+                    StartModule();
+                    return;
+                }
+            }
+            else
+            {
+                Debug.Log("isin3");
+                state = State.Tracking;
+                aph = GetNewAPH(1, AnimationPointHandler.WalkingState.Run);
+                aph.shouldLoop = true;
+                SetAPs(aph.GetAnimationPoint(0), prepareData.target, PersonAniState.StateKind.LookAround, 0f, true, true);
+                isAphDone = false;
+                SetAPH(aph, true);
+                StartTracingTargetInSight(prepareData.target, () => isAphDone);
+            }
         }
     }
 
     AnimationPointHandler GetTrackingAPH()
     {
-        var aph = GetNewAPH(1, AnimationPointHandler.WalkingState.Run);
-        aph.shouldLoop = true;
-        var ap = aph.GetActionPoint(0);
-        SetAPs(ap, prepareData.target, PersonAniState.StateKind.LookAround, 0f, true, true);
+
 
         return aph;
     }
@@ -41,7 +67,7 @@ public class Tracking_PersonState : PersonState
     {
         // this function will loop untill isAphDone == true
         aph.shouldLoop = false;
-        var ap = aph.GetActionPoint(0);
+        var ap = aph.GetAnimationPoint(0);
         if (isHit)
         {
             var dist = Vector3.Distance(ActorTransform.position, prepareData.target.position);
@@ -72,10 +98,16 @@ public class Tracking_PersonState : PersonState
     {
         isAphDone = true;
         ProcessTracingTarget = null;
+        state = State.Non;
         base.Exit();
     }
     protected override void AfterAPHDone()
     {
+        if (state == State.UsingWeapon)
+        {
+            Debug.Log("isin using done");
+            StartModule();
+        }
         switch (stateKinds)
         {
             case StateKinds.Attack: SetState(StateKinds.Attack, prepareData); break;

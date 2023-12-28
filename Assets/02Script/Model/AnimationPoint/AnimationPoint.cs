@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEditor.Animations;
 using UnityEngine;
 
@@ -15,69 +16,49 @@ public abstract class AnimationPoint : MonoBehaviour
     [HideInInspector]
     public float targetDegree = 0;
     public Vector3 CorrectedPosition { set; get; }
-    public Action<string> EventTrigger { set; get; }
+    public bool ShouldcontinuousReadState { set; get; } = false;
+
+    // event 
+    public Action<int> EventTrigger { set; get; }
     public Action whenAnimationStart { set; get; }
     public Action whenAnimationEnd { set; get; }
+    public Action whenAnimationExitTime { set; get; }
+
+    // positioning
     public bool CanYield { set; get; } = true;
-    // public abstract bool IsImmediatePlay { get; }
     public abstract bool ShouldPlaySamePosition { get; }
     public abstract void ReplaceExpectionState();
-    public bool IsSameState(AnimationPoint other)
-    {
-        return other.state == state;
-    }
-    public ChildAnimatorState GetState(string stateName)
-    {
-        var aniState = animatorController.layers;
-        foreach (AnimatorControllerLayer layer in aniState)
-        {
-            foreach (ChildAnimatorState state in layer.stateMachine.states)
-            {
-                if (state.state.name == stateName)
-                    return state;
-            }
 
-            foreach (ChildAnimatorStateMachine machine in layer.stateMachine.stateMachines)
-            {
-                foreach (ChildAnimatorState state in machine.stateMachine.states)
-                {
-                    if (state.state.name == stateName)
-                    {
-                        return state;
-                    }
-                }
-            }
-        }
+    // aiming detail
+    public InteractionObj InteractionObj { set; get; } = null;
+    public Weapon Weapon { get { return InteractionObj as Weapon; } }
+    public Transform TargetingTarsform { set; get; } = null;
+    public Transform AimTarget { set; get; } = null;
 
-        return new ChildAnimatorState();
-    }
-    public AnimationClip GetAnimationClip(ChildAnimatorState state)
-    {
-        if (state.state != null)
-        {
-            var motionName = state.state.motion.name;
-            var clips = animatorController.animationClips;
-            foreach (AnimationClip clip in clips)
-            {
-                if (clip.name == motionName)
-                {
-                    return clip;
-                }
-            }
-        }
-        return null;
-    }
+    // attackComboAniNode
+    public AnimationComboStateNode AttackComboStateNode { set; get; } = null;
+
     public float GetAnimationClipLength(string stateName)
     {
-        var state = GetState(stateName);
-        var clip = GetAnimationClip(state);
-        return clip == null ? 0f : clip.length / state.state.speed;
+        var state = AnimatorStateManager.Instance.GetStateInfo(animatorController, stateName);
+        if (state == null) return -1f;
+        else
+            return state.Length;
     }
-    public AnimationEvent[] GetAnimationEvent(string stateName)
+    public List<float> GetAnimationEvent(string stateName)
     {
-        var state = GetState(stateName);
-        var clip = GetAnimationClip(state);
-        return clip == null ? null : clip.events;
+        var state = AnimatorStateManager.Instance.GetStateInfo(animatorController, stateName);
+        if (state == null) return null;
+        else
+            return state.EventsTiming;
+    }
+
+    public List<KeyValuePair<float, string>> GetExitAniEvent(string animationName)
+    {
+        var state = AnimatorStateManager.Instance.GetStateInfo(animatorController, animationName);
+        if (state == null) return null;
+        else
+            return state.ExitTime;
     }
     private void ChangePosition(Vector3 position)
     {
@@ -111,11 +92,18 @@ public abstract class AnimationPoint : MonoBehaviour
         SetAPWithDuring(from, to, state, GetAnimationClipLength(kind), shouldReachTargetPosition, shouldLookAtTarget);
     }
 
-    public void SetAP(Vector3 from, Vector3 to, int state, float time, bool canYield, bool shouldReachTargetPosition, bool shouldLookAtTarget)
+    public void SetAP(Vector3 from, Vector3 to, int state, float time, bool canYield, bool shouldReachTargetPosition, bool shouldLookAtTarget, Transform targetTransform)
     {
         CanYield = canYield;
+        TargetingTarsform = targetTransform;
         if (IsFixedDuring(state))
         {
+            // if (IsFixedDuringInRuntime(state))
+            // {
+            //     var stateName = GetRuntimeStateName(state);
+            //     SetAPWithFixedDuring(from, to, state, stateName, shouldReachTargetPosition, shouldLookAtTarget);
+            //     return;
+            // }
             SetAPWithFixedDuring(from, to, state, GetStateName(state), shouldReachTargetPosition, shouldLookAtTarget);
         }
         else
@@ -124,6 +112,8 @@ public abstract class AnimationPoint : MonoBehaviour
         }
     }
     public abstract bool IsFixedDuring(int state);
+    //public abstract bool IsFixedDuringInRuntime(int state);
     public abstract string GetStateName(int state);
+    public abstract string GetRuntimeStateName(int state);
 }
 

@@ -68,6 +68,7 @@ public abstract class ConversationHandler : IConversationSequence
 
     protected AnimationPointHandler GetNewAnipointHandler<T>(int count, AnimationPointHandler.WalkingState walkingState) where T : AnimationPoint
     {
+        return null;
         var aph = APHManager.Instance.GetNewAPH<T>(Model.APHGroup, count, walkingState);
         return aph;
     }

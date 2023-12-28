@@ -12,15 +12,11 @@ public abstract class PersonState : StateModule
         Normal,
         Sensed,
         Curiousity,
-        //Warn,
-        //Follow,
-        //Wait,
-        DrawWeapon,
+        //HoldingWeapon,
         Tracking,
         Patrol,
         Attack,
         Hit,
-        //Avoid,
         Dead,
         Non
     }
@@ -28,11 +24,17 @@ public abstract class PersonState : StateModule
     public static int ConvertStateKindToInt(StateKinds kinds) => (int)kinds;
     private Person Person { get; set; }
     public PersonState(Person person) => Person = person;
-    protected Transform ActorTransform { get { return Person.ActorTransform; } }
-    protected PersonWeapon Weapon { get { return Person.Weapon; } }
-    protected void HoldWeapon(bool shouldHold) => Person.HoldWeapon(shouldHold, shouldHold ? InteractionObjGrabRig.State.Using : InteractionObjGrabRig.State.Holding);
+    protected bool shouldOnGuard => Person.stayOnGaurd;
+    protected Transform ActorTransform => Person.ActorTransform;
+    protected PersonWeapon Weapon => Person.Weapon;
+    protected InteractionObjGrabRig.State GetHoldState => Person.GetHoldingState;
+    protected void HandleWeapon(PersonAniState.StateKind stateKind)
+        => Person.HoldWeapon(stateKind == PersonAniState.StateKind.HoldingWeapon || stateKind == PersonAniState.StateKind.UsingWeapon,
+                                stateKind == PersonAniState.StateKind.HoldingWeapon ? InteractionObjGrabRig.State.Holding : InteractionObjGrabRig.State.Using);
     new public PersonPrepareData prepareData { set { base.prepareData = value; } get { return base.prepareData as PersonPrepareData; } }
     protected PersonStateModuleHandler ModuleHandler { get { return Person.ModuleHandler; } }
+
+    // Coroutine
     protected List<Coroutine> Coroutines { set; get; } = new List<Coroutine>();
     public Coroutine StartCoroutine(IEnumerator doFunction)
     {
@@ -41,8 +43,8 @@ public abstract class PersonState : StateModule
         return coroutine;
     }
     protected void StopAllCoroutine() => Coroutines.ForEach(x => { if (x != null) Person.StopCoroutine(x); });
-    // APH
 
+    // APH
     public AnimationPointHandler GetNewAPH(int APCounts, AnimationPointHandler.WalkingState walkingState = AnimationPointHandler.WalkingState.Walk)
     {
         return APHManager.Instance.GetNewAPH<PersonAnimationPoint>(Person.APHGroup, APCounts, walkingState);
@@ -53,14 +55,12 @@ public abstract class PersonState : StateModule
         SetAPs(ap, dir, kind, time, false, true);
     }
     protected void SetAPs(AnimationPoint ap, Transform target, PersonAniState.StateKind kind, float time, bool shouldReachTargetPosition, bool shouldLookAtTarget)
-        => SetAPs(ap, target.position, kind, time, shouldReachTargetPosition, shouldLookAtTarget);
-    protected void SetAPs(AnimationPoint ap, Vector3 target, PersonAniState.StateKind kind, float time, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false)
+        => SetAPs(ap, target.position, kind, time, shouldReachTargetPosition, shouldLookAtTarget, target);
+    protected void SetAPs(AnimationPoint ap, Vector3 target, PersonAniState.StateKind kind, float time, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false, Transform targetTransform = null)
     {
+        ap.InteractionObj = Weapon;
         var canYield = CanYeildList.Contains(ModuleHandler.GetPlayingModuleStateKind());
-        // var dist = Vector3.Distance(ap.transform.position, target);
-        // var tooShort = dist < 0.1f;
-        // if (tooShort) { SetAPsImmediate(ap, kind, time); return; }
-        ap.SetAP(Person.ActorTransform.position, target, (int)kind, time, canYield, shouldReachTargetPosition, shouldLookAtTarget);
+        ap.SetAP(Person.ActorTransform.position, target, (int)kind, time, canYield, shouldReachTargetPosition, shouldLookAtTarget, canYield ? null : targetTransform);
     }
     protected void SetAPH(AnimationPointHandler aph = null, bool needFuncAfterAPH = false)
     {
@@ -138,7 +138,7 @@ public abstract class PersonState : StateModule
                     case StateKinds.Normal: list.Add(new Normal_PersonState(person)); break;
                     case StateKinds.Sensed: list.Add(new Sensed_PersonState(person)); break;
                     case StateKinds.Curiousity: list.Add(new Curiousity_PersonState(person)); break;
-                    case StateKinds.DrawWeapon: list.Add(new DrawWeapon_PersonState(person)); break;
+                    //case StateKinds.HoldingWeapon: list.Add(new HoldingWeapon_PersonState(person)); break;
                     case StateKinds.Tracking: list.Add(new Tracking_PersonState(person)); break;
                     case StateKinds.Patrol: list.Add(new Patrol_PersonState(person)); break;
                     case StateKinds.Attack: list.Add(new Attack_PersonState(person)); break;

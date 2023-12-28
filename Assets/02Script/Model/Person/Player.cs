@@ -8,9 +8,8 @@ public class Player : Model
     private Renderer renderer;
     public Material belongTo { get { return renderer.material; } }
 
-    private void Awake()
+    new private void Awake()
     {
-
     }
     protected override StateModuleHandler SetStateModuleHandler()
     {

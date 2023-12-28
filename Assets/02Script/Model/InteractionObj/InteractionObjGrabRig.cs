@@ -14,6 +14,7 @@ public class InteractionObjGrabRig : MonoBehaviour
     LimbIK[] Limb { set; get; }
     FingerRig fingerRig { set; get; }
     Coroutine coroutine { set; get; }
+    public bool IsUsingThis { get { return weight > 0; } }
     private void Awake()
     {
         if (OriginalPrefab == null) Debug.Log("original Prefab is empty");
@@ -29,18 +30,14 @@ public class InteractionObjGrabRig : MonoBehaviour
 
     public bool IsSamePrefab(GameObject gameObject)
     {
-        return OriginalPrefab == PrefabUtility.GetOriginalSourceRootWhereGameObjectIsAdded(gameObject);
+        return OriginalPrefab == gameObject;
     }
 
     public void TurnOn_IK(bool turnOn)
     {
-        CheckRunningCoroutie();
-        coroutine = StartCoroutine(DoStartIK(turnOn));
-    }
-    void CheckRunningCoroutie()
-    {
         if (coroutine != null)
             StopCoroutine(coroutine);
+        coroutine = StartCoroutine(DoStartIK(turnOn));
     }
 
     IEnumerator DoStartIK(bool turnOn)
@@ -73,5 +70,7 @@ public class InteractionObjGrabRig : MonoBehaviour
             limb.solver.IKPositionWeight = weight;
         }
         fingerRig.weight = weight;
+
+        coroutine = null;
     }
 }

@@ -2,6 +2,7 @@ using JExtentioner;
 using SensorToolkit;
 using System;
 using System.Collections;
+using System.Security.Policy;
 using UnityEngine;
 
 public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, IDamagePasser
@@ -14,11 +15,11 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
     // DMG
     float IgnoreDmgTime { set; get; } = 2f;
     bool CanAcceptableDmg { set; get; } = true;
-    [SerializeField]
-    bool canDead = true;
+    [SerializeField] bool canDead = true;
     DamageContorller DamageContorller { set; get; }
 
     //APH
+    [SerializeField] public bool stayOnGaurd = false;
     protected ModelAnimationPlayer ModelAnimationPlayer { set; get; }
     ModelAPHJobManger ModelAPHJobManger { set; get; }
     public Transform APHGroup { private set; get; }
@@ -33,7 +34,8 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
         get
         {
             var weapons = interactionManager.GetInteractionObj<Weapon>();
-            return weapons?[0] ?? null;
+            if (weapons == null) return null;
+            else return weapons[0];
         }
     }
 
@@ -46,9 +48,9 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
         DamageContorller = new DamageContorller(this, ActorTransform);
         interactionManager = ActorTransform.GetComponent<InteractionObjHolsterHandler>();
         APHGroup = transform.Find("APHGroup");
-        ModelAPHJobManger = new ModelAPHJobManger(null, null, APHGroup, ModelAnimationPlayer);
+        ModelAPHJobManger = new ModelAPHJobManger(this, null, null, APHGroup, ModelAnimationPlayer);
         ModuleHandler = SetStateModuleHandler();
-        ConversationHandler = SetConversationHandler();
+        //ConversationHandler = SetConversationHandler();
         var physicalModelConnector = GetComponentInChildren<PhysicalModelConnector>();
         physicalModelConnector.SetPhysicalModelConnector(this, ConversationHandler);
     }
@@ -82,6 +84,8 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
             interactionManager.SetKeep(Weapon);
         }
     }
+
+    public InteractionObjGrabRig.State GetHoldingState => interactionManager.GetHoldingState(Weapon);
 
     public void SetDamage(object section, object parts, float damage, out bool isDead)
     {

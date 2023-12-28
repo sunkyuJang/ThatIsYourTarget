@@ -33,7 +33,7 @@ public class InteractionObjHolster : MonoBehaviour
 
     public InteractionObjHolsterPositioner GetContainHolster(GameObject gameObject)
     {
-        var targetObj = PrefabUtility.GetOriginalSourceRootWhereGameObjectIsAdded(gameObject);
+        var targetObj = gameObject;
         if (holserRemap.ContainsKey(targetObj))
         {
             return holserRemap[targetObj];
@@ -45,21 +45,28 @@ public class InteractionObjHolster : MonoBehaviour
     public bool TryHold(InteractionObj obj)
     {
         if (IsUsing) return false;
-        var positioner = GetContainHolster(obj.gameObject);
+        var positioner = GetContainHolster(obj.originalPrefab);
         if (positioner == null) return false;
         return positioner.TryHoldInteractionObj(obj);
     }
 
     public bool TryRemove(InteractionObj obj)
     {
-        var positioner = GetContainHolster(obj.gameObject);
+        var positioner = GetContainHolster(obj.originalPrefab);
         if (positioner == null) return false;
         return positioner.TryRemoveInterationObj();
     }
 
-    public InteractionObj GetInteractionObj()
+    public List<InteractionObj> GetInteractionObj()
     {
-        var positioner = interactionObjHolsterPositioners.Find(x => x.interactionObjPrefab);
-        return positioner?.interactionObj;
+        var list = new List<InteractionObj>();
+        foreach (var positioner in interactionObjHolsterPositioners)
+        {
+            if (positioner.interactionObj != null)
+            {
+                list.Add(positioner.interactionObj);
+            }
+        }
+        return list;
     }
 }

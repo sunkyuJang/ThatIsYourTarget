@@ -22,7 +22,7 @@ public class ModelAnimationPlayerJobManager : JobManager
 
     public override void StartJob()
     {
-        var firstAP = modelJob.aph.GetNowActionPoint();
+        var firstAP = modelJob.aph.GetNowAnimationPoint();
         AddJob(CreateJobs(firstAP, modelJob.aph));
         base.StartJob();
     }

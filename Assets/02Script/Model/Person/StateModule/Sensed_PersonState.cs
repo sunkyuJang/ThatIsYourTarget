@@ -14,7 +14,7 @@ public class Sensed_PersonState : PersonState
             StateKinds.Curiousity,
             StateKinds.Patrol,
             StateKinds.Tracking,
-            StateKinds.DrawWeapon,
+            //StateKinds.HoldingWeapon,
             StateKinds.Hit,
         };
     public Sensed_PersonState(Person person) : base(person) { }
@@ -23,6 +23,7 @@ public class Sensed_PersonState : PersonState
         return true;
     }
 
+    // whenever person sensed target, this func will running
     protected override void StartModule()
     {
         var sensedData = prepareData as SensedPrepareData;
@@ -46,17 +47,13 @@ public class Sensed_PersonState : PersonState
         var trackingList = new List<Transform>();
         while (sensedPrepareDatas.Count > 0)
         {
-            // making TrackingList
+            // making TrackingList with in Sight
             for (int i = 0; i < sensedPrepareDatas.Count; i++)
             {
                 var prepareData = sensedPrepareDatas[i];
                 if (prepareData.isInSight)
                 {
-                    var canSeeTarget = IsInSight(prepareData.target);
-                    if (canSeeTarget)
-                    {
-                        trackingList.Add(prepareData.target);
-                    }
+                    trackingList.Add(prepareData.target);
                 }
             }
 
@@ -68,9 +65,9 @@ public class Sensed_PersonState : PersonState
                 {
                     // is new target?
                     var dist = Vector3.Distance(ActorTransform.transform.position, selectedModel.position);
-                    var shouldAttack = dist < DrawWeapon_PersonState.AbsoluteAttackDist;
+                    var shouldAttack = dist < HoldingWeapon_PersonState.AbsoluteAttackDist;
                     target = selectedModel;
-                    SetState(shouldAttack ? StateKinds.DrawWeapon : StateKinds.Curiousity, new PersonPrepareData(selectedModel));
+                    SetState(shouldAttack ? StateKinds.Tracking : StateKinds.Curiousity, new PersonPrepareData(selectedModel));
                     var selectedModelIndex = sensedPrepareDatas.FindIndex(x => x.target == selectedModel);
                     sensedPrepareDatas.RemoveAt(selectedModelIndex);
                 }
@@ -78,7 +75,7 @@ public class Sensed_PersonState : PersonState
                 trackingList.Clear();
             }
 
-            // as long as target is in sight, this func will keep running.
+            // as long as target is in sight, this func will keep running
             sensedPrepareDatas.RemoveAll(x => !x.isInSight);
             yield return new WaitForSeconds(0.1f);
         }
@@ -95,7 +92,9 @@ public class Sensed_PersonState : PersonState
         if (playingTarget != null)
         {
             var isContained = PriolityList.Contains(playingModuleHandler.GetPlayingModuleStateKind());
+            // give priolity with state first
             var playingPriolity = isContained ? PriolityList.FindIndex(x => x == playingModuleHandler.GetPlayingModuleStateKind()) : 0;
+            // give priolity with detail(by dist)
             eachModelPriolity.Add(GetPriolityTuple(playingTarget, playingPriolity));
         }
 
@@ -114,10 +113,11 @@ public class Sensed_PersonState : PersonState
 
     (Transform model, int priolity, float dist) GetPriolityTuple(Transform target, int priolity = 0)
     {
+        // adding priolity by dist
         var dist = Vector3.Distance(ActorTransform.position, target.position);
-        var shouldAttack = dist <= DrawWeapon_PersonState.AbsoluteAttackDist;
+        var shouldAttack = dist <= HoldingWeapon_PersonState.AbsoluteAttackDist;
         priolity += priolity == 0 ?
-                        PriolityList.IndexOf(shouldAttack ? StateKinds.DrawWeapon : StateKinds.Curiousity) :
+                        PriolityList.IndexOf(shouldAttack ? StateKinds.Tracking : StateKinds.Curiousity) :
                         priolity;
 
         priolity += Person.GetPriolity(target);

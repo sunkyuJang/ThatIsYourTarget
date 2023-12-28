@@ -51,12 +51,7 @@ public class ObjDetector : MonoBehaviour
     {
         if (IsFind(other))
         {
-            if (other.CompareTag("Avoid"))
-            {
-                Debug.Log("isIN");
-            }
             SetTarget(other, true);
-            Debug.Log(I_OnDetected == null);
             I_OnDetected?.OnDetected(this, other);
         }
     }

@@ -21,10 +21,10 @@ public class AnimationPointHandler : MonoBehaviour
         {
             list.ForEach(x => x.transform.SetParent(transform));
         }
-        SetActionPoint();
+        SetAnimationPoint();
     }
 
-    void SetActionPoint()
+    void SetAnimationPoint()
     {
         animationPoints.Clear();
 
@@ -35,7 +35,7 @@ public class AnimationPointHandler : MonoBehaviour
         ResetIndex();
     }
 
-    public AnimationPoint GetNowActionPoint() { return isAPHDone ? null : animationPoints[index]; }
+    public AnimationPoint GetNowAnimationPoint() { return isAPHDone ? null : animationPoints[index]; }
 
     public AnimationPoint GetNextActionPoint()
     {
@@ -47,22 +47,22 @@ public class AnimationPointHandler : MonoBehaviour
             return null;
         }
 
-        return GetActionPoint(index);
+        return GetAnimationPoint(index);
     }
 
-    public AnimationPoint GetActionPoint(int index)
+    public AnimationPoint GetAnimationPoint(int index)
     {
         var ap = animationPoints[index];
         return ap;
     }
 
-    public T GetActionPoint<T>(int index) where T : AnimationPoint
+    public T GetAnimationPoint<T>(int index) where T : AnimationPoint
     {
-        var ap = GetActionPoint(index);
+        var ap = GetAnimationPoint(index);
         return ap as T;
     }
 
-    public AnimationPoint GetEndActionPoint
+    public AnimationPoint GetEndAnimationPoint
     {
         get { return animationPoints[animationPoints.Count - 1]; }
     }

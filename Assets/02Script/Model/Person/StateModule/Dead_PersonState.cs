@@ -16,7 +16,7 @@ public class Dead_PersonState : PersonState
     protected override void StartModule()
     {
         var aph = GetNewAPH(1, AnimationPointHandler.WalkingState.Walk);
-        SetAPsImmediate(aph.GetActionPoint(0), PersonAniState.StateKind.Dead, -1f);
+        SetAPsImmediate(aph.GetAnimationPoint(0), PersonAniState.StateKind.Dead, -1f);
         SetAPH(aph, true);
         ModuleHandler.SetLockModuleChange(StateKinds.Dead, StateKinds.Non);
     }
