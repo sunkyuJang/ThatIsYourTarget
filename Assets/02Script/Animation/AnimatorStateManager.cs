@@ -35,7 +35,7 @@ public class AnimatorStateManager : MonoBehaviour
     {
         foreach (var stateData in serializerDictionary.Values)
         {
-            stateData.attackingComboManager.RemoveAddiedParameter();
+            stateData.attackingStateManager.RemoveAddiedParameter();
         }
         serializerDictionary.Clear();
         for (int i = 0; i < transform.childCount; i++)
@@ -46,7 +46,7 @@ public class AnimatorStateManager : MonoBehaviour
         foreach (var controller in animators)
         {
             var group = new GameObject(controller.name);
-            var attackingComboManager = new GameObject("AttackingCombo").AddComponent<AttackingComboManager>();
+            var attackingComboManager = new GameObject("AttackingCombo").AddComponent<AttackingAnimationStateManager>();
             var animatorStateManager = new GameObject("AnimatorStateList").AddComponent<AnimatorStateListManager>();
             group.transform.SetParent(transform);
             attackingComboManager.transform.SetParent(group.transform);
@@ -58,7 +58,7 @@ public class AnimatorStateManager : MonoBehaviour
             var data = new StateData()
             {
                 controller = controller,
-                attackingComboManager = attackingComboManager,
+                attackingStateManager = attackingComboManager,
                 animatorStateListManager = animatorStateManager,
             };
 
@@ -66,9 +66,9 @@ public class AnimatorStateManager : MonoBehaviour
         }
     }
 
-    public AnimationStateData GetStateInfo(string animator, string stateName) => GetStateInfo(animators.Find(x => x.name == animator), stateName);
+    public AnimationStateInfo GetStateInfo(string animator, string stateName) => GetStateInfo(animators.Find(x => x.name == animator), stateName);
 
-    public AnimationStateData GetStateInfo(AnimatorController animator, string stateName)
+    public AnimationStateInfo GetStateInfo(AnimatorController animator, string stateName)
     {
         if (serializerDictionary.ContainsKey(animator))
         {
@@ -82,12 +82,12 @@ public class AnimatorStateManager : MonoBehaviour
         return null;
     }
 
-    public AttackingComboManager GetAttackingComboState(string animatorName) => GetAttackingComboState(animators.Find(x => x.name == animatorName));
-    public AttackingComboManager GetAttackingComboState(AnimatorController animator)
+    public AttackingAnimationStateManager GetAttackingState(string animatorName) => GetAttackingStateManager(animators.Find(x => x.name == animatorName));
+    public AttackingAnimationStateManager GetAttackingStateManager(AnimatorController animator)
     {
         if (serializerDictionary.ContainsKey(animator))
         {
-            return serializerDictionary[animator].attackingComboManager;
+            return serializerDictionary[animator].attackingStateManager;
         }
 
         return null;
@@ -97,11 +97,10 @@ public class AnimatorStateManager : MonoBehaviour
     public class StateData
     {
         [HideInInspector] public AnimatorController controller;
-        public AttackingComboManager attackingComboManager;
+        public AttackingAnimationStateManager attackingStateManager;
         public AnimatorStateListManager animatorStateListManager;
     }
 }
-
 [CustomEditor(typeof(AnimatorStateManager))]
 public class AnimatorStateManagerEditor : Editor
 {

@@ -11,34 +11,42 @@ public class Weapon : InteractionObj, IObjCollisionDetectorConnector_OnCollision
         Stick,
         Non
     }
-    [SerializeField] public float Dmg { set; get; } = 1;
-    [SerializeField] public float Range { set; get; } = 0;
-    [SerializeField] public bool IsMelee { get { return Range == 0; } }
-    [SerializeField] public float HitPower { set; get; } = 1;
+    [SerializeField] public float dmg = 1;
+    [SerializeField] public float range = 0;
+    [SerializeField] public bool IsMelee { get { return range == 0; } }
+    [SerializeField] public float hitPower { set; get; } = 1;
 
     // 1 Cycle == 1 MaxCount
-    public enum CanAttackStateError { OverMaxCount, Non }
+    public enum CanAttackStateError { OverMaxCount, Range, Non }
     [SerializeField] protected int curHitCount = 0;
     [SerializeField] protected int maxHitCountPerCycle = 0;
     public int LeftHitCount => maxHitCountPerCycle - curHitCount;
+
     [SerializeField] protected WeaponType weaponType = WeaponType.Non;
     public WeaponType GetWeaponType => weaponType;
 
+    public Transform AimTransform;
 
-    public bool CanAttack(out CanAttackStateError canAttackStateError)
+    public bool CanAttack(Transform target, out CanAttackStateError canAttackStateError)
     {
         canAttackStateError = CanAttackStateError.Non;
-        if (curHitCount < maxHitCountPerCycle)
+
+        if (Vector3.Distance(target.transform.position, transform.position) > range)
         {
-            return true;
+            canAttackStateError = CanAttackStateError.Range;
         }
-        else
+        else if (curHitCount >= maxHitCountPerCycle)
+        {
             canAttackStateError = CanAttackStateError.OverMaxCount;
+        }
 
-        if (canAttackStateError != CanAttackStateError.Non)
+        if (canAttackStateError == CanAttackStateError.Non)
+            return true;
+        else
+        {
             Debug.Log(canAttackStateError.ToString());
-
-        return false;
+            return false;
+        }
     }
 
     public void Attack()
@@ -64,7 +72,7 @@ public class Weapon : InteractionObj, IObjCollisionDetectorConnector_OnCollision
         IDamageConnector damageController = collision.collider.GetComponent<IDamageConnector>();
         if (damageController != null)
         {
-            var isDead = damageController.SetDamage(Dmg, () => { });
+            var isDead = damageController.SetDamage(dmg, () => { });
             if (isDead)
             {
                 // melee
@@ -79,10 +87,11 @@ public class Weapon : InteractionObj, IObjCollisionDetectorConnector_OnCollision
                     {
                         var hipPoint = collision.contacts[0];
                         var targetRigidbody = collision.rigidbody;
-                        targetRigidbody?.AddForceAtPosition((hipPoint.point - transform.position).normalized * HitPower * 100, hipPoint.point, ForceMode.Impulse);
+                        targetRigidbody?.AddForceAtPosition((hipPoint.point - transform.position).normalized * hitPower * 100, hipPoint.point, ForceMode.Impulse);
                     }
                 }
             }
         }
     }
 }
+

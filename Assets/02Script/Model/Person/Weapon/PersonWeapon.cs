@@ -3,8 +3,6 @@ using UnityEngine;
 
 public class PersonWeapon : Weapon
 {
-    public Transform AimTransform;
-
     public void Awake()
     {
     }

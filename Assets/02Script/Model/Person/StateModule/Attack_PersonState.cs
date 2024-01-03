@@ -7,10 +7,9 @@ using Unity.VisualScripting;
 
 public class Attack_PersonState : PersonState
 {
-    PersonAttackConditionHandler AttackConditioner { set; get; }
     public Attack_PersonState(Person person) : base(person)
     {
-        AttackConditioner = new PersonAttackConditionHandler(ActorTransform.GetComponent<Animator>().runtimeAnimatorController as AnimatorController);
+
     }
     public override bool IsReady()
     {
@@ -25,7 +24,7 @@ public class Attack_PersonState : PersonState
             SetNormalState();
         }
 
-        if (Weapon.CanAttack(out Weapon.CanAttackStateError attackError))
+        if (Weapon.CanAttack(prepareData.target, out Weapon.CanAttackStateError attackError))
         {
             SetAttack(null);
         }
@@ -33,19 +32,22 @@ public class Attack_PersonState : PersonState
         {
             // reloading
         }
+        else if (attackError == global::Weapon.CanAttackStateError.Range)
+        {
+            // Range
+        }
     }
 
-    void SetAttack(AnimationComboStateNode loopNode)
+    void SetAttack(SkillLoader.SkillToken token)
     {
         var aph = GetNewAPH(1, AnimationPointHandler.WalkingState.Run);
         var AttackAP = aph.GetAnimationPoint<PersonAnimationPoint>(0);
         SetAPs(AttackAP, prepareData.target, PersonAniState.StateKind.Attack, 0, false, true);
         AttackAP.EventTrigger = AttackTrigger; // for actual attack timing
-        var ConditionRequireData = new PersonAttackConditionHandler.PersonRequireData(Weapon);
-        var node = loopNode == null ? AttackConditioner.GetInitiatedNode(ConditionRequireData) : loopNode; // if its loop, keep using old one
-        node.loopCount++;
-        AttackAP.AttackComboStateNode = node;
-        AttackAP.whenAnimationExitTime = () => { WhenExitTime(AttackAP); }; // every exit time, the attack state will issue an AP
+        var skillToken = token == null ? skillLoader.UseSkill() : token;
+        AttackAP.SkillData = skillToken.SkillData;
+        skillToken.curLoopCount++;
+        AttackAP.whenAnimationExitTime = () => { WhenExitTime(AttackAP, skillToken); }; // every exit time, the attack state will issue an AP
         SetAPH(aph, true);
     }
 
@@ -54,17 +56,16 @@ public class Attack_PersonState : PersonState
         Debug.Log("isIn");
     }
 
-    public void WhenExitTime(AnimationPoint ap)
+    public void WhenExitTime(AnimationPoint ap, SkillLoader.SkillToken token)
     {
         // checking loop
         if (ap.Weapon == Weapon)
         {
-            var node = ap.AttackComboStateNode;
-            if (node.maxLoop != 0)
+            if (token.maxLoopCount != 0)
             {
-                if (node.loopCount <= node.maxLoop)
+                if (token.curLoopCount <= token.maxLoopCount)
                 {
-                    SetAttack(node);
+                    SetAttack(token);
                     return;
                 }
             }

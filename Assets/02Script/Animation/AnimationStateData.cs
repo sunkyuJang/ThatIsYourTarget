@@ -5,15 +5,14 @@ using UnityEngine;
 using UnityEditor.Animations;
 using JExtentioner;
 using UnityEngine.Rendering;
-using Unity.VisualScripting;
 
 [Serializable]
 public class AnimationStateDic
 {
-    public SerializedDictionary<string, AnimationStateData> StateWithTime = new SerializedDictionary<string, AnimationStateData>();
+    public SerializedDictionary<string, AnimationStateInfo> StateWithTime = new SerializedDictionary<string, AnimationStateInfo>();
 }
 [Serializable]
-public class AnimationStateData
+public class AnimationStateInfo
 {
     [SerializeField] private string name = "";
     [SerializeField] private float length = 0;
@@ -69,7 +68,7 @@ public class AnimationStateData
             return null;
         }
     }
-    public AnimationStateData(string name, float length, List<float> events, List<AnimatorStateTransition> animatorTransitions)
+    public AnimationStateInfo(string name, float length, List<float> events, List<AnimatorStateTransition> animatorTransitions)
     {
         this.name = name;
         this.length = length;
@@ -89,22 +88,23 @@ public class AnimationStateData
 }
 
 [Serializable]
-public class AnimationComboStateNode
+public class AnimationStateNode
 {
     public bool isSubState;
     public string nowAnimation;
-    public List<string> nextAnimations = new List<string>();
-    public Func<int> SetCondition = null;
+    public string beforeAnimation;
+    public SerializedDictionary<string, RequirementDataManager> nextAnimations = new SerializedDictionary<string, RequirementDataManager>();
     public bool hasLoop;
+    public SkillData skillData;
     [HideInInspector] public int loopIndex;
     [HideInInspector] public int loopCount = 0;
     [HideInInspector] public int maxLoop = 0;
     [HideInInspector] public Action<Animator> WhenReadAPForSetParametter { set; get; }
-    public AnimationComboStateNode(bool isSubState, string nowAnimation, List<string> nextAnimations)
+    public AnimationStateNode(bool isSubState, string nowAnimation, List<string> nextAnimations)
     {
         this.isSubState = isSubState;
         this.nowAnimation = nowAnimation;
-        this.nextAnimations = nextAnimations;
+        nextAnimations.ForEach(x => this.nextAnimations.Add(x, new RequirementDataManager()));
         hasLoop = nextAnimations.Find(x =>
         {
             loopIndex++;
@@ -112,28 +112,20 @@ public class AnimationComboStateNode
         }) != null;
         loopIndex--;
     }
-    public string ReadNextAnimation()
+    public AnimationStateNode(AnimationStateNode node)
     {
-        var index = SetCondition?.Invoke() ?? null;
-        if (index == null) return null;
-        if (index.Value < 0 || index.Value >= nextAnimations.Count) return null;
-        if (hasLoop && index.Value == loopIndex)
-            loopCount++;
-
-        return nextAnimations[index.Value];
-    }
-
-    public string ReadNextAnimation(int index)
-    {
-        if (0 <= index && index < nextAnimations.Count) return nextAnimations[index];
-        return null;
+        this.isSubState = node.isSubState;
+        this.nowAnimation = node.nowAnimation;
+        this.nextAnimations = node.nextAnimations;
+        this.hasLoop = node.hasLoop;
+        this.skillData = node.skillData;
     }
 }
 
 public static class AnimationComboStateNodeExtentiner
 {
-    public static AnimationComboStateNode Copy(this AnimationComboStateNode node)
+    public static AnimationStateNode Copy(this AnimationStateNode node)
     {
-        return new AnimationComboStateNode(node.isSubState, node.nowAnimation, node.nextAnimations);
+        return new AnimationStateNode(node);
     }
 }

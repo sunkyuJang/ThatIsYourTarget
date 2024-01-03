@@ -7,10 +7,9 @@ using UnityEngine.Rendering;
 
 public abstract class AttackConditionerHandler
 {
-
     protected List<string> requireAniNodeName = new List<string>();
     protected AnimatorController controller;
-    protected AttackingComboManager AttackingComboManager { set; get; } = null;
+    protected AttackingAnimationStateManager AttackingAniStateManager { set; get; } = null;
     readonly protected int ExcuteAni = -1;
     readonly protected int ProgressToNext = 0;
     static bool IsCheckedBeforeRun = false;
@@ -18,7 +17,7 @@ public abstract class AttackConditionerHandler
     {
         requireAniNodeName = GetAniNodeName();
         controller = animatorController;
-        AttackingComboManager = AnimatorStateManager.Instance.GetAttackingComboState(controller);
+        AttackingAniStateManager = AnimatorStateManager.Instance.GetAttackingStateManager(controller);
 
         CheckRequireAniNode();
     }
@@ -27,13 +26,39 @@ public abstract class AttackConditionerHandler
         if (IsCheckedBeforeRun) return;
         IsCheckedBeforeRun = true;
 
-        AttackingComboManager.CheckRequireNodeExist(requireAniNodeName);
+        AttackingAniStateManager.CheckRequireNodeExist(requireAniNodeName);
     }
 
-    public abstract AnimationComboStateNode GetInitiatedNode(RequireData data);
-    public AnimationComboStateNode GetNextNode(RequireData requireData, AnimationComboStateNode node) => FindNextNode(requireData, node, null);
-    protected abstract AnimationComboStateNode FindNextNode(RequireData requireData, AnimationComboStateNode node, Action<Animator> parametterSetter);
-    protected abstract List<string> GetAniNodeName();
+    public Action<Animator> GetAllTransitionPath(string Name)
+    {
+        var node = AttackingAniStateManager.GetStateNode(Name);
+        Action<Animator> actions = (Animator animator) => { };
+        GetBeforePath(ref actions, node);
+        return actions;
+    }
 
+    void GetBeforePath(ref Action<Animator> actions, AnimationStateNode node)
+    {
+        var beforeNode = AttackingAniStateManager.GetStateNode(node.beforeAnimation);
+        var count = 0;
+        foreach (var nextAniString in beforeNode.nextAnimations.Keys)
+        {
+            if (nextAniString == node.nowAnimation)
+            {
+                actions += (Animator animator) => { animator.SetInteger(beforeNode.nowAnimation, count); };
+                break;
+            }
+            count++;
+        }
+
+        if (beforeNode.beforeAnimation != "")
+        {
+            GetBeforePath(ref actions, beforeNode);
+        }
+    }
+    public abstract AnimationStateNode GetInitiatedNode(RequireData data);
+    public AnimationStateNode GetNextNode(RequireData requireData, AnimationStateNode node) => FindNextNode(requireData, node, null);
+    protected abstract AnimationStateNode FindNextNode(RequireData requireData, AnimationStateNode node, Action<Animator> parametterSetter);
+    protected abstract List<string> GetAniNodeName();
     public class RequireData { }
 }

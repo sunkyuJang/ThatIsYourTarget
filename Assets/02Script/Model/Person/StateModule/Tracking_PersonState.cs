@@ -71,7 +71,7 @@ public class Tracking_PersonState : PersonState
         if (isHit)
         {
             var dist = Vector3.Distance(ActorTransform.position, prepareData.target.position);
-            if (dist < Weapon.Range)
+            if (dist < Weapon.range)
             {
                 SetAPs(ap, prepareData.target, PersonAniState.StateKind.Non, 0, false, true);
                 stateKinds = StateKinds.Attack;

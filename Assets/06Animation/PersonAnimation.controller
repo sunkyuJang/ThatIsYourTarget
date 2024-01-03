@@ -918,7 +918,8 @@ AnimatorStateMachine:
   m_EntryTransitions:
   - {fileID: -6476743273340269209}
   m_StateMachineTransitions: {}
-  m_StateMachineBehaviours: []
+  m_StateMachineBehaviours:
+  - {fileID: -3225363519232437372}
   m_AnyStatePosition: {x: 50, y: 20, z: 0}
   m_EntryPosition: {x: 50, y: 120, z: 0}
   m_ExitPosition: {x: 800, y: 120, z: 0}
@@ -2090,6 +2091,21 @@ AnimatorStateTransition:
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
+--- !u!114 &-3225363519232437372
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0464fc24d81c72498f0b8646bcd9002, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  trantisionGoTo: 0
+  requirementDataManager:
+    requirementDatas: []
 --- !u!1107 &-2909161147292787743
 AnimatorStateMachine:
   serializedVersion: 6
@@ -2138,6 +2154,20 @@ AnimatorStateTransition:
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
+--- !u!114 &-2760074913147691201
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82c1ac8658403344894ba10e4baf75e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SkillName: 
+  skillData: {fileID: 0}
 --- !u!1102 &-2568357023058795861
 AnimatorState:
   serializedVersion: 6
@@ -4996,7 +5026,8 @@ AnimatorState:
   m_Transitions:
   - {fileID: 2094267394616206328}
   - {fileID: 5960462282720346446}
-  m_StateMachineBehaviours: []
+  m_StateMachineBehaviours:
+  - {fileID: 6033021524322944968}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -5036,6 +5067,20 @@ AnimatorStateTransition:
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
+--- !u!114 &6033021524322944968
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82c1ac8658403344894ba10e4baf75e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SkillName: HandGunAttack_Normal
+  skillData: {fileID: 11400000, guid: 548177276a5040945af7aba6406e5fd8, type: 2}
 --- !u!1101 &6154032935298482925
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -5284,7 +5329,7 @@ AnimatorStateMachine:
   m_ChildStates:
   - serializedVersion: 1
     m_State: {fileID: 5956110083775886304}
-    m_Position: {x: 400, y: 110, z: 0}
+    m_Position: {x: 410, y: 110, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions: []
   m_EntryTransitions:
@@ -5334,7 +5379,8 @@ AnimatorState:
   m_Transitions:
   - {fileID: -4777549569788263313}
   - {fileID: -3495173212942056073}
-  m_StateMachineBehaviours: []
+  m_StateMachineBehaviours:
+  - {fileID: -2760074913147691201}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1

@@ -3,6 +3,7 @@ using SensorToolkit;
 using System;
 using System.Collections;
 using System.Security.Policy;
+using UnityEditor.Animations;
 using UnityEngine;
 
 public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, IDamagePasser
@@ -27,6 +28,9 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
     // Module
     public StateModuleHandler ModuleHandler { protected set; get; }
 
+    //SkillLoader
+    public SkillLoader skillLoader { private set; get; }
+
     // InteractionObjManager
     private InteractionObjHolsterHandler interactionManager { set; get; }
     public Weapon Weapon
@@ -50,11 +54,13 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
         APHGroup = transform.Find("APHGroup");
         ModelAPHJobManger = new ModelAPHJobManger(this, null, null, APHGroup, ModelAnimationPlayer);
         ModuleHandler = SetStateModuleHandler();
+        skillLoader = SetSkillLoader(ActorTransform.GetComponent<Animator>().runtimeAnimatorController as AnimatorController);
         //ConversationHandler = SetConversationHandler();
         var physicalModelConnector = GetComponentInChildren<PhysicalModelConnector>();
         physicalModelConnector.SetPhysicalModelConnector(this, ConversationHandler);
     }
     protected abstract StateModuleHandler SetStateModuleHandler();
+    protected abstract SkillLoader SetSkillLoader(AnimatorController controller);
     protected abstract ConversationHandler SetConversationHandler();
     protected virtual IEnumerator Start()
     {

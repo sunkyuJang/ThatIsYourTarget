@@ -6,7 +6,7 @@ using System.Linq;
 using UnityEngine.Rendering;
 public class AnimatorStateListManager : MonoBehaviour
 {
-    public SerializedDictionary<string, AnimationStateData> serializerDictionary = new SerializedDictionary<string, AnimationStateData>();
+    public SerializedDictionary<string, AnimationStateInfo> serializerDictionary = new SerializedDictionary<string, AnimationStateInfo>();
     public void InitializeStateData(AnimatorController controller)
     {
         serializerDictionary.Clear();
@@ -36,7 +36,7 @@ public class AnimatorStateListManager : MonoBehaviour
             }
 
             float length = CalculateStateLength(state.state);
-            serializerDictionary.Add(state.state.name, new AnimationStateData(state.state.name, length, events, state.state.transitions.ToList()));
+            serializerDictionary.Add(state.state.name, new AnimationStateInfo(state.state.name, length, events, state.state.transitions.ToList()));
         }
     }
 
@@ -53,7 +53,7 @@ public class AnimatorStateListManager : MonoBehaviour
         return length;
     }
 
-    public AnimationStateData GetStateInfo(string stateName)
+    public AnimationStateInfo GetStateInfo(string stateName)
     {
         if (serializerDictionary.ContainsKey(stateName))
         {

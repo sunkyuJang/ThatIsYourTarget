@@ -35,8 +35,8 @@ public abstract class AnimationPoint : MonoBehaviour
     public Transform TargetingTarsform { set; get; } = null;
     public Transform AimTarget { set; get; } = null;
 
-    // attackComboAniNode
-    public AnimationComboStateNode AttackComboStateNode { set; get; } = null;
+    // SkillAnimationName
+    public SkillData SkillData { set; get; }
 
     public float GetAnimationClipLength(string stateName)
     {

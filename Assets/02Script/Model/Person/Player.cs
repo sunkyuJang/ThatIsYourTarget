@@ -1,4 +1,5 @@
 using System.Collections;
+using UnityEditor.Animations;
 using UnityEngine;
 
 public class Player : Model
@@ -24,5 +25,8 @@ public class Player : Model
         yield break;
     }
 
-
+    protected override SkillLoader SetSkillLoader(AnimatorController controller)
+    {
+        throw new System.NotImplementedException();
+    }
 }

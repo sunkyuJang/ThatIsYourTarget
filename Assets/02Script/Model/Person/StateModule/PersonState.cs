@@ -27,6 +27,7 @@ public abstract class PersonState : StateModule
     protected bool shouldOnGuard => Person.stayOnGaurd;
     protected Transform ActorTransform => Person.ActorTransform;
     protected PersonWeapon Weapon => Person.Weapon;
+    protected SkillLoader_Person skillLoader => Person.skillLoader;
     protected InteractionObjGrabRig.State GetHoldState => Person.GetHoldingState;
     protected void HandleWeapon(PersonAniState.StateKind stateKind)
         => Person.HoldWeapon(stateKind == PersonAniState.StateKind.HoldingWeapon || stateKind == PersonAniState.StateKind.UsingWeapon,

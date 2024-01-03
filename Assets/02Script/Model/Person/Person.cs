@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Resources;
+using UnityEditor.Animations;
 using UnityEngine;
 
 public partial class Person : Model
@@ -27,8 +28,13 @@ public partial class Person : Model
     private Renderer modelRenderer;
     new public PersonStateModuleHandler ModuleHandler
         => base.ModuleHandler as PersonStateModuleHandler;
+
+    new public SkillLoader_Person skillLoader
+        => base.skillLoader as SkillLoader_Person;
     protected override StateModuleHandler SetStateModuleHandler()
         => new PersonStateModuleHandler(this);
+    protected override SkillLoader SetSkillLoader(AnimatorController controller)
+        => new SkillLoader_Person(controller, this);
     protected override ConversationHandler SetConversationHandler()
         => new PersonConversationHandler(this);
     new public PersonWeapon Weapon { get { return base.Weapon as PersonWeapon; } }

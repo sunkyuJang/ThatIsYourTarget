@@ -251,8 +251,8 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
         //                     Mathf.Lerp(0, ap.during, animationPlayLimit);
 
         List<KeyValuePair<float, string>> exitEvent = null;
-        if (ap.AttackComboStateNode != null)
-            exitEvent = ap.GetExitAniEvent(ap.AttackComboStateNode.nowAnimation);
+        if (ap.SkillData != null)
+            exitEvent = ap.GetExitAniEvent(ap.SkillData.keyName);
 
         var triggeredExitEvent = false;
 
