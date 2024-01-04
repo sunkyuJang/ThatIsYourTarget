@@ -16,7 +16,7 @@ public class Normal_PersonState : PersonState
         var ap = aph.GetAnimationPoint(0);
         var state = shouldOnGuard ? PersonAniState.StateKind.HoldingWeapon : PersonAniState.StateKind.KeepingWeapon;
         SetAPsImmediate(ap, state, 0);
-        ap.whenAnimationStart += () => { HandleWeapon(state); };
+        ap.animationPointData.whenAnimationStart += () => { HandleWeapon(state); };
         SetAPH(aph, true);
     }
 

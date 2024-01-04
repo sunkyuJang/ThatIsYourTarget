@@ -3,22 +3,22 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 using System.Collections.Generic;
-public class PersonAnimationPoint : AnimationPoint
+public class PersonAnimationPoint : AnimationPoint, IPoolerConnector
 {
     public PersonAniState.StateKind State
     {
-        get { return (PersonAniState.StateKind)base.state; }
+        get { return (PersonAniState.StateKind)animationPointData.state; }
     }
-
-    public override bool ShouldPlaySamePosition { get => PersonAniState.shouldPlaySamePositions.Contains(State); }
-    public override void ReplaceExpectionState() => state = (int)PersonAniState.replacebleState;
-    public override bool HasAction { get { return base.state != (int)PersonAniState.StateKind.Non; } }
+    public override bool HasAction { get { return base.animationPointData.state != (int)PersonAniState.StateKind.Non; } }
     public bool shouldReadyForBattle;
     public int subState_int = 0;
     public bool subState_bool = false;
     public float subState_float = 0f;
-    public float GetLength() => GetAnimationClipLength(((PersonAniState.StateKind)base.state).ToString());
-    new public PersonWeapon Weapon { get { return base.Weapon as PersonWeapon; } }
+    public float GetLength() => GetAnimationClipLength(((PersonAniState.StateKind)base.animationPointData.state).ToString());
+    public PersonWeapon Weapon { get { return base.animationPointData.Weapon as PersonWeapon; } }
+
+    public override bool ShouldPlaySamePosition => PersonAniState.shouldPlaySamePositions.Contains(State);
+
     public List<float> GetAnimationEvent()
     {
         return GetAnimationEvent(State.ToString());
@@ -33,11 +33,6 @@ public class PersonAnimationPoint : AnimationPoint
         return PersonAniState.IsStateDuringFixed((PersonAniState.StateKind)state);
     }
 
-    // public override bool IsFixedDuringInRuntime(int state)
-    // {
-    //     return PersonAniState.IsStateDuringFixedAfterRuntime((PersonAniState.StateKind)state);
-    // }
-
     public override string GetStateName(int state)
     {
         return state.GetEnumVal<PersonAniState.StateKind>()?.ToString();
@@ -46,11 +41,6 @@ public class PersonAnimationPoint : AnimationPoint
     public override string GetRuntimeStateName(int state)
     {
         var aniState = (PersonAniState.StateKind)state;
-        // if (PersonAniState.IsWeaponRuntimeState(aniState))
-        // {
-        //     return Weapon.weaponType.ToString() + aniState.ToString();
-        // }
-        // else 
         if (PersonAniState.IsAttackKind(aniState))
         {
             return Weapon.GetWeaponType.ToString() + aniState.ToString() + subState_int.ToString();
@@ -59,6 +49,10 @@ public class PersonAnimationPoint : AnimationPoint
         return "";
     }
 
+    public override void ReplaceExpectionState()
+    {
+        throw new System.NotImplementedException();
+    }
 }
 
 [CustomEditor(typeof(PersonAnimationPoint))]
@@ -86,7 +80,7 @@ public class PersonActionPointEditor : Editor
         }
         ExpresseDuring(ap);
 
-        ap.state = (int)kind;
+        ap.animationPointData.state = (int)kind;
         ap.animatorController = animatorController;
         EditorUtility.SetDirty(target);
     }
@@ -99,7 +93,7 @@ public class PersonActionPointEditor : Editor
     void ExpresseDuring(PersonAnimationPoint ap)
     {
         var find = PersonAniState.FixedDuringStateKinds.Find(x => x == ap.State);
-        ap.during = find == ap.State ? (float)EditorGUILayout.DelayedFloatField("FixedDuring", ap.GetLength())
-                                        : (float)EditorGUILayout.FloatField("during", ap.during);
+        ap.animationPointData.during = find == ap.State ? (float)EditorGUILayout.DelayedFloatField("FixedDuring", ap.GetLength())
+                                        : (float)EditorGUILayout.FloatField("during", ap.animationPointData.during);
     }
 }

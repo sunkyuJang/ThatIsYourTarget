@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class PersonAniController : AniController
 {
+    public int WeaponMotionLayer = 1;
+
     public GameObject personNeck;
     PersonAniStateModuleHandler moduleHandler => base.stateModuleHandler as PersonAniStateModuleHandler;
 
@@ -22,8 +24,9 @@ public class PersonAniController : AniController
     protected override bool IsWalkState()
     {
         return
-            animator.GetCurrentAnimatorStateInfo(0).IsName("WalkAround") ||
-            animator.GetCurrentAnimatorStateInfo(0).IsName("RunningAround");
+            (animator.GetCurrentAnimatorStateInfo(0).IsName("WalkAround") ||
+            animator.GetCurrentAnimatorStateInfo(0).IsName("RunningAround"))
+            && !animator.GetCurrentAnimatorStateInfo(1).IsTag("Attack");
     }
 
     protected override void StartAni(AnimationPoint actionPoint, bool shouldReturnAP = false)
@@ -48,13 +51,19 @@ public class PersonAniController : AniController
 
     void SetWalkModule(AnimationPointHandler.WalkingState walkingState)
     {
-        var module = moduleHandler.GetModule(PersonAniState.StateKind.Walk);
+        var walkModule = moduleHandler.GetModule(PersonAniState.StateKind.Walk);
+        var usingModule = moduleHandler.GetModule(PersonAniState.StateKind.UsingWeapon);
 
-        if (CanModuleRun(module) && module is Walk_PersonAniState)
+        if (CanModuleRun(walkModule) && walkModule is Walk_PersonAniState)
         {
-            var walkingModule = module as Walk_PersonAniState;
+            var walkingModule = walkModule as Walk_PersonAniState;
             walkingModule.SetWalkState(walkingState);
-            module.TryEnter<StateModule.PrepareData>(null);
+            walkModule.TryEnter<StateModule.PrepareData>(null);
+
+            if (animator.GetCurrentAnimatorStateInfo(1).IsTag("Attack"))
+            {
+                usingModule.TryEnter<StateModule.PrepareData>();
+            }
         }
         else
         {
@@ -89,11 +98,11 @@ public class PersonAniController : AniController
     protected override float GetMakeTurnDuring(float degree)
     {
         var ap = APHManager.Instance.GetNewAP<PersonAnimationPoint>();
-        ap.state = (int)PersonAniState.StateKind.TurnAround;
-        ap.targetDegree = degree;
-        ap.during = ap.GetAnimationClipLength(GetStateNameByDegree(ap.targetDegree));
+        ap.animationPointData.state = (int)PersonAniState.StateKind.TurnAround;
+        ap.animationPointData.targetDegree = degree;
+        ap.animationPointData.during = ap.GetAnimationClipLength(GetStateNameByDegree(ap.animationPointData.targetDegree));
         StartAni(ap, true);
-        return ap.during;
+        return ap.animationPointData.during;
     }
 
     string GetStateNameByDegree(float degree)
@@ -113,13 +122,4 @@ public class PersonAniController : AniController
         return module != null && module is PersonAniState;
     }
 
-    // public ActionPoint MakeHeadTurn()
-    // {
-    //     var ap = APHManager.Instance.GetObjPooler(APHManager.PoolerKinds.PersonAP).GetNewOne<PersonActionPoint>();
-    //     ap.State = PersonAniController.StateKind.TurnHead;
-    //     ap.during = 3f;
-    //     StartAni(ap, true);
-
-    //     return ap;
-    // }
 }

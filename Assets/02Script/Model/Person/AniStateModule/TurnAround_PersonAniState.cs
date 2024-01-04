@@ -10,7 +10,7 @@ internal class TurnAround_PersonAniState : PersonAniState
 
     protected override void StartModule()
     {
-        Animator.SetFloat(TurnDegree, ap.targetDegree);
+        Animator.SetFloat(TurnDegree, ap.animationPointData.targetDegree);
     }
 
     public override void EnterToException()

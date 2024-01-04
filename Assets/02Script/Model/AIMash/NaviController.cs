@@ -87,16 +87,16 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
     {
         var jobEnded = false;
         var loopEndByAniDone = false;
-        if (job.ap.TargetingTarsform != null)
+        if (job.ap.animationPointData.TargetingTarsform != null)
         {
             job.EndJob();
             jobEnded = true;
-            job.ap.whenAnimationEnd += () => { loopEndByAniDone = true; };
+            job.ap.animationPointData.whenAnimationEnd += () => { loopEndByAniDone = true; };
         }
 
         TurnOnNavi(true);
         var ap = job.ap;
-        ap.CorrectedPosition = correctedVector;
+        ap.animationPointData.CorrectedPosition = correctedVector;
 
         var lastPosition = ap.transform.position;
         TimeCounter.TimeCountData crowededTimeData = null;
@@ -123,7 +123,7 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
                 if (!hasBeenCheckNearBy)
                 {
                     hasBeenCheckNearBy = true;
-                    if (ap.CanYield)
+                    if (ap.animationPointData.CanYield)
                     {
                         if (!NaviTrafficManager.Instance.IsCongested(correctedVector, this, out trafficData))
                         {
@@ -179,7 +179,7 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
         }
 
         navMeshAgent.obstacleAvoidanceType = ObstacleAvoidanceType.HighQualityObstacleAvoidance;
-        ap.CorrectedPosition = correctedVector;
+        ap.animationPointData.CorrectedPosition = correctedVector;
         navMeshAgent.avoidancePriority = 99;
         navMeshAgent.stoppingDistance = 100f;
         TurnOnNavi(false);

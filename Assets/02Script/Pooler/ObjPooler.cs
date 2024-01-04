@@ -5,6 +5,13 @@ public class ObjPooler : MonoBehaviour
 {
     public GameObject TargetObj;
     protected Queue<GameObject> instantiatedObj = new Queue<GameObject>();
+    private void Start()
+    {
+        if (TargetObj.GetComponent<IPoolerConnector>() == null)
+        {
+            Debug.Log("Target obj must has IPoolerConnector for reset when get");
+        }
+    }
     public static void CopyComponentValue(Component from, Component to)
     {
         if (from is Transform)
@@ -40,7 +47,9 @@ public class ObjPooler : MonoBehaviour
         if (!CanPull())
             MakeNewOne();
 
-        return instantiatedObj.Dequeue();
+        var obj = instantiatedObj.Dequeue();
+        obj.GetComponent<IPoolerConnector>().ResetObj();
+        return obj;
     }
 
     public T GetNewOne<T>()

@@ -2,6 +2,7 @@ using UnityEngine;
 public class UsingWeapon_PersonAniState : PersonAniState
 {
     public static string UsingWeapon { get { return "UsingWeapon"; } }
+    private float minTransitionTime = 0.3f;
     public UsingWeapon_PersonAniState(PersonAniStateModuleHandler moduleHandler) : base(moduleHandler)
     {
 
@@ -19,9 +20,9 @@ public class UsingWeapon_PersonAniState : PersonAniState
         var layer = Animator.GetLayerIndex("WeaponMotion");
         Animator.SetLayerWeight(layer, 1);
         Animator.SetBool(UsingWeapon, true);
-        Animator.SetInteger("WeaponType", (int)ap.Weapon.GetWeaponType);
+        Animator.SetInteger("WeaponType", (int)ap.animationPointData.Weapon.GetWeaponType);
 
-        ap.during = 0.25f;
+        ap.animationPointData.during = ap.animationPointData.during < minTransitionTime ? minTransitionTime : ap.animationPointData.during;
     }
 
     public override void EnterToException()

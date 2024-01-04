@@ -1,12 +1,11 @@
 using System;
 using UnityEngine;
-using UnityEditor.Animations;
-using UnityEngine.AI;
-using System.Collections.Generic;
-using Unity.VisualScripting;
+using System.Collections;
 
 public class Attack_PersonState : PersonState
 {
+    public enum APHDoneState { Attacking, Delaying, Non }
+    public APHDoneState aphDoneState = APHDoneState.Non;
     public Attack_PersonState(Person person) : base(person)
     {
 
@@ -26,6 +25,7 @@ public class Attack_PersonState : PersonState
 
         if (Weapon.CanAttack(prepareData.target, out Weapon.CanAttackStateError attackError))
         {
+            aphDoneState = APHDoneState.Attacking;
             SetAttack(null);
         }
         else if (attackError == global::Weapon.CanAttackStateError.OverMaxCount)
@@ -41,13 +41,27 @@ public class Attack_PersonState : PersonState
     void SetAttack(SkillLoader.SkillToken token)
     {
         var aph = GetNewAPH(1, AnimationPointHandler.WalkingState.Run);
+
         var AttackAP = aph.GetAnimationPoint<PersonAnimationPoint>(0);
         SetAPs(AttackAP, prepareData.target, PersonAniState.StateKind.Attack, 0, false, true);
-        AttackAP.EventTrigger = AttackTrigger; // for actual attack timing
+        AttackAP.animationPointData.EventTrigger = AttackTrigger; // for actual attack timing
         var skillToken = token == null ? skillLoader.UseSkill() : token;
-        AttackAP.SkillData = skillToken.SkillData;
+        AttackAP.animationPointData.SkillData = skillToken.SkillData;
+        AttackAP.animationPointData.CanAnimationCancle = false;
         skillToken.curLoopCount++;
-        AttackAP.whenAnimationExitTime = () => { WhenExitTime(AttackAP, skillToken); }; // every exit time, the attack state will issue an AP
+
+        // var usingAP = aph.GetAnimationPoint<PersonAnimationPoint>(1);
+        // SetAPs(usingAP, prepareData.target, PersonAniState.StateKind.UsingWeapon, 0f, false, true);
+        // usingAP.animationPointData.CanAnimationCancle = false;
+
+        if (skillToken.SkillData.canLoop)
+        {
+            if (skillToken.maxLoopCount == 0)
+            {
+                skillToken.maxLoopCount = UnityEngine.Random.Range(0, 2);
+            }
+        }
+
         SetAPH(aph, true);
     }
 
@@ -56,30 +70,47 @@ public class Attack_PersonState : PersonState
         Debug.Log("isIn");
     }
 
-    public void WhenExitTime(AnimationPoint ap, SkillLoader.SkillToken token)
-    {
-        // checking loop
-        if (ap.Weapon == Weapon)
-        {
-            if (token.maxLoopCount != 0)
-            {
-                if (token.curLoopCount <= token.maxLoopCount)
-                {
-                    SetAttack(token);
-                    return;
-                }
-            }
-        }
-        StartModule();
-    }
-
+    // public void WhenExitTime(AnimationPoint ap, SkillLoader.SkillToken token)
+    // {
+    //     // checking loop
+    //     if (ap.animationPointData.Weapon == Weapon)
+    //     {
+    //         if (token.maxLoopCount != 0)
+    //         {
+    //             if (token.curLoopCount <= token.maxLoopCount)
+    //             {
+    //                 SetAttack(token);
+    //             }
+    //             else
+    //             {
+    //                 aphDoneState = APHDoneState.Delaying;
+    //                 var aph = GetNewAPH(1, AnimationPointHandler.WalkingState.Run);
+    //                 var loopDelayAP = aph.GetAnimationPoint(0);
+    //                 SetAPs(loopDelayAP, prepareData.target, PersonAniState.StateKind.UsingWeapon, 1f, false, true);
+    //                 SetAPH(aph, true);
+    //             }
+    //             return;
+    //         }
+    //     }
+    //     StartModule();
+    // }
 
     protected override void AfterAPHDone()
     {
-        if (IsInSight(prepareData.target))
-            StartModule();
-        else
-            SetState(StateKinds.Tracking, prepareData);
+        switch (aphDoneState)
+        {
+            case APHDoneState.Attacking:
+                if (IsInSight(prepareData.target))
+                    StartModule();
+                else
+                    SetState(StateKinds.Tracking, prepareData);
+                break;
+
+            case APHDoneState.Delaying:
+                StartModule();
+                break;
+        }
+
     }
     public override void Exit()
     {

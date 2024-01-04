@@ -75,13 +75,14 @@ public class AnimationStateInfo
         events.ForEach(x => eventsTiming += x.Round(3) + ",");
         animatorTransitions.ForEach(x =>
         {
-            if (x.exitTime != 0f)
+            if (x.hasExitTime)
             {
+                exitTime += x.exitTime.Round(3) + ",";
                 if (x.destinationState != null)
-                {
-                    exitTime += x.exitTime.Round(3) + ",";
                     nextAnimation += x.destinationState.name + ",";
-                }
+
+                var newLegth = Mathf.Lerp(0, x.exitTime, 0.5f);
+                this.length = newLegth;
             }
         });
     }

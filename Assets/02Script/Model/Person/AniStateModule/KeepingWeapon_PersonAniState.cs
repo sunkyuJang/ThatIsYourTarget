@@ -14,8 +14,8 @@ public class KeepingWeapon_PersonAniState : PersonAniState
         var layer = Animator.GetLayerIndex("WeaponMotion");
         Animator.SetLayerWeight(layer, 1);
         Animator.SetBool(KeepingWeapon, false);
-        Animator.SetInteger("WeaponType", (int)ap.Weapon.GetWeaponType);
-        ap.whenAnimationEnd += () => { };
+        Animator.SetInteger("WeaponType", (int)ap.animationPointData.Weapon.GetWeaponType);
+        ap.animationPointData.whenAnimationEnd += () => { };
     }
 
     public override void EnterToException()

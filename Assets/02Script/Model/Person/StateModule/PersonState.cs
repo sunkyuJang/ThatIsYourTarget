@@ -59,7 +59,7 @@ public abstract class PersonState : StateModule
         => SetAPs(ap, target.position, kind, time, shouldReachTargetPosition, shouldLookAtTarget, target);
     protected void SetAPs(AnimationPoint ap, Vector3 target, PersonAniState.StateKind kind, float time, bool shouldReachTargetPosition = false, bool shouldLookAtTarget = false, Transform targetTransform = null)
     {
-        ap.InteractionObj = Weapon;
+        ap.animationPointData.InteractionObj = Weapon;
         var canYield = CanYeildList.Contains(ModuleHandler.GetPlayingModuleStateKind());
         ap.SetAP(Person.ActorTransform.position, target, (int)kind, time, canYield, shouldReachTargetPosition, shouldLookAtTarget, canYield ? null : targetTransform);
     }

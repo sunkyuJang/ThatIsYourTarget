@@ -23,9 +23,9 @@ public class HoldingWeapon_PersonState : PersonState
     public AnimationPointHandler GetAttckAPHHandler()
     {
         var aph = GetNewAPH(1, AnimationPointHandler.WalkingState.Run);
-        aph.GetAnimationPoint(0).InteractionObj = Weapon;
+        aph.GetAnimationPoint(0).animationPointData.InteractionObj = Weapon;
         SetAPsImmediate(aph.GetAnimationPoint(0), PersonAniState.StateKind.HoldingWeapon, 0);
-        aph.GetAnimationPoint(0).whenAnimationStart += () => HandleWeapon(PersonAniState.StateKind.HoldingWeapon);
+        aph.GetAnimationPoint(0).animationPointData.whenAnimationStart += () => HandleWeapon(PersonAniState.StateKind.HoldingWeapon);
         return aph;
     }
     protected override void AfterAPHDone()

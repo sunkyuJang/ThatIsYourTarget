@@ -5,6 +5,7 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine.Rendering;
 using System.Threading;
+using Unity.VisualScripting;
 
 public class AttackingAnimationStateManager : MonoBehaviour
 {
@@ -13,6 +14,7 @@ public class AttackingAnimationStateManager : MonoBehaviour
     private List<AnimationStateNode> LoopList = new List<AnimationStateNode>();
     private static string targetLayerName = "WeaponMotion";
     private static string targetSubStateName = "AttackingWeapon";
+    private static string tagForAttack = "Attack";
     public AnimationStateNode GetStartNode() => aniStateNode[targetSubStateName];
     [SerializeField] private List<string> AddiedParametaList = new List<string>();
     public SkillManager skillManager;
@@ -79,10 +81,12 @@ public class AttackingAnimationStateManager : MonoBehaviour
         {
             if (stateData != null)
             {
+                state.state.tag = tagForAttack;
                 SetTransitionParameter(state.state.name, state.state.transitions, out List<string> nextAnimationNames);
 
                 var newNode = new AnimationStateNode(false, state.state.name, nextAnimationNames);
                 if (newNode.hasLoop) LoopList.Add(newNode);
+
 
                 aniStateNode.Add(state.state.name, newNode);
             }
@@ -122,14 +126,21 @@ public class AttackingAnimationStateManager : MonoBehaviour
                 if (!stateNameAlreadyExist)
                     controller.AddParameter(stateName, AnimatorControllerParameterType.Int);
 
-                AnimatorCondition condition = new AnimatorCondition
+                AnimatorCondition trassitionCondition = new AnimatorCondition
                 {
                     mode = AnimatorConditionMode.Equals,
                     parameter = stateName,
                     threshold = nextAnimationNames.Count - 1
                 };
 
-                transition.conditions = new AnimatorCondition[] { condition };
+                AnimatorCondition OnlyStateInAttackCondition = new AnimatorCondition
+                {
+                    mode = AnimatorConditionMode.If,
+                    parameter = "Attack",
+                    threshold = 0,
+                };
+
+                transition.conditions = new AnimatorCondition[] { trassitionCondition, OnlyStateInAttackCondition };
                 if (!AddiedParametaList.Contains(stateName))
                     AddiedParametaList.Add(stateName);
             }
@@ -169,14 +180,21 @@ public class AttackingAnimationStateManager : MonoBehaviour
                 if (!stateNameAlreadyExist)
                     controller.AddParameter(stateName, AnimatorControllerParameterType.Int);
 
-                AnimatorCondition condition = new AnimatorCondition
+                AnimatorCondition trassitionCondition = new AnimatorCondition
                 {
                     mode = AnimatorConditionMode.Equals,
                     parameter = stateName,
                     threshold = nextAnimationNames.Count - 1
                 };
 
-                transition.conditions = new AnimatorCondition[] { condition };
+                AnimatorCondition OnlyStateInAttackCondition = new AnimatorCondition
+                {
+                    mode = AnimatorConditionMode.If,
+                    parameter = "Attack",
+                    threshold = 0,
+                };
+
+                transition.conditions = new AnimatorCondition[] { trassitionCondition, OnlyStateInAttackCondition };
                 if (!AddiedParametaList.Contains(stateName))
                     AddiedParametaList.Add(stateName);
             }

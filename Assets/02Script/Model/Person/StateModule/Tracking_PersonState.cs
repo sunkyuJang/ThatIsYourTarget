@@ -25,18 +25,15 @@ public class Tracking_PersonState : PersonState
                 Debug.Log(GetHoldState.ToString());
                 if (GetHoldState != InteractionObjGrabRig.State.Using)
                 {
-                    Debug.Log("isin");
                     state = State.UsingWeapon;
                     var aph = GetNewAPH(1, AnimationPointHandler.WalkingState.Run);
                     SetAPsImmediate(aph.GetAnimationPoint(0), PersonAniState.StateKind.UsingWeapon, 0f);
-                    aph.GetAnimationPoint(0).whenAnimationStart += () => HandleWeapon(PersonAniState.StateKind.UsingWeapon);
-                    Debug.Log("isin  " + aph.GetAnimationPoint(0).state);
+                    aph.GetAnimationPoint(0).animationPointData.whenAnimationStart += () => HandleWeapon(PersonAniState.StateKind.UsingWeapon);
                     SetAPH(aph, true);
                     return;
                 }
                 else
                 {
-                    Debug.Log("isin2");
                     state = State.Tracking;
                     StartModule();
                     return;
@@ -44,7 +41,6 @@ public class Tracking_PersonState : PersonState
             }
             else
             {
-                Debug.Log("isin3");
                 state = State.Tracking;
                 aph = GetNewAPH(1, AnimationPointHandler.WalkingState.Run);
                 aph.shouldLoop = true;

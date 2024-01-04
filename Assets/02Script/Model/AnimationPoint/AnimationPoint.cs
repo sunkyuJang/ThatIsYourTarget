@@ -8,36 +8,13 @@ public abstract class AnimationPoint : MonoBehaviour
 {
     public AnimatorController animatorController;
     public virtual bool HasAction { get { return true; } }
-    [HideInInspector]
-    public int state = 0;
-    [HideInInspector]
-    public float during = 0;
-    public bool IsUnLimited { get { return during <= -1; } }
-    [HideInInspector]
-    public float targetDegree = 0;
-    public Vector3 CorrectedPosition { set; get; }
-    public bool ShouldcontinuousReadState { set; get; } = false;
-
-    // event 
-    public Action<int> EventTrigger { set; get; }
-    public Action whenAnimationStart { set; get; }
-    public Action whenAnimationEnd { set; get; }
-    public Action whenAnimationExitTime { set; get; }
-
-    // positioning
-    public bool CanYield { set; get; } = true;
+    public AnimationPointData animationPointData;
     public abstract bool ShouldPlaySamePosition { get; }
     public abstract void ReplaceExpectionState();
-
-    // aiming detail
-    public InteractionObj InteractionObj { set; get; } = null;
-    public Weapon Weapon { get { return InteractionObj as Weapon; } }
-    public Transform TargetingTarsform { set; get; } = null;
-    public Transform AimTarget { set; get; } = null;
-
-    // SkillAnimationName
-    public SkillData SkillData { set; get; }
-
+    public void ResetData()
+    {
+        animationPointData = new AnimationPointData();
+    }
     public float GetAnimationClipLength(string stateName)
     {
         var state = AnimatorStateManager.Instance.GetStateInfo(animatorController, stateName);
@@ -63,7 +40,7 @@ public abstract class AnimationPoint : MonoBehaviour
     private void ChangePosition(Vector3 position)
     {
         transform.position = position;
-        CorrectedPosition = position;
+        animationPointData.CorrectedPosition = position;
     }
     private void MakeLookAtTo(Vector3 to)
     {
@@ -81,8 +58,8 @@ public abstract class AnimationPoint : MonoBehaviour
 
     protected void SetAPWithDuring(Vector3 from, Vector3 to, int state, float time, bool shouldReachTargetPosition, bool shouldLookAtTarget)
     {
-        this.state = state;
-        during = time;
+        animationPointData.state = state;
+        animationPointData.during = time;
         SetPositionForTracking(from, to, shouldReachTargetPosition, shouldLookAtTarget);
     }
 
@@ -94,16 +71,10 @@ public abstract class AnimationPoint : MonoBehaviour
 
     public void SetAP(Vector3 from, Vector3 to, int state, float time, bool canYield, bool shouldReachTargetPosition, bool shouldLookAtTarget, Transform targetTransform)
     {
-        CanYield = canYield;
-        TargetingTarsform = targetTransform;
+        animationPointData.CanYield = canYield;
+        animationPointData.TargetingTarsform = targetTransform;
         if (IsFixedDuring(state))
         {
-            // if (IsFixedDuringInRuntime(state))
-            // {
-            //     var stateName = GetRuntimeStateName(state);
-            //     SetAPWithFixedDuring(from, to, state, stateName, shouldReachTargetPosition, shouldLookAtTarget);
-            //     return;
-            // }
             SetAPWithFixedDuring(from, to, state, GetStateName(state), shouldReachTargetPosition, shouldLookAtTarget);
         }
         else
@@ -112,8 +83,12 @@ public abstract class AnimationPoint : MonoBehaviour
         }
     }
     public abstract bool IsFixedDuring(int state);
-    //public abstract bool IsFixedDuringInRuntime(int state);
     public abstract string GetStateName(int state);
     public abstract string GetRuntimeStateName(int state);
+
+    public void ResetObj()
+    {
+        ResetData();
+    }
 }
 

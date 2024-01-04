@@ -28,7 +28,7 @@ public class ModelAPHJobManger : JobManager
     {
         TargetAPH = targetAPH == null ? OriginalAPH : targetAPH;
         var weapon = Model.Weapon;
-        TargetAPH.animationPoints.ForEach(x => x.InteractionObj = weapon);
+        TargetAPH.animationPoints.ForEach(x => x.animationPointData.InteractionObj = weapon);
         this.ReservatedAction = ReservatedAction;
     }
 

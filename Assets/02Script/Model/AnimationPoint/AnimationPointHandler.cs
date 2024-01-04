@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-public class AnimationPointHandler : MonoBehaviour
+public class AnimationPointHandler : MonoBehaviour, IPoolerConnector
 {
     public enum WalkingState { Non, Walk, Run }
     public WalkingState walkingState = WalkingState.Walk;
@@ -72,6 +72,14 @@ public class AnimationPointHandler : MonoBehaviour
     private void OnDisable()
     {
         ResetIndex();
+    }
+
+    public void ResetObj()
+    {
+        walkingState = WalkingState.Non;
+        animationPoints.Clear();
+        index = 0;
+        shouldLoop = false;
     }
 }
 

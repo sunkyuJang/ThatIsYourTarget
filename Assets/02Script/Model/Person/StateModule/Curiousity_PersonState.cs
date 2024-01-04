@@ -41,7 +41,7 @@ public class Curiousity_PersonState : PersonState
             state = State.HoldingWeapon;
             var aph = GetNewAPH(1);
             SetAPs(aph.animationPoints[0], prepareData.target, PersonAniState.StateKind.HoldingWeapon, 0, false, true);
-            aph.animationPoints[0].whenAnimationStart += () => HandleWeapon(PersonAniState.StateKind.HoldingWeapon);
+            aph.animationPoints[0].animationPointData.whenAnimationStart += () => HandleWeapon(PersonAniState.StateKind.HoldingWeapon);
             SetAPH(aph, true);
         }
         else

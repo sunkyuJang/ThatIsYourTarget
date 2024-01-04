@@ -50,7 +50,7 @@ public class MetaphysicsTrafficHandler
             var isAnimationDone = false;
 
             agent.stoppingDistance = 0;
-            registedAP.whenAnimationEnd += () => { isAnimationDone = true; };
+            registedAP.animationPointData.whenAnimationEnd += () => { isAnimationDone = true; };
 
             yield return new WaitUntil(() => naviController.playingAP != registedAP || isAnimationDone || trafficData.RemoveList.Contains(naviController));
 
@@ -90,7 +90,7 @@ public class MetaphysicsTrafficHandler
             agent.avoidancePriority = AddingCount++;
             agent.stoppingDistance = 2f;
 
-            if (ap.IsUnLimited)
+            if (ap.animationPointData.IsUnLimited)
             {
                 isUnlimitedPlayingExist = true;
             }
@@ -126,8 +126,8 @@ public class MetaphysicsTrafficHandler
         {
             NaviPairAP.Sort((pair1, pair2) =>
             {
-                float distance1 = Vector3.Distance(pair1.Key.transform.position, pair1.Value.CorrectedPosition);
-                float distance2 = Vector3.Distance(pair2.Key.transform.position, pair2.Value.CorrectedPosition);
+                float distance1 = Vector3.Distance(pair1.Key.transform.position, pair1.Value.animationPointData.CorrectedPosition);
+                float distance2 = Vector3.Distance(pair2.Key.transform.position, pair2.Value.animationPointData.CorrectedPosition);
                 return distance1.CompareTo(distance2);
             });
         }
