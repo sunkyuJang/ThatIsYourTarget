@@ -72,7 +72,6 @@ public abstract class AnimationPoint : MonoBehaviour
     public void SetAP(Vector3 from, Vector3 to, int state, float time, bool canYield, bool shouldReachTargetPosition, bool shouldLookAtTarget, Transform targetTransform)
     {
         animationPointData.CanYield = canYield;
-        animationPointData.TargetingTarsform = targetTransform;
         if (IsFixedDuring(state))
         {
             SetAPWithFixedDuring(from, to, state, GetStateName(state), shouldReachTargetPosition, shouldLookAtTarget);

@@ -1,12 +1,10 @@
 using JExtentioner;
 using System;
 using System.Collections;
-using Unity.Mathematics;
 using UnityEngine;
-using RootMotion;
 using RootMotion.FinalIK;
 using System.Collections.Generic;
-using JExtentioner;
+using SensorToolkit;
 
 public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJobManager.ModelHandlerJob>
 {
@@ -20,7 +18,7 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
     // IK
     protected AimIK aimIK;
     protected LookAtIK lookAtIK;
-    [SerializeField] private float IK_bodyThreshold = 45f;
+    [SerializeField] private float IK_bodyThreshold = 0f;
     protected Coroutine DoTrackingBody { set; get; }
 
     // reserved Ani
@@ -42,6 +40,11 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
         animator = GetComponent<Animator>();
         aimIK = GetComponent<AimIK>();
         lookAtIK = GetComponent<LookAtIK>();
+        var FOVCollider = GetComponentInChildren<FOVCollider>();
+        if (FOVCollider == null)
+            Debug.Log("aniController cant find fovCollider");
+        else
+            IK_bodyThreshold = FOVCollider.FOVAngle * 0.5f;
     }
 
     protected virtual void Start()
@@ -106,28 +109,29 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
     {
         if (!IsPlayingAni)
         {
-            Debug.Log(ap.animationPointData.state + "// isin _ MakeCorrect");
+            Debug.Log("isin make Correct _ " + ap.animationPointData.state);
             PlayingAni = StartCoroutine(DoMakeCorrectTransform(ap));
         }
         else
         {
-            Debug.Log(ap.animationPointData.state + "// isin _ Make Reserved");
+            Debug.Log("isin reserved _ " + ap.animationPointData.state);
             reservedAP = ap;
         }
     }
     protected virtual IEnumerator DoMakeCorrectTransform(AnimationPoint ap)
     {
-        Debug.Log(ap.animationPointData.state + "// isin _ DoMakeCorrectTransform");
-        if (ap.animationPointData.TargetingTarsform == null)
+        if (ap.animationPointData.LookAtTransform == null)
         {
+            aimIK.solver.IKPositionWeight = 0;
+            aimIK.enabled = false;
+
             var isPositionDone = false;
             var isRotationDone = false;
             var positionCorrect = StartCoroutine(DoPositionCorrectly(ap.animationPointData.CorrectedPosition, () => { isPositionDone = true; }));
             var rotationCorrect = StartCoroutine(DoRotationCorrectly(ap.transform.forward, () => { isRotationDone = true; }));
 
             yield return new WaitUntil(() => isPositionDone && isRotationDone);
-            yield return new WaitUntil(() => IsWalkState() || IsAPReserved);
-            Debug.Log(ap.animationPointData.state + "// isin _ DoMakeCorrectTransformEnd");
+            yield return new WaitUntil(() => IsWalkState());
         }
         else
         {
@@ -137,16 +141,8 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
             DoTrackingBody = StartCoroutine(DoTracking(ap));
         }
 
-        if (IsAPReserved)
-        {
-            Debug.Log(ap.animationPointData.state + "// isin _ resevedAP");
-            RunReservedAP();
-        }
-        else
-        {
-            Debug.Log(ap.animationPointData.state + "// isin _ startAni");
-            StartAni(ap);
-        }
+        StartAni(ap);
+
         yield return null;
     }
 
@@ -194,18 +190,15 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
     {
         var rotationSpeed = 2f;
         var animationEnded = false;
-        var aimTarget = ap.animationPointData.AimTarget;
-        var target = ap.animationPointData.TargetingTarsform;
-        aimIK.solver.transform = aimTarget;
-        aimIK.solver.target = target;
+        aimIK.solver.target = ap.animationPointData.LookAtTransform;
         aimIK.solver.IKPositionWeight = 1;
         aimIK.enabled = true;
         ap.animationPointData.whenAnimationEnd += () => { animationEnded = true; };
 
-        while (true)
+        while (true && ap.animationPointData.LookAtTransform != null)
         {
             var limit = IK_bodyThreshold;
-            var targetDir = target.transform.position.ExceptVector3Property(1) - transform.position.ExceptVector3Property(1);
+            var targetDir = aimIK.solver.target.position.ExceptVector3Property(1) - transform.position.ExceptVector3Property(1);
             var targetAngle = transform.forward.GetRotationDir(targetDir);
             if (Mathf.Abs(targetAngle) >= limit)
             {
@@ -216,16 +209,14 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
             if (animationEnded)
             {
                 if (!IsAPReserved
-                    || IsAPReserved && !(reservedAP.animationPointData.AimTarget == ap.animationPointData.AimTarget && reservedAP.animationPointData.TargetingTarsform == ap.animationPointData.TargetingTarsform))
+                    || IsAPReserved && !(reservedAP.animationPointData.LookAtTransform == ap.animationPointData.LookAtTransform))
                     break;
             }
             yield return new WaitForFixedUpdate();
         }
 
-        ap.animationPointData.AimTarget = null;
-        ap.animationPointData.TargetingTarsform = null;
-        aimIK.solver.IKPositionWeight = 0;
-        aimIK.enabled = false;
+        if (ap.animationPointData.LookAtTransform == null)
+            aimIK.enabled = false;
     }
 
     bool IsRatationDirLeft(Vector3 targetDir)
@@ -255,7 +246,6 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
 
         var triggeredExitEvent = false;
 
-        Debug.Log(ap.animationPointData.state + "// isin _ timeCountStart");
         int eventsCount = 0;
         for (float time = 0f; time < ap.animationPointData.during && !(IsAPReserved && ap.animationPointData.CanAnimationCancle); time += Time.fixedDeltaTime)
         {
@@ -283,7 +273,8 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
 
             yield return new WaitForFixedUpdate();
         }
-        Debug.Log(ap.animationPointData.state + "// isin _ timeCountEnd : ap reserved ? " + IsAPReserved);
+
+        Debug.Log("isin timecountinf done + " + ap.animationPointData.state + "//" + ap.animationPointData.during + "//" + IsAPReserved + "//" + ap.animationPointData.CanAnimationCancle);
 
         ap.animationPointData.whenAnimationEnd?.Invoke();
         MakeResetAni(!shouldReturnAP, stateModule);
@@ -315,9 +306,10 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
     protected void RunReservedAP()
     {
         var ap = reservedAP;
-        Debug.Log(ap.animationPointData.state + "// isin _ run resevedAP");
         reservedAP = null;
         PlayingAni = null;
+
+        Debug.Log("isin reserved Start + : " + ap.animationPointData.state);
         MakeCorrectTransform(ap);
     }
 

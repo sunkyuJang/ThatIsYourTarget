@@ -5,7 +5,7 @@ using System.Collections;
 using System.Security.Policy;
 using UnityEditor.Animations;
 using UnityEngine;
-
+using JExtentioner;
 public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, IDamagePasser
 {
     public enum ModelKinds { Person, Player }
@@ -46,6 +46,11 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
     // Coversation
     public ConversationHandler ConversationHandler { protected set; get; }
 
+    // Sight
+    public FOVCollider FOVCollider;
+    public float SightLength { get { return FOVCollider.Length * FOVCollider.transform.lossyScale.x; } }
+
+
     protected virtual void Awake()
     {
         ModelAnimationPlayer = new ModelAnimationPlayer(this, ActorTransform);
@@ -58,6 +63,7 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
         //ConversationHandler = SetConversationHandler();
         var physicalModelConnector = GetComponentInChildren<PhysicalModelConnector>();
         physicalModelConnector.SetPhysicalModelConnector(this, ConversationHandler);
+        FOVCollider = GetComponentInChildren<FOVCollider>();
     }
     protected abstract StateModuleHandler SetStateModuleHandler();
     protected abstract SkillLoader SetSkillLoader(AnimatorController controller);
@@ -69,6 +75,7 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
     }
     public void SetState(int newState, StateModule.PrepareData prepareData = null)
     {
+        Debug.Log("isin StatNum : // " + newState);
         ModuleHandler.EnterModule(newState, prepareData);
     }
     public void SetAPH(AnimationPointHandler handler = null, Action nextActionFromState = null)
@@ -76,8 +83,9 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
         ModelAPHJobManger.SetAPH(handler, nextActionFromState);
         ModelAPHJobManger.StartJob();
     }
-    public void OnDetected(ObjDetector detector, Collider collider) { OnDetected(collider); }
-    public virtual void OnDetected(Collider collider) { }
+    public void OnDetected(ObjDetector detector, Collider collider) => OnDetected(collider);
+
+    public abstract void OnDetected(Collider collider); // use onDetected as for detection sensedState. onRemove is not working by some animation.
     protected virtual void DoDead() { }
     public void HoldWeapon(bool shouldHold, InteractionObjGrabRig.State grabbingState)
     {
@@ -114,4 +122,31 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
             }
         }
     }
+
+    // sight
+    public IEnumerator DoTracingTargetInSight(Transform target, Func<bool> conditionOfEndLoop, Func<bool, bool> ShouldStopAfterCast)
+    {
+        var maxTime = 600f;
+        var time = 0f;
+        while (time < maxTime && !conditionOfEndLoop())
+        {
+            var isHit = IsHitToTarget(target, SightLength);
+            if (ShouldStopAfterCast.Invoke(isHit))
+            {
+                yield break;
+            }
+
+            time += Time.fixedDeltaTime;
+            yield return new WaitForFixedUpdate();
+        }
+
+        if (!conditionOfEndLoop())
+            ShouldStopAfterCast?.Invoke(false);
+
+        if (time > maxTime)
+            Debug.Log("DoTracingTargetInSight closed by force : its over than " + maxTime + "sec.\n" + "instanceID : " + transform.GetInstanceID());
+
+        yield break;
+    }
+    public bool IsHitToTarget(Transform target, float dist = 0f) => FOVCollider.transform.IsRayHitToTarget(target, dist, FOVCollider.FOVAngle);
 }

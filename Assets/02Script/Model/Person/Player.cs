@@ -29,4 +29,9 @@ public class Player : Model
     {
         throw new System.NotImplementedException();
     }
+
+    public override void OnDetected(Collider collider)
+    {
+        throw new System.NotImplementedException();
+    }
 }

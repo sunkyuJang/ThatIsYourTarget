@@ -10,7 +10,6 @@ public class UsingWeapon_PersonAniState : PersonAniState
 
     public override bool IsReady()
     {
-        Debug.Log(base.IsReady());
         return base.IsReady();
     }
     protected override void StartModule()

@@ -10,8 +10,9 @@ public class SkillManager : MonoBehaviour
 {
     public AnimatorController animatorController;
     [SerializeField] private SerializedDictionary<string, SkillData> skills = new SerializedDictionary<string, SkillData>();
+    [SerializeField] private SerializedDictionary<SkillData, ObjPooler> skillDetectors = new SerializedDictionary<SkillData, ObjPooler>();
+
     public SerializedDictionary<string, SkillData> AllSkillData { get => skills; }
-    private SerializedDictionary<Model, Dictionary<SkillData, SkillToken>> usingSkill = new SerializedDictionary<Model, Dictionary<SkillData, SkillToken>>();
     public void Initialize(AnimatorController controller)
     {
         skills.Clear();
@@ -23,19 +24,6 @@ public class SkillManager : MonoBehaviour
                 skills.Add(item.skillData.keyName, item.skillData);
         }
     }
-    public void AddSkill(SkillData skillData)
-    {
-        if (skills.ContainsKey(skillData.keyName))
-        {
-            Debug.Log("duplicated skill" + skillData.keyName);
-        }
-        else
-        {
-            skills.Add(skillData.keyName, skillData);
-        }
-    }
-
-
     public void CheckAllSkillName(List<string> skillKeyNames)
     {
         foreach (var keyName in skills.Keys)
@@ -45,6 +33,26 @@ public class SkillManager : MonoBehaviour
                 Debug.Log("skillkeyName must same with animationStateName_ target SkillName : " + keyName);
             }
         }
+    }
+    private void Start()
+    {
+        foreach (var skillData in skillDetectors.Keys)
+        {
+            var skillPooler = ObjPoolerManager.Instance.GetPooler(skillData.SkillDetectorObj);
+            for (int i = 0; i < skillData.poolerStayCount; i++)
+            {
+                skillPooler.MakeNewOne();
+            }
+            skillDetectors.Add(skillData, skillPooler);
+        }
+    }
+
+    public SkillTargetDetector GetSkillTargetDetector(SkillData skillData)
+    {
+        if (skillDetectors.ContainsKey(skillData))
+            return skillDetectors[skillData].GetNewOne<SkillTargetDetector>();
+
+        return null;
     }
 
     public class SkillToken

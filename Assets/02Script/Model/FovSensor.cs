@@ -9,6 +9,8 @@ public class FovSensor : ObjDetector
             transform.tag = "Untagged";
             Debug.Log("FOVSenser should be untagged for unexpecting catcing by other objDetector");
         }
+
+        gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
     }
     public Vector3 rayStartPoint { get { return transform.position + transform.forward * 0.2f; } }
     //protected override void OnTriggerStay(Collider other)

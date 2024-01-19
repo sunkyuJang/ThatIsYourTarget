@@ -20,6 +20,10 @@ public abstract class PersonState : StateModule
         Dead,
         Non
     }
+    readonly public static List<PersonAniState.StateKind> SensedLockStateList = new List<PersonAniState.StateKind>()
+    {
+        PersonAniState.StateKind.Surprize,
+    };
     public static List<StateKinds> CanYeildList = new List<StateKinds>() { StateKinds.Normal, StateKinds.Sensed, StateKinds.Curiousity, StateKinds.Patrol, };
     public static int ConvertStateKindToInt(StateKinds kinds) => (int)kinds;
     private Person Person { get; set; }
@@ -65,6 +69,20 @@ public abstract class PersonState : StateModule
     }
     protected void SetAPH(AnimationPointHandler aph = null, bool needFuncAfterAPH = false)
     {
+        // if (aph != null)
+        // {
+        //     for (int i = 0; i < aph.GetActionCount; i++)
+        //     {
+        //         var ap = aph.GetAnimationPoint(i);
+        //         if (SensedLockStateList.Contains((PersonAniState.StateKind)ap.animationPointData.state))
+        //         {
+        //             var sensed = ModuleHandler.GetModule<Sensed_PersonState>(StateKinds.Sensed);
+        //             ap.animationPointData.whenAnimationStart += () => sensed.SensedLock = true;
+        //             ap.animationPointData.whenAnimationEnd += () => sensed.SensedLock = false;
+        //         }
+        //     }
+        // }
+
         Person.SetAPH(aph, needFuncAfterAPH ? AfterAPHDone : null);
     }
     protected virtual void AfterAPHDone() { }
@@ -83,17 +101,13 @@ public abstract class PersonState : StateModule
 
     // Sight
     protected bool IsInSight(Transform target)
-    {
-        var sensed = ModuleHandler.GetModule<Sensed_PersonState>(StateKinds.Sensed);
-        return sensed.target?.Equals(target) ?? false;
-    }
-
+        => Person.IsHitToTarget(target, Person.SightLength);
     public void StartTracingTargetInSight(Transform target, Func<bool> conditionOfEndLoop)
     {
         var playingModule = ModuleHandler.GetPlayingModule();
         var playingKind = ModuleHandler.GetThisKind(playingModule);
         var thisKind = ModuleHandler.GetThisKind(this);
-        StartCoroutine(DoTracingTargetInSight(target, () => conditionOfEndLoop() && playingKind == thisKind, ShouldStopAfterCast));
+        StartCoroutine(Person.DoTracingTargetInSight(target, () => conditionOfEndLoop() && playingKind == thisKind, ShouldStopAfterCast));
     }
     public IEnumerator DoTracingTargetInSight(Transform target, Func<bool> conditionOfEndLoop, Func<bool, bool> ShouldStopAfterCast)
     {
@@ -120,6 +134,7 @@ public abstract class PersonState : StateModule
 
         yield break;
     }
+
     public override void Exit()
     {
         prepareData = null;
@@ -139,7 +154,6 @@ public abstract class PersonState : StateModule
                     case StateKinds.Normal: list.Add(new Normal_PersonState(person)); break;
                     case StateKinds.Sensed: list.Add(new Sensed_PersonState(person)); break;
                     case StateKinds.Curiousity: list.Add(new Curiousity_PersonState(person)); break;
-                    //case StateKinds.HoldingWeapon: list.Add(new HoldingWeapon_PersonState(person)); break;
                     case StateKinds.Tracking: list.Add(new Tracking_PersonState(person)); break;
                     case StateKinds.Patrol: list.Add(new Patrol_PersonState(person)); break;
                     case StateKinds.Attack: list.Add(new Attack_PersonState(person)); break;

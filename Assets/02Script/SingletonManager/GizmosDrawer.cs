@@ -6,6 +6,7 @@ using UnityEngine;
 public class GizmosDrawer : MonoBehaviour
 {
     public static GizmosDrawer instanse { private set; get; }
+    public bool drawGizmos = true;
 
     private void Awake()
     {
@@ -43,29 +44,30 @@ public class GizmosDrawer : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        for (int i = 0; i < gizmosToDraw.Count; i++)
-        {
-            var info = gizmosToDraw[i];
-            if (info.NeedRemove)
+        if (drawGizmos)
+            for (int i = 0; i < gizmosToDraw.Count; i++)
             {
-                gizmosToDraw.RemoveAt(i--);
-                continue;
-            }
-            else
-            {
-                Gizmos.color = info.Color;
-                switch (info.GizmoType)
+                var info = gizmosToDraw[i];
+                if (info.NeedRemove)
                 {
-                    case GizmoInfo.GizmosType.Line:
-                        Gizmos.DrawLine(info.StartPosition, info.EndPosition);
-                        break;
-                    case GizmoInfo.GizmosType.Sphere:
-                        var sphereInfo = info as SphereGizmoInfo;
-                        Gizmos.DrawSphere(sphereInfo.StartPosition, sphereInfo.Radius);
-                        break;
+                    gizmosToDraw.RemoveAt(i--);
+                    continue;
+                }
+                else
+                {
+                    Gizmos.color = info.Color;
+                    switch (info.GizmoType)
+                    {
+                        case GizmoInfo.GizmosType.Line:
+                            Gizmos.DrawLine(info.StartPosition, info.EndPosition);
+                            break;
+                        case GizmoInfo.GizmosType.Sphere:
+                            var sphereInfo = info as SphereGizmoInfo;
+                            Gizmos.DrawSphere(sphereInfo.StartPosition, sphereInfo.Radius);
+                            break;
+                    }
                 }
             }
-        }
     }
 
     public class GizmoInfo

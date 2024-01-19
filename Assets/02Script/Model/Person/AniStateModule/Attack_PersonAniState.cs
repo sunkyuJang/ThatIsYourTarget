@@ -20,7 +20,6 @@ public class Attack_PersonAniState : PersonAniState
         ap.animationPointData.whenAnimationExitTime += () => { WhenAniExit(ap); };
         var stateInfo = AnimatorStateManager.Instance.GetStateInfo(Animator.runtimeAnimatorController.name, node.nowAnimation);
         ap.animationPointData.during = stateInfo.Length;
-        Debug.Log(ap.animationPointData.state + "// isin _ attackStartState");
     }
 
     public override void EnterToException()
@@ -35,8 +34,6 @@ public class Attack_PersonAniState : PersonAniState
 
     public override void Exit()
     {
-        Debug.Log(ap.animationPointData.state + "// isin _ attackStartEnd");
         Animator.SetBool(Attack, false);
-        Animator.SetBool(UsingWeapon_PersonAniState.UsingWeapon, true);
     }
 }

@@ -2,10 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using JExtentioner;
 
 public class Sensed_PersonState : PersonState
 {
-    public Transform target { private set; get; }
     public List<SensedPrepareData> sensedPrepareDatas { private set; get; } = new List<SensedPrepareData>();
     Coroutine trackingBySensedPrepareData = null;
     readonly public List<StateKinds> PriolityList =
@@ -51,6 +51,7 @@ public class Sensed_PersonState : PersonState
             for (int i = 0; i < sensedPrepareDatas.Count; i++)
             {
                 var prepareData = sensedPrepareDatas[i];
+
                 if (prepareData.isInSight)
                 {
                     trackingList.Add(prepareData.target);
@@ -66,11 +67,11 @@ public class Sensed_PersonState : PersonState
                     // is new target?
                     var dist = Vector3.Distance(ActorTransform.transform.position, selectedModel.position);
                     var shouldAttack = dist < HoldingWeapon_PersonState.AbsoluteAttackDist;
-                    target = selectedModel;
                     SetState(shouldAttack ? StateKinds.Tracking : StateKinds.Curiousity, new PersonPrepareData(selectedModel));
-                    var selectedModelIndex = sensedPrepareDatas.FindIndex(x => x.target == selectedModel);
-                    sensedPrepareDatas.RemoveAt(selectedModelIndex);
                 }
+
+                var selectedModelIndex = sensedPrepareDatas.FindIndex(x => x.target == selectedModel);
+                sensedPrepareDatas.RemoveAt(selectedModelIndex);
 
                 trackingList.Clear();
             }

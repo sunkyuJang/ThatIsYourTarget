@@ -28,7 +28,7 @@ public partial class StateModuleHandler
 
         if (targetModule == null || targetModule == playingModule) return;
 
-        if (targetModule.TryEnter(prepareData))
+        if (targetModule.TryEnter(prepareData)) // cause of this, do not change the state in same frame;
         {
             playingModule?.Exit();
             playingModuleIndex = targetModuleIndex;

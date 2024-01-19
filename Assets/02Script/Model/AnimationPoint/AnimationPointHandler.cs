@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -11,6 +12,7 @@ public class AnimationPointHandler : MonoBehaviour, IPoolerConnector
     public int index = 0;
     public bool shouldLoop = true;
     public bool isAPHDone { get { return !shouldLoop && index >= GetActionCount; } }
+    public Transform LookAtTarget { set; get; } = null;
     public void Awake()
     {
         SetAPs<AnimationPoint>();

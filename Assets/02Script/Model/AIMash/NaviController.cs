@@ -72,7 +72,7 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
             var needNavi = Vector3.Distance(job.ap.transform.position, transform.position) > eachStateDist[(int)State.Reached].Value;
             if (needNavi)
             {
-                navMeshAgent.stoppingDistance = eachStateDist[(int)State.Reached].Value; ;
+                navMeshAgent.stoppingDistance = eachStateDist[(int)State.Reached].Value;
                 CheckingUntilArrive = StartCoroutine(DoCheckUntilArrive(job, correctVector));
             }
             else
@@ -87,11 +87,15 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
     {
         var jobEnded = false;
         var loopEndByAniDone = false;
-        if (job.ap.animationPointData.TargetingTarsform != null)
+        if (job.ap.animationPointData.ShouldTrackingTarget)
         {
-            job.EndJob();
-            jobEnded = true;
-            job.ap.animationPointData.whenAnimationEnd += () => { loopEndByAniDone = true; };
+            if (job.ap.animationPointData.LookAtTransform != null)
+            {
+                job.EndJob();
+                jobEnded = true;
+                job.ap.animationPointData.whenAnimationEnd += () => { loopEndByAniDone = true; };
+                navMeshAgent.stoppingDistance = job.ap.animationPointData.StoppingDistance;
+            }
         }
 
         TurnOnNavi(true);
@@ -117,7 +121,7 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
                 hasBeenCheckNearBy = false;
             }
 
-            // can yield when it get close to AP
+            // can it yield when it get close to AP? 
             if (state == State.Close || state == State.Near)
             {
                 if (!hasBeenCheckNearBy)
@@ -133,7 +137,7 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
                     }
                     else
                     {
-                        if (IsCrowededNear(out Collider[] hitCollider))
+                        if (IsCrowededByNearObj(out Collider[] hitCollider))
                         {
                             if (ap.ShouldPlaySamePosition || hitCollider.Length > 1)
                                 navMeshAgent.obstacleAvoidanceType = ObstacleAvoidanceType.NoObstacleAvoidance;
@@ -145,13 +149,15 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
             // checking Croweded
             if (crowededTimeData == null)
             {
-                crowededTimeData = TimeCounter.Instance.SetTimeCounting(0.5f, () =>
-                {
-                    navMeshAgent.obstacleAvoidanceType = IsCrowededNear(out Collider[] hitCollider) ? ObstacleAvoidanceType.NoObstacleAvoidance : ObstacleAvoidanceType.HighQualityObstacleAvoidance;
-                    crowededTimeData = null;
-                },
-                playingAP,
-                (addedSeqeunce) => addedSeqeunce.Equals(playingAP));
+                crowededTimeData = TimeCounter.Instance.SetTimeCounting(
+                    maxTime: 0.5f,
+                    function: () =>
+                        {
+                            navMeshAgent.obstacleAvoidanceType = IsCrowededByNearObj(out Collider[] hitCollider) ? ObstacleAvoidanceType.NoObstacleAvoidance : ObstacleAvoidanceType.HighQualityObstacleAvoidance;
+                            crowededTimeData = null;
+                        },
+                    sequenceKey: playingAP,
+                    sequnceMatch: (addedSeqeunce) => addedSeqeunce.Equals(playingAP));
             }
 
             // checking DeadLock
@@ -161,18 +167,20 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
                 var lastStanding = transform.position;
                 var speedCorrection = 0.8f;
                 var expectingDist = navMeshAgent.velocity.magnitude * speedCorrection * eachTime;
-                deadLockTimeData = TimeCounter.Instance.SetTimeCounting(eachTime, () =>
-                {
-                    var dist = Vector3.Distance(transform.position, lastStanding);
-                    if (dist < expectingDist)
-                    {
-                        navMeshAgent.obstacleAvoidanceType = ObstacleAvoidanceType.NoObstacleAvoidance;
-                    }
+                deadLockTimeData = TimeCounter.Instance.SetTimeCounting(
+                    maxTime: eachTime,
+                    function: () =>
+                        {
+                            var dist = Vector3.Distance(transform.position, lastStanding);
+                            if (dist < expectingDist)
+                            {
+                                navMeshAgent.obstacleAvoidanceType = ObstacleAvoidanceType.NoObstacleAvoidance;
+                            }
 
-                    deadLockTimeData = null;
-                },
-                playingAP,
-                (addedSeqeunce) => addedSeqeunce.Equals(playingAP));
+                            deadLockTimeData = null;
+                        },
+                    sequenceKey: playingAP,
+                    sequnceMatch: (addedSeqeunce) => addedSeqeunce.Equals(playingAP));
             }
 
             yield return new WaitForFixedUpdate();
@@ -190,7 +198,7 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
             job.EndJob();
     }
 
-    bool IsCrowededNear(out Collider[] hitColliders)
+    bool IsCrowededByNearObj(out Collider[] hitColliders)
     {
         var isCroweded = false;
         var distByState = GetDistByState(State.Close);

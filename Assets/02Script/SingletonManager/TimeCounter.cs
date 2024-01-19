@@ -59,12 +59,9 @@ public class TimeCounter : MonoBehaviour
         {
             data.requestFunction.Invoke();
         }
-        RemoveProcessCounting(data);
-        yield return null;
-    }
-    public void RemoveProcessCounting(TimeCountData data)
-    {
+
         countingList.Remove(data);
+        yield return null;
     }
 
     public class TimeCountData

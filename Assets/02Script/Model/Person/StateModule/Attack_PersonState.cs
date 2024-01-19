@@ -23,36 +23,33 @@ public class Attack_PersonState : PersonState
             SetNormalState();
         }
 
+        Debug.Log("isin attacking in");
+        aphDoneState = APHDoneState.Attacking;
         if (Weapon.CanAttack(prepareData.target, out Weapon.CanAttackStateError attackError))
         {
-            aphDoneState = APHDoneState.Attacking;
-            SetAttack(null);
+            SetAttack();
         }
         else if (attackError == global::Weapon.CanAttackStateError.OverMaxCount)
         {
             // reloading
         }
-        else if (attackError == global::Weapon.CanAttackStateError.Range)
-        {
-            // Range
-        }
     }
 
-    void SetAttack(SkillLoader.SkillToken token)
+    void SetAttack()
     {
         var aph = GetNewAPH(1, AnimationPointHandler.WalkingState.Run);
 
         var AttackAP = aph.GetAnimationPoint<PersonAnimationPoint>(0);
         SetAPs(AttackAP, prepareData.target, PersonAniState.StateKind.Attack, 0, false, true);
         AttackAP.animationPointData.EventTrigger = AttackTrigger; // for actual attack timing
-        var skillToken = token == null ? skillLoader.UseSkill() : token;
+        var skillToken = skillLoader.UseSkill();
         AttackAP.animationPointData.SkillData = skillToken.SkillData;
         AttackAP.animationPointData.CanAnimationCancle = false;
         skillToken.curLoopCount++;
 
-        // var usingAP = aph.GetAnimationPoint<PersonAnimationPoint>(1);
-        // SetAPs(usingAP, prepareData.target, PersonAniState.StateKind.UsingWeapon, 0f, false, true);
-        // usingAP.animationPointData.CanAnimationCancle = false;
+        AttackAP.animationPointData.EventTrigger += (int i) => { AttackTrigger(i); };
+        AttackAP.animationPointData.LookAtTransform = prepareData.target;
+        AttackAP.animationPointData.StoppingDistance = Weapon.range;
 
         if (skillToken.SkillData.canLoop)
         {
@@ -68,32 +65,8 @@ public class Attack_PersonState : PersonState
     public void AttackTrigger(int num)
     {
         Debug.Log("isIn");
-    }
 
-    // public void WhenExitTime(AnimationPoint ap, SkillLoader.SkillToken token)
-    // {
-    //     // checking loop
-    //     if (ap.animationPointData.Weapon == Weapon)
-    //     {
-    //         if (token.maxLoopCount != 0)
-    //         {
-    //             if (token.curLoopCount <= token.maxLoopCount)
-    //             {
-    //                 SetAttack(token);
-    //             }
-    //             else
-    //             {
-    //                 aphDoneState = APHDoneState.Delaying;
-    //                 var aph = GetNewAPH(1, AnimationPointHandler.WalkingState.Run);
-    //                 var loopDelayAP = aph.GetAnimationPoint(0);
-    //                 SetAPs(loopDelayAP, prepareData.target, PersonAniState.StateKind.UsingWeapon, 1f, false, true);
-    //                 SetAPH(aph, true);
-    //             }
-    //             return;
-    //         }
-    //     }
-    //     StartModule();
-    // }
+    }
 
     protected override void AfterAPHDone()
     {
@@ -101,9 +74,16 @@ public class Attack_PersonState : PersonState
         {
             case APHDoneState.Attacking:
                 if (IsInSight(prepareData.target))
+                {
+                    Debug.Log("isin aph Done to attack");
                     StartModule();
+                }
                 else
-                    SetState(StateKinds.Tracking, prepareData);
+                {
+                    Debug.Log("isin aph Done to tracking");
+                    SetState(StateKinds.Tracking, new PersonPrepareData(prepareData.target));
+                }
+
                 break;
 
             case APHDoneState.Delaying:
@@ -114,6 +94,7 @@ public class Attack_PersonState : PersonState
     }
     public override void Exit()
     {
+        prepareData = null;
         base.Exit();
     }
 }

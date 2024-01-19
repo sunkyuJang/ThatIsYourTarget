@@ -60,7 +60,8 @@ public class Patrol_PersonState : PersonState
         var aph = GetAPHByPositions(position);
         SetAPH(aph, true);
 
-        StartCoroutine(DoTracingTarget(aph));
+        StartTracingTargetInSight(prepareData.target, () => aph.isAPHDone);
+        //StartCoroutine(DoTracingTarget(aph));
     }
     void LookAroundNearBy()
     {
@@ -69,7 +70,8 @@ public class Patrol_PersonState : PersonState
         var aph = GetAPHByPositions(positions);
         SetAPH(aph, true);
 
-        StartCoroutine(DoTracingTarget(aph));
+        StartTracingTargetInSight(prepareData.target, () => aph.isAPHDone);
+        //StartCoroutine(DoTracingTarget(aph));
     }
 
     IEnumerator DoTracingTarget(AnimationPointHandler aph)
@@ -87,6 +89,17 @@ public class Patrol_PersonState : PersonState
         }
 
         yield break;
+    }
+
+    protected override bool ShouldStopAfterCast(bool isHit)
+    {
+        if (isHit)
+        {
+            SetState(StateKinds.Tracking, new PersonPrepareData(prepareData.target));
+            return true;
+        }
+
+        return false;
     }
 
     AnimationPointHandler GetAPHByPositions(List<Vector3> positions)

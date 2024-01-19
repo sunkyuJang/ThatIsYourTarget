@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -6,6 +7,12 @@ namespace JExtentioner
 {
     public static class TransformExtentioner
     {
+        public static List<RaycastHit> GetAllRayHitOrderBy(this Transform center, Transform target, float dist = 0f)
+        {
+            var hits = GetAllRayHIts(center, target, dist).ToList();
+            hits.OrderBy(x => x.distance);
+            return hits;
+        }
         public static RaycastHit[] GetAllRayHIts(this Transform center, Transform target, float dist = 0f)
         {
             var from = center.position;
@@ -13,6 +20,12 @@ namespace JExtentioner
             var dir = from.GetDirection(to);
             dist = dist == 0f ? Vector3.Distance(from, to) : dist;
 
+            return Physics.RaycastAll(from, dir, dist, 0, QueryTriggerInteraction.Ignore);
+        }
+
+        public static RaycastHit[] GetAllRayHIts(this Transform center, Vector3 dir, float dist = 0f)
+        {
+            var from = center.position;
             return Physics.RaycastAll(from, dir, dist, 0, QueryTriggerInteraction.Ignore);
         }
 
@@ -82,7 +95,20 @@ namespace JExtentioner
             return false;
         }
 
-        public static bool IsRayHitToTarget(this Transform center, Transform target, float dist = 0f, float limitedAngle = 180f)
+        public static bool IsRayHitToTarget(this Transform center, Transform target, float limitedAngle = 180f)
+        {
+            var dist = Vector3.Distance(center.position, target.position);
+            if (IsRayHit(center, target, out RaycastHit hit, dist, limitedAngle))
+            {
+                if (hit.transform.CompareTag(target.tag))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        public static bool IsRayHitToTarget(this Transform center, Transform target, float dist, float limitedAngle = 180f)
         {
             if (IsRayHit(center, target, out RaycastHit hit, dist, limitedAngle))
             {
@@ -113,6 +139,56 @@ namespace JExtentioner
                     {
                         hits.Add(ray.GetPoint(dist));
                     }
+                }
+            }
+
+            return hits;
+        }
+
+        public static bool IsHitToTargetWithAngleRange(this Transform center, Transform target, float maxAngle, float eachAngleUnit, float dist)
+        {
+            var hits = GetFrontRangeHit(center, target, maxAngle, eachAngleUnit, dist);
+            foreach (var hit in hits)
+            {
+                if (hit.transform.CompareTag(target.tag))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        public static List<RaycastHit> GetFrontRangeHit(this Transform center, Transform target, float maxAngle, float eachAngleUnit, float dist)
+        {
+            var hits = new List<RaycastHit>();
+            var forward = target.position - center.position;
+            var from = center.position;
+            for (float angle = maxAngle * -1f; angle <= maxAngle; angle += eachAngleUnit)
+            {
+                var dir = Quaternion.Euler(0f, angle, 0f) * forward;
+                GizmosDrawer.instanse.DrawLine(center.position, dir * dist + center.position, 2f, Color.grey);
+                for (bool isSelf = false; isSelf == false;)
+                {
+                    var ray = new Ray(from, dir);
+                    var targetLayer = 1 << LayerMask.NameToLayer("Ignore Raycast");
+                    if (Physics.Raycast(ray, out RaycastHit hit, dist, ~targetLayer))
+                    {
+                        if (hit.transform != center &&
+                            !hit.transform.IsChildOf(center.root))
+                        {
+                            hits.Add(hit);
+                            break;
+                        }
+                        else
+                        {
+                            //Debug.DrawLine(from, hit.point + dir * 0.01f, Color.magenta, 2f);
+                            var newFrom = hit.point + dir * 0.01f;
+                            dist -= Vector3.Distance(from, newFrom);
+                            from = hit.point;
+                        }
+                    }
+                    else
+                        break;
                 }
             }
 

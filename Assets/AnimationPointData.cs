@@ -30,8 +30,10 @@ public class AnimationPointData
     // aiming detail
     public InteractionObj InteractionObj { set; get; } = null;
     public Weapon Weapon { get { return InteractionObj as Weapon; } }
-    public Transform TargetingTarsform { set; get; } = null;
-    public Transform AimTarget { set; get; } = null;
+    public Transform LookAtTransform { set; get; } = null;
+    public Transform AimTarget { get { return Weapon?.AimTransform; } }
+    public bool ShouldTrackingTarget { get { return LookAtTransform != null; } }
+    public float StoppingDistance { set; get; }
 
     // SkillAnimationName
     public SkillData SkillData { set; get; } = null;

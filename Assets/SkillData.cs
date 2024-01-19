@@ -19,8 +19,10 @@ public class SkillData : ScriptableObject
     [SerializeField] public AdditionalEffectType additionalEffectType = AdditionalEffectType.Add;
     [SerializeField] private float value = 0f;
     public bool canLoop = false;
+    public int poolerStayCount = 0;
 
     public RequirementDataManager requirementDataManager = new RequirementDataManager();
+    public GameObject SkillDetectorObj;
 }
 
 [CustomEditor(typeof(SkillData))]
