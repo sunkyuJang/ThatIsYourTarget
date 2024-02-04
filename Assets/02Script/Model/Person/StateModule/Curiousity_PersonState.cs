@@ -74,7 +74,6 @@ public class Curiousity_PersonState : PersonState
             }
             else
             {
-                //SetState(StateKinds.HoldingWeapon, new PersonPrepareData(prepareData.target));
                 SetState(StateKinds.Tracking, new PersonPrepareData(prepareData.target));
                 return true;
             }

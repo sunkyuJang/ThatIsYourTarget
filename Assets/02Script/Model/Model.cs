@@ -2,10 +2,8 @@ using JExtentioner;
 using SensorToolkit;
 using System;
 using System.Collections;
-using System.Security.Policy;
 using UnityEditor.Animations;
 using UnityEngine;
-using JExtentioner;
 public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, IDamagePasser
 {
     public enum ModelKinds { Person, Player }
@@ -75,7 +73,6 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
     }
     public void SetState(int newState, StateModule.PrepareData prepareData = null)
     {
-        Debug.Log("isin StatNum : // " + newState);
         ModuleHandler.EnterModule(newState, prepareData);
     }
     public void SetAPH(AnimationPointHandler handler = null, Action nextActionFromState = null)

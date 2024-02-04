@@ -4,8 +4,8 @@ using System.Collections;
 
 public class Attack_PersonState : PersonState
 {
-    public enum APHDoneState { Attacking, Delaying, Non }
-    public APHDoneState aphDoneState = APHDoneState.Non;
+    private enum APHDoneState { Attacking, Delaying, Non }
+    private APHDoneState aphDoneState = APHDoneState.Non;
     public Attack_PersonState(Person person) : base(person)
     {
 
@@ -23,7 +23,6 @@ public class Attack_PersonState : PersonState
             SetNormalState();
         }
 
-        Debug.Log("isin attacking in");
         aphDoneState = APHDoneState.Attacking;
         if (Weapon.CanAttack(prepareData.target, out Weapon.CanAttackStateError attackError))
         {

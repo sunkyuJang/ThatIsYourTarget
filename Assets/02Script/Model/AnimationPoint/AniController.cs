@@ -5,6 +5,7 @@ using UnityEngine;
 using RootMotion.FinalIK;
 using System.Collections.Generic;
 using SensorToolkit;
+using System.Diagnostics.CodeAnalysis;
 
 public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJobManager.ModelHandlerJob>
 {
@@ -109,29 +110,60 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
     {
         if (!IsPlayingAni)
         {
-            Debug.Log("isin make Correct _ " + ap.animationPointData.state);
             PlayingAni = StartCoroutine(DoMakeCorrectTransform(ap));
         }
         else
         {
-            Debug.Log("isin reserved _ " + ap.animationPointData.state);
             reservedAP = ap;
         }
     }
     protected virtual IEnumerator DoMakeCorrectTransform(AnimationPoint ap)
     {
+        var canPlayAni = true;
         if (ap.animationPointData.LookAtTransform == null)
         {
             aimIK.solver.IKPositionWeight = 0;
             aimIK.enabled = false;
 
-            var isPositionDone = false;
-            var isRotationDone = false;
-            var positionCorrect = StartCoroutine(DoPositionCorrectly(ap.animationPointData.CorrectedPosition, () => { isPositionDone = true; }));
-            var rotationCorrect = StartCoroutine(DoRotationCorrectly(ap.transform.forward, () => { isRotationDone = true; }));
+            var turnAnimationDone = false;
+            var dir = ap.transform.forward;
+            var isLeft = IsRatationDirLeft(dir);
+            var rotateDir = MathF.Abs(transform.forward.GetRotationDir(dir));
+            var shouldBodyTurnWithAnimation = rotateDir >= bodyThreshold;
 
-            yield return new WaitUntil(() => isPositionDone && isRotationDone);
-            yield return new WaitUntil(() => IsWalkState());
+            Coroutine proc_CorrectionPosition = null;
+            Coroutine proc_CorrectionRotation = null;
+            if (shouldBodyTurnWithAnimation)
+            {
+                canPlayAni = false;
+                var degree = rotateDir * (isLeft ? -1 : 1);
+                var turnAroundAP = GetTurnAroundAP(degree);
+                turnAroundAP.animationPointData.whenAnimationStart += () =>
+                {
+                    proc_CorrectionPosition = StartCoroutine(DoPositionCorrectly(ap.animationPointData.CorrectedPosition));
+                    proc_CorrectionRotation = StartCoroutine(DoRotationCorrectly(dir, degree));
+                };
+
+                turnAroundAP.animationPointData.whenDoneToAnimationReset += () =>
+                {
+                    if (proc_CorrectionPosition != null)
+                        StopCoroutine(proc_CorrectionPosition);
+
+                    if (proc_CorrectionRotation != null)
+                        StopCoroutine(proc_CorrectionRotation);
+
+                    canPlayAni = !IsAPReserved;
+                    turnAnimationDone = true;
+                };
+
+                StartAni(turnAroundAP, true);
+
+                yield return new WaitUntil(() => turnAnimationDone);
+            }
+            else
+            {
+
+            }
         }
         else
         {
@@ -141,14 +173,15 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
             DoTrackingBody = StartCoroutine(DoTracking(ap));
         }
 
-        StartAni(ap);
+        if (canPlayAni)
+            StartAni(ap);
 
         yield return null;
     }
 
     protected virtual bool IsWalkState() { return true; }
 
-    protected virtual IEnumerator DoPositionCorrectly(Vector3 worldPosition, Action done)
+    protected virtual IEnumerator DoPositionCorrectly(Vector3 worldPosition)
     {
         var t = 0f;
         var maxT = 0.05f;
@@ -160,10 +193,8 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
             var ratio = Mathf.InverseLerp(0, maxT, t);
             transform.position = Vector3.Lerp(beforePosition, worldPosition.GetOverrideY(beforePosition.y), ratio);
         }
-
-        done?.Invoke();
     }
-    protected virtual IEnumerator DoRotationCorrectly(Vector3 dir, Action done)
+    protected virtual IEnumerator DoRotationCorrectly(Vector3 dir, float during)
     {
         var isLeft = IsRatationDirLeft(dir);
         var rotateDir = MathF.Abs(transform.forward.GetRotationDir(dir));
@@ -171,7 +202,6 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
 
         if (shouldBodyTurnWithAnimation)
         {
-            var during = GetMakeTurnDuring(rotateDir * (isLeft ? -1 : 1));
             var totalAngle = Vector3.Angle(transform.forward, dir);
             var eachFrameAngle = totalAngle / (during / Time.fixedDeltaTime);
             for (float t = 0; t < during && !IsAPReserved; t += Time.fixedDeltaTime)
@@ -182,7 +212,6 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
             transform.Rotate(isLeft ? Vector3.down : Vector3.up, eachFrameAngle);
         }
 
-        done?.Invoke();
         yield return null;
     }
 
@@ -195,7 +224,7 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
         aimIK.enabled = true;
         ap.animationPointData.whenAnimationEnd += () => { animationEnded = true; };
 
-        while (true && ap.animationPointData.LookAtTransform != null)
+        while (ap.animationPointData.LookAtTransform != null) // this state will start when ap return to objPooler
         {
             var limit = IK_bodyThreshold;
             var targetDir = aimIK.solver.target.position.ExceptVector3Property(1) - transform.position.ExceptVector3Property(1);
@@ -228,7 +257,7 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
     }
 
     public void StopJob() { }
-    protected virtual float GetMakeTurnDuring(float degree) { return 0; }
+    protected virtual AnimationPoint GetTurnAroundAP(float degree) { return null; }
     protected abstract void StartAni(AnimationPoint actionPoint, bool shouldReturnAP = false);
     protected void StartAniTimeCount(AnimationPoint ap, bool shouldReturnAP, StateModule stateModule, List<float> events)
     {
@@ -274,42 +303,35 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
             yield return new WaitForFixedUpdate();
         }
 
-        Debug.Log("isin timecountinf done + " + ap.animationPointData.state + "//" + ap.animationPointData.during + "//" + IsAPReserved + "//" + ap.animationPointData.CanAnimationCancle);
-
         ap.animationPointData.whenAnimationEnd?.Invoke();
-        MakeResetAni(!shouldReturnAP, stateModule);
-
-        if (shouldReturnAP)
-            APHManager.Instance.ReturnAP(ap.gameObject);
-    }
-    protected void MakeResetAni(bool shouldReadNextAction, StateModule stateModule)
-    {
-        StartCoroutine(DoResetAni(shouldReadNextAction, stateModule));
-    }
-    protected virtual IEnumerator DoResetAni(bool shouldReadNextAction, StateModule stateModule)
-    {
-        yield return new WaitUntil(() => IsWalkState());
+        yield return StartCoroutine(DoWaitUntilAnimationReset(stateModule));
+        ap.animationPointData.whenDoneToAnimationReset?.Invoke();
 
         PlayingAni = null;
+
         if (IsAPReserved)
         {
             RunReservedAP();
         }
         else
         {
-            if (shouldReadNextAction)
+            if (!shouldReturnAP)
+            {
                 modelHandlerJob.EndJob();
+            }
         }
-        yield return null;
     }
 
+    protected virtual IEnumerator DoWaitUntilAnimationReset(StateModule stateModule)
+    {
+        yield return new WaitUntil(() => IsWalkState());
+    }
     protected void RunReservedAP()
     {
         var ap = reservedAP;
         reservedAP = null;
         PlayingAni = null;
 
-        Debug.Log("isin reserved Start + : " + ap.animationPointData.state);
         MakeCorrectTransform(ap);
     }
 

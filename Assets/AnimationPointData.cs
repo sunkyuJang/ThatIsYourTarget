@@ -21,8 +21,9 @@ public class AnimationPointData
     // event 
     public Action<int> EventTrigger { set; get; } = null;
     public Action whenAnimationStart { set; get; } = null;
-    public Action whenAnimationEnd { set; get; } = null;
     public Action whenAnimationExitTime { set; get; } = null;
+    public Action whenAnimationEnd { set; get; } = null;
+    public Action whenDoneToAnimationReset { set; get; } = null;
 
     // positioning
     public bool CanYield { set; get; } = true;

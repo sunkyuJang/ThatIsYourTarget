@@ -123,38 +123,44 @@ public class Patrol_PersonState : PersonState
         startAngle = startAngle < 0 ? startAngle : startAngle * -1f;
         for (float angle = startAngle; angle < maxAngle; angle += angleUnit)
         {
-            var ray = GetRay(angle);
-            if (Physics.Raycast(ray, out RaycastHit hit, castDist))
-            {
-                hitList.Add(hit.point);
-            }
-            else
-            {
-                hitList.Add(ray.GetPoint(castDist));
-            }
+            // var ray = GetRay(angle);
+            // if (Physics.Raycast(ray, out RaycastHit hit, castDist))
+            // {
+            //     hitList.Add(hit.point);
+            // }
+            // else
+            // {
+            //     hitList.Add(ray.GetPoint(castDist));
+            // }
+            var dir = Quaternion.Euler(0f, angle, 0f) * ActorTransform.forward;
+            var dist = Vector3.Distance(prepareData.target.position, ActorTransform.position);
+            hitList.Add(dir * dist);
+            GizmosDrawer.instanse.DrawLine(ActorTransform.position, dir * dist, 2f, Color.black);
         }
 
-        if (onlyFarOne)
-        {
-            var mostFarAway = Vector3.zero;
-            var farDist = 0f;
-            hitList.ForEach(x =>
-            {
-                Debug.DrawLine(ActorTransform.position, x, Color.blue, 2f);
-                var dist = Vector3.Distance(ActorTransform.position, x);
-                if (dist > farDist)
-                {
-                    farDist = dist;
-                    mostFarAway = x;
-                }
-            });
+        // if (onlyFarOne)
+        // {
+        //     var mostFarAway = Vector3.zero;
+        //     var farDist = 0f;
+        //     hitList.ForEach(x =>
+        //     {
+        //         Debug.DrawLine(ActorTransform.position, x, Color.blue, 2f);
+        //         var dist = Vector3.Distance(ActorTransform.position, x);
+        //         if (dist > farDist)
+        //         {
+        //             farDist = dist;
+        //             mostFarAway = x;
+        //         }
+        //     });
 
-            return new List<Vector3>() { mostFarAway };
-        }
-        else
-        {
-            return hitList;
-        }
+        //     return new List<Vector3>() { mostFarAway };
+        // }
+        // else
+        // {
+        //     return hitList;
+        // }
+
+        return hitList;
     }
 
     Ray GetRay(float angle)

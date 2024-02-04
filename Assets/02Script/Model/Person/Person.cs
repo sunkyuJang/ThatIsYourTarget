@@ -28,7 +28,6 @@ public partial class Person : Model
     private Renderer modelRenderer;
     new public PersonStateModuleHandler ModuleHandler
         => base.ModuleHandler as PersonStateModuleHandler;
-
     new public SkillLoader_Person skillLoader
         => base.skillLoader as SkillLoader_Person;
     protected override StateModuleHandler SetStateModuleHandler()

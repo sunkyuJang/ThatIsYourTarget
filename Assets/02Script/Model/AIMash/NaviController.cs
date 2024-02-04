@@ -11,7 +11,6 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
     public enum State { Reached, Near, Close, MiddleWay }
     public NavMeshAgent navMeshAgent { private set; get; }
     NavMeshObstacle navMeshObstacle { set; get; }
-    Collider Collider { set; get; }
     Coroutine CheckingUntilArrive;
     public AnimationPoint playingAP { private set; get; }
     readonly public static List<KeyValuePair<State, float>> eachStateDist = new List<KeyValuePair<State, float>>()
@@ -50,7 +49,6 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
         navMeshAgent = GetComponent<NavMeshAgent>();
         navMeshObstacle = GetComponent<NavMeshObstacle>();
         navMeshObstacle.enabled = false;
-        Collider = GetComponent<Collider>();
     }
 
     private void Start()

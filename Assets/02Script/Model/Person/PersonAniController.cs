@@ -75,7 +75,7 @@ public class PersonAniController : AniController
     {
         headFollowTarget = ap.transform;
     }
-    protected override IEnumerator DoResetAni(bool shouldReadNextAction, StateModule stateModule = null)
+    protected override IEnumerator DoWaitUntilAnimationReset(StateModule stateModule)
     {
         if (stateModule == null)
         {
@@ -90,19 +90,16 @@ public class PersonAniController : AniController
         }
 
         SetWalkModule(walkingState);
-        StartCoroutine(base.DoResetAni(shouldReadNextAction, null));
-
-        yield return null;
+        yield return StartCoroutine(base.DoWaitUntilAnimationReset(null));
     }
 
-    protected override float GetMakeTurnDuring(float degree)
+    protected override AnimationPoint GetTurnAroundAP(float degree)
     {
         var ap = APHManager.Instance.GetNewAP<PersonAnimationPoint>();
         ap.animationPointData.state = (int)PersonAniState.StateKind.TurnAround;
         ap.animationPointData.targetDegree = degree;
         ap.animationPointData.during = ap.GetAnimationClipLength(GetStateNameByDegree(ap.animationPointData.targetDegree));
-        StartAni(ap, true);
-        return ap.animationPointData.during;
+        return ap;
     }
 
     string GetStateNameByDegree(float degree)

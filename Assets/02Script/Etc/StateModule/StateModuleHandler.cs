@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 
-public partial class StateModuleHandler
+public class StateModuleHandler
 {
     protected List<StateModule> modules = new List<StateModule>();
     protected int playingModuleIndex = -1;
