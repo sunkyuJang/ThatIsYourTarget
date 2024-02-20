@@ -12,6 +12,8 @@ TagManager:
   - Chair
   - Avoid
   - clip
+  - Human
+  - HumanModel
   layers:
   - Default
   - TransparentFX

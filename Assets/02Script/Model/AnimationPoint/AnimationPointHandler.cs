@@ -41,9 +41,13 @@ public class AnimationPointHandler : MonoBehaviour, IPoolerConnector
 
     public AnimationPoint GetNextActionPoint()
     {
+
         ++index;
         if (shouldLoop)
+        {
+            Debug.Log("loop");
             index %= GetActionCount;
+        }
         else if (isAPHDone)
         {
             return null;

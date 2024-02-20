@@ -17,7 +17,7 @@ public class Weapon : InteractionObj, IObjCollisionDetectorConnector_OnCollision
     [SerializeField] public float hitPower { set; get; } = 1;
 
     // 1 Cycle == 1 MaxCount
-    public enum CanAttackStateError { OverMaxCount, Non }
+    public enum CanAttackStateError { OverMaxCount, Range, Non }
     [SerializeField] protected int curHitCount = 0;
     [SerializeField] protected int maxHitCountPerCycle = 0;
     public int LeftHitCount => maxHitCountPerCycle - curHitCount;
@@ -26,7 +26,7 @@ public class Weapon : InteractionObj, IObjCollisionDetectorConnector_OnCollision
     public WeaponType GetWeaponType => weaponType;
 
     public Transform AimTransform;
-    private void Awake()
+    protected void Awake()
     {
         if (AimTransform == null)
         {
@@ -41,6 +41,10 @@ public class Weapon : InteractionObj, IObjCollisionDetectorConnector_OnCollision
         if (curHitCount >= maxHitCountPerCycle)
         {
             canAttackStateError = CanAttackStateError.OverMaxCount;
+        }
+        else if (Vector3.Distance(target.position, transform.position) > range)
+        {
+            canAttackStateError = CanAttackStateError.Range;
         }
 
         if (canAttackStateError == CanAttackStateError.Non)

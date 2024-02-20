@@ -99,12 +99,40 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
             }
         }
     }
+
+    /// <summary>
+    /// this StartJob will enter 2 Times each ap.
+    /// in the first time when enter, it will updatae tracking 
+    /// in secound time, it will update animation
+    /// </summary>
+    /// <param name="job"></param>
     public void StartJob(ModelAnimationPlayerJobManager.ModelHandlerJob job)
     {
-        modelHandlerJob = job;
-        walkingState = modelHandlerJob.walkingState;
-        var ap = modelHandlerJob.ap;
-        MakeCorrectTransform(ap);
+        if (job.jobState == ModelAnimationPlayerJobManager.JobState.aniTrackingUpdate)
+        {
+            var ap = job.ap;
+
+            if (DoTrackingBody != null)
+                StopCoroutine(DoTrackingBody);
+
+            if (ap.animationPointData.LookAtTransform == null)
+            {
+                aimIK.solver.target = null;
+                aimIK.solver.IKPositionWeight = 0;
+                aimIK.enabled = false;
+            }
+            else
+                DoTrackingBody = StartCoroutine(DoTracking(ap));
+
+            job.EndJob();
+        }
+        else
+        {
+            modelHandlerJob = job;
+            walkingState = modelHandlerJob.walkingState;
+            var ap = modelHandlerJob.ap;
+            MakeCorrectTransform(ap);
+        }
     }
     void MakeCorrectTransform(AnimationPoint ap)
     {
@@ -122,9 +150,6 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
         var canPlayAni = true;
         if (ap.animationPointData.LookAtTransform == null)
         {
-            aimIK.solver.IKPositionWeight = 0;
-            aimIK.enabled = false;
-
             var turnAnimationDone = false;
             var dir = ap.transform.forward;
             var isLeft = IsRatationDirLeft(dir);
@@ -138,10 +163,11 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
                 canPlayAni = false;
                 var degree = rotateDir * (isLeft ? -1 : 1);
                 var turnAroundAP = GetTurnAroundAP(degree);
+                turnAroundAP.animationPointData.CorrectedPosition = ap.animationPointData.CorrectedPosition;
                 turnAroundAP.animationPointData.whenAnimationStart += () =>
                 {
-                    proc_CorrectionPosition = StartCoroutine(DoPositionCorrectly(ap.animationPointData.CorrectedPosition));
-                    proc_CorrectionRotation = StartCoroutine(DoRotationCorrectly(dir, degree));
+                    proc_CorrectionPosition = StartCoroutine(DoPositionCorrectly(turnAroundAP.animationPointData.CorrectedPosition));
+                    proc_CorrectionRotation = StartCoroutine(DoRotationCorrectly(dir, turnAroundAP.animationPointData.during));
                 };
 
                 turnAroundAP.animationPointData.whenDoneToAnimationReset += () =>
@@ -160,17 +186,6 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
 
                 yield return new WaitUntil(() => turnAnimationDone);
             }
-            else
-            {
-
-            }
-        }
-        else
-        {
-            if (DoTrackingBody != null)
-                StopCoroutine(DoTrackingBody);
-
-            DoTrackingBody = StartCoroutine(DoTracking(ap));
         }
 
         if (canPlayAni)
@@ -308,6 +323,8 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
         ap.animationPointData.whenDoneToAnimationReset?.Invoke();
 
         PlayingAni = null;
+
+        Debug.Log("ani end");
 
         if (IsAPReserved)
         {

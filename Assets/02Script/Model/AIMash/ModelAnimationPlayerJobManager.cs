@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using JExtentioner;
 
 public class ModelAnimationPlayerJobManager : JobManager
 {
-    enum jobState { navi, ani, done, non }
+    public enum JobState { aniTrackingUpdate, navi, ani, done, non }
     private ModelAPHJobManger.ModelJob modelJob;
     private IJobStarter<ModelHandlerJob> naviJobStarter;
     private IJobStarter<ModelHandlerJob> aniJobstarter;
@@ -30,25 +31,35 @@ public class ModelAnimationPlayerJobManager : JobManager
     public Queue<Job> CreateJobs(AnimationPoint ap, AnimationPointHandler aph)
     {
         var queue = new Queue<Job>();
-        for (jobState i = jobState.navi; i < jobState.non; i++)
+        for (int i = 0; i < EnumExtentioner.GetEnumSize<JobState>() - 1; i++)
         {
             var job = new ModelHandlerJob(this, ap, aph.walkingState);
             Action action = null;
-            switch (i)
+            switch ((JobState)i)
             {
-                case jobState.navi:
+                case JobState.aniTrackingUpdate:
+                    action = () =>
+                    {
+                        // for updating tracking
+                        job.jobState = JobState.aniTrackingUpdate;
+                        aniJobstarter.StartJob(job);
+                    };
+                    break;
+                case JobState.navi:
                     action = () =>
                     {
                         naviJobStarter.StartJob(job);
                     };
                     break;
-                case jobState.ani:
+                case JobState.ani:
                     action = () =>
                     {
+                        // for updating animation
+                        job.jobState = JobState.ani;
                         aniJobstarter.StartJob(job);
                     };
                     break;
-                case jobState.done:
+                case JobState.done:
                     action = ReadNextAP;
                     break;
             }
@@ -77,6 +88,7 @@ public class ModelAnimationPlayerJobManager : JobManager
     {
         public AnimationPoint ap { private set; get; }
         public AnimationPointHandler.WalkingState walkingState { private set; get; }
+        public JobState jobState = JobState.aniTrackingUpdate;
         public ModelHandlerJob(JobManager jobManager, AnimationPoint ap, AnimationPointHandler.WalkingState walkingState) : base(jobManager)
         {
             this.ap = ap;

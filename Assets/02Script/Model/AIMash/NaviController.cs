@@ -60,8 +60,16 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
     {
         if (job.ap != null)
         {
+            if (job.ap != null)
+                Debug.Log(job.ap.animationPointData.state);
+
+            if (job.ap == playingAP) // looping
+                return;
+
             if (CheckingUntilArrive != null)
+            {
                 StopCoroutine(CheckingUntilArrive);
+            }
 
             var correctVector = job.ap.transform.position;
             navMeshAgent.avoidancePriority = 0;
@@ -81,6 +89,7 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
             }
         }
     }
+
     IEnumerator DoCheckUntilArrive(ModelAnimationPlayerJobManager.ModelHandlerJob job, Vector3 correctedVector)
     {
         var jobEnded = false;

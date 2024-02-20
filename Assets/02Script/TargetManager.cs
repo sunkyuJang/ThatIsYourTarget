@@ -6,9 +6,9 @@ public class TargetManager : MonoBehaviour
 {
     public static TargetManager instance { set; get; }
     public static bool IsExist { get { return instance != null; } }
-    public PersonHandler personHandler;
+    public HumanHandler personHandler;
     public int targetCount = 1;
-    List<Person> TargetPerson = new List<Person>();
+    List<Human> TargetPerson = new List<Human>();
     private void Awake()
     {
         if (instance == null)
@@ -33,7 +33,7 @@ public class TargetManager : MonoBehaviour
         var left = 0;
         for (int i = 0; i < TargetPerson.Count; i++)
         {
-            left += (PersonState.StateKinds)TargetPerson[i].state != PersonState.StateKinds.Dead ? 1 : 0;
+            left += (HumanState.StateKinds)TargetPerson[i].state != HumanState.StateKinds.Dead ? 1 : 0;
         }
         return left;
     }

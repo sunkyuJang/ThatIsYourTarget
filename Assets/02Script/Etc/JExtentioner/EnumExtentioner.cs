@@ -15,5 +15,10 @@ namespace JExtentioner
 
             return null;
         }
+
+        public static int GetEnumSize<T>() where T : Enum
+        {
+            return Enum.GetValues(typeof(T)).Length;
+        }
     }
 }

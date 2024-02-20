@@ -7,6 +7,7 @@ using UnityEngine.InputSystem;
 using Unity.VisualScripting;
 using System.Threading;
 using System;
+using UnityEngine.Rendering;
 
 public class InteractionObjHolsterHandler : MonoBehaviour
 {
@@ -14,10 +15,12 @@ public class InteractionObjHolsterHandler : MonoBehaviour
     // Holding == On Hands with stay idle 
     // Using ==  OnHands with other stat
     // After Remapping, this list will not use.
-    [SerializeField][ReadOnly] private List<InteractionObjHolster> Keepingholsters = new List<InteractionObjHolster>();
-    [SerializeField][ReadOnly] private List<InteractionObjHolster> Holdingholsters = new List<InteractionObjHolster>();
-    [SerializeField][ReadOnly] private InteractionObjGrabRigHandler grabRigHandler;
+    [SerializeField] private List<InteractionObjHolster> Keepingholsters = new List<InteractionObjHolster>();
+    [SerializeField] private List<InteractionObjHolster> Holdingholsters = new List<InteractionObjHolster>();
+    [SerializeField] private SerializedDictionary<HumanBodyBones, HumanHandLimbIKSetter> personHandLimbIKSetter;
+    [SerializeField] private LimbIKPositionerHandler limbIKPositionerHandler;
     [SerializeField] private bool shouldMatch = true;
+    public InteractionObjLimbIKHandPositioner.HandPositioner.HoldingState holdingState = InteractionObjLimbIKHandPositioner.HandPositioner.HoldingState.Non;
 
     // Remap
     private Dictionary<GameObject, HolsterHandlerPair> HolsterPairs { set; get; } = new Dictionary<GameObject, HolsterHandlerPair>();
@@ -26,8 +29,10 @@ public class InteractionObjHolsterHandler : MonoBehaviour
         var originalPrefab = gameObject;
         return HolsterPairs.ContainsKey(originalPrefab) ? HolsterPairs[originalPrefab] : null;
     }
-    [SerializeField]
-    private List<InteractionObj> interactionObjs = new List<InteractionObj>();
+    [SerializeField] private List<InteractionObj> interactionObjs = new List<InteractionObj>();
+
+    //change weight
+    [SerializeField] private float changingWeightTime = 0f;
 
     private void Awake()
     {
@@ -45,6 +50,7 @@ public class InteractionObjHolsterHandler : MonoBehaviour
         Keepingholsters.Clear();
         Holdingholsters.Clear();
         HolsterPairs.Clear();
+        personHandLimbIKSetter.Clear();
 
         var isSucced = true;
         var holsterList = transform.GetComponentsInChildren<InteractionObjHolster>().ToList();
@@ -63,15 +69,29 @@ public class InteractionObjHolsterHandler : MonoBehaviour
             }
         });
 
-        grabRigHandler = transform.GetComponentInChildren<InteractionObjGrabRigHandler>();
-        if (grabRigHandler == null)
+        var iKSetters = transform.GetComponentsInChildren<HumanHandLimbIKSetter>();
+        if (iKSetters != null && iKSetters.Length > 1)
         {
-            isSucced = false;
-            Debug.LogError("cantFind GrabRigHandler");
+            foreach (var setter in iKSetters)
+            {
+                personHandLimbIKSetter.Add(setter.handBone, setter);
+            }
         }
         else
         {
-            grabRigHandler.SetGrabRigs();
+            isSucced = false;
+            Debug.LogError("cantFind PersonHandLimbIKSetter");
+        }
+
+        limbIKPositionerHandler = transform.GetComponentInChildren<LimbIKPositionerHandler>();
+        if (limbIKPositionerHandler == null)
+        {
+            isSucced = false;
+            Debug.LogError("cantFind LimbIKPositionerHandler");
+        }
+        else
+        {
+            limbIKPositionerHandler.SetLimbIK();
         }
 
         return isSucced;
@@ -82,7 +102,7 @@ public class InteractionObjHolsterHandler : MonoBehaviour
         // remapping 
         Dictionary<GameObject, KeyValuePair<InteractionObjHolsterPositioner, InteractionObjHolster>> keepingHolsters = new Dictionary<GameObject, KeyValuePair<InteractionObjHolsterPositioner, InteractionObjHolster>>();
         Dictionary<GameObject, KeyValuePair<InteractionObjHolsterPositioner, InteractionObjHolster>> holdingHolsters = new Dictionary<GameObject, KeyValuePair<InteractionObjHolsterPositioner, InteractionObjHolster>>();
-        var objGrabRigs = grabRigHandler.grabRigs.ToList();
+        var limbIks = limbIKPositionerHandler.eachLimbIKPositioner;
 
         for (InteractionObjHolster.State state = InteractionObjHolster.State.Keeping; state <= InteractionObjHolster.State.Non; state++)
         {
@@ -105,13 +125,10 @@ public class InteractionObjHolsterHandler : MonoBehaviour
         {
             if (holdingHolsters.ContainsKey(key))
             {
-                var grabRig = objGrabRigs.FindAll(x => x.IsSamePrefab(key));
-
-                HolsterPairs[key] = new HolsterHandlerPair(keepingHolsters[key].Value, holdingHolsters[key].Value, grabRig);
-
-                if (grabRig != null)
+                if (limbIks.ContainsKey(key))
                 {
-                    grabRig.ForEach(x => objGrabRigs.Remove(x));
+                    var targetlimbIK = limbIks[key];
+                    HolsterPairs[key] = new HolsterHandlerPair(keepingHolsters[key].Value, holdingHolsters[key].Value, targetlimbIK);
                 }
             }
         }
@@ -157,41 +174,50 @@ public class InteractionObjHolsterHandler : MonoBehaviour
 
     public bool SetKeep(InteractionObj interactionObj)
     {
-        return TrySwitchToTargetHandler(interactionObj, InteractionObjHolster.State.Keeping, InteractionObjGrabRig.State.Non, out HolsterHandlerPair pair);
-    }
-
-    public bool SetHold(InteractionObj interactionObj, InteractionObjGrabRig.State grabbingState)
-    {
-        var isSucced = TrySwitchToTargetHandler(interactionObj, InteractionObjHolster.State.Holding, grabbingState, out HolsterHandlerPair pair);
+        var isSucced = TrySwitchToTargetHandler(interactionObj, InteractionObjHolster.State.Keeping, out HolsterHandlerPair pair);
         if (!isSucced) return false;
 
-        pair.TurnOnRig(grabbingState);
+        personHandLimbIKSetter[HumanBodyBones.LeftHand].TurnOnIK(false, changingWeightTime, null, null);
+        personHandLimbIKSetter[HumanBodyBones.RightHand].TurnOnIK(false, changingWeightTime, null, null);
 
+        holdingState = InteractionObjLimbIKHandPositioner.HandPositioner.HoldingState.Non;
         return true;
     }
 
-    public InteractionObjGrabRig.State GetHoldingState(InteractionObj interactionObj)
+    public bool SetHold(InteractionObj interactionObj, InteractionObjLimbIKHandPositioner.HandPositioner.HoldingState grabbingState, FingerPositioner lfingerPositioner, FingerPositioner rfingerPositioner)
     {
-        var pair = GetHolsterHandlerPair(interactionObj.originalPrefab);
-        return pair.GetTurnOnRigState;
+        var isSucced = TrySwitchToTargetHandler(interactionObj, InteractionObjHolster.State.Holding, out HolsterHandlerPair pair);
+        if (!isSucced) return false;
+
+        var positioner = pair.limbIKPositioner.handsGrabPositioner[grabbingState];
+        var lhandPositiner = positioner.eachHand[HumanBodyBones.LeftHand];
+        var rhandPositiner = positioner.eachHand[HumanBodyBones.RightHand];
+
+        personHandLimbIKSetter[HumanBodyBones.LeftHand].TurnOnIK(true, changingWeightTime, lhandPositiner, lfingerPositioner);
+        personHandLimbIKSetter[HumanBodyBones.RightHand].TurnOnIK(true, changingWeightTime, rhandPositiner, rfingerPositioner);
+
+        holdingState = grabbingState;
+        return true;
     }
 
-    bool TrySwitchToTargetHandler(InteractionObj interactionObj, InteractionObjHolster.State targetState, InteractionObjGrabRig.State targetGrabbingState, out HolsterHandlerPair pair)
+    public InteractionObjLimbIKHandPositioner.HandPositioner.HoldingState GetHoldingState()
+    {
+        return holdingState;
+    }
+
+    bool TrySwitchToTargetHandler(InteractionObj interactionObj, InteractionObjHolster.State targetState, out HolsterHandlerPair pair)
     {
         var nowState = targetState == InteractionObjHolster.State.Keeping ? InteractionObjHolster.State.Holding : InteractionObjHolster.State.Keeping;
         pair = GetHolsterHandlerPair(interactionObj.originalPrefab);
         if (pair == null) return false;
+
         var nowHandler = pair.GetHandlerByState(nowState);
         var targetHandler = pair.GetHandlerByState(targetState);
         if (targetHandler.IsUsing)
         {
-            if (targetState == InteractionObjHolster.State.Holding && targetGrabbingState != InteractionObjGrabRig.State.Non)
+            if (targetState == InteractionObjHolster.State.Holding)
             {
-                if (pair.GetTurnOnRigState != InteractionObjGrabRig.State.Non &&
-                    pair.GetTurnOnRigState != targetGrabbingState)
-                {
-                    return true;
-                }
+                return true;
             }
             Debug.Log("target holster is already using.");
             return false;
@@ -214,36 +240,18 @@ public class InteractionObjHolsterHandler : MonoBehaviour
         public GameObject originalPrefab;
         public InteractionObjHolster KeepingHolsterHandler { private set; get; }
         public InteractionObjHolster HoldingHolsterHandler { private set; get; }
-        public List<InteractionObjGrabRig> GrabRig { set; get; }
+        public InteractionObjLimbIKHandPositioner limbIKPositioner { private set; get; }
         public InteractionObjHolster GetHandlerByState(InteractionObjHolster.State state) { return state == InteractionObjHolster.State.Keeping ? KeepingHolsterHandler : HoldingHolsterHandler; }
         public bool IsUsing { get => KeepingHolsterHandler.IsUsing || HoldingHolsterHandler.IsUsing; }
-        public InteractionObjGrabRig.State GetTurnOnRigState
-        {
-            get
-            {
-                var state = GrabRig.Find(x => x.IsUsingThis);
-                if (state == null) return InteractionObjGrabRig.State.Non;
-                else
-                {
-                    return state.state;
-                }
-            }
-        }
-        public void TurnOnRig(InteractionObjGrabRig.State grabbingState)
-        {
-            GrabRig.ForEach(x =>
-            {
-                x.TurnOn_IK(x.state == grabbingState);
-            });
-        }
+
         public HolsterHandlerPair(
             InteractionObjHolster keepingholsterHandler,
             InteractionObjHolster holdingHolsterHandler,
-            List<InteractionObjGrabRig> grabRig)
+            InteractionObjLimbIKHandPositioner limbIKPositioner)
         {
             KeepingHolsterHandler = keepingholsterHandler;
             HoldingHolsterHandler = holdingHolsterHandler;
-            GrabRig = grabRig;
+            this.limbIKPositioner = limbIKPositioner;
         }
     }
 }
@@ -251,13 +259,17 @@ public class InteractionObjHolsterHandler : MonoBehaviour
 [CustomEditor(typeof(InteractionObjHolsterHandler))]
 public class InteractionObjTotalManagerEditor : Editor
 {
+    // SerializedProperty personHandLimbIKSetterProperty;
+    // private void OnEnable()
+    // {
+    //     personHandLimbIKSetterProperty = serializedObject.FindProperty("personHandLimbIKSetter");
+    // }
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI(); // Draw the default inspector
-
         InteractionObjHolsterHandler script = (InteractionObjHolsterHandler)target;
 
-        if (GUILayout.Button("Set Components"))
+        if (GUILayout.Button("Set Each Components"))
         {
             if (script.TrySetAllHolsterList())
             {

@@ -26,7 +26,6 @@ public class ObjMover : MonoBehaviour, IObjDetectorConnector_OnDetected
             var position = Group.transform.GetChild(i).position;
             agent.SetDestination(position);
 
-
             yield return new WaitUntil(() => Vector3.Distance(transform.position.ConvertVector3To2(1), position.ConvertVector3To2(1)) < 1f);
             if (i + 1 == Group.transform.childCount) i = 0;
         }

@@ -241,10 +241,9 @@ public class AttackingAnimationStateManager : MonoBehaviour
     {
         AddiedParametaList.ForEach(x =>
         {
-            var parameters = controller.parameters;
-            for (int i = 0; i < parameters.Length; i++)
+            for (int i = 0; i < controller.parameters.Length; i++)
             {
-                if (x == parameters[i].name)
+                if (x == controller.parameters[i].name)
                 {
                     controller.RemoveParameter(i--);
                 }

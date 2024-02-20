@@ -1,0 +1,39 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class HumanHandler : MonoBehaviour
+{
+    public List<Human> Persons { set; get; } = new List<Human>();
+    public List<Material> belongKinds = new List<Material>();
+    Material TargetColor { get { return belongKinds[0]; } }
+    int NormalPersonStartFrom { get { return 1; } }
+    public bool isStartPass = false;
+    void Start()
+    {
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            var person = transform.GetChild(i).GetComponent<Human>();
+            //person.SetBelongTo(belongKinds[Random.Range(NormalPersonStartFrom, belongKinds.Count)]);
+            Persons.Add(person);
+        }
+
+        isStartPass = true;
+    }
+
+    public List<Human> SetEnemy(int enemyCount)
+    {
+        var nowPersonList = new List<Human>();
+        for (int i = 0; i < enemyCount; i++)
+        {
+            var index = Random.Range(0, Persons.Count);
+            var nowPerson = Persons[index];
+            Persons.RemoveAt(index);
+            nowPerson.belongTo = TargetColor;
+            nowPersonList.Add(nowPerson);
+        }
+        Persons.AddRange(nowPersonList);
+
+        return nowPersonList;
+    }
+}

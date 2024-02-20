@@ -24,6 +24,7 @@ public class AnimationPointData
     public Action whenAnimationExitTime { set; get; } = null;
     public Action whenAnimationEnd { set; get; } = null;
     public Action whenDoneToAnimationReset { set; get; } = null;
+    public Action makeLoopingAnimationStop { set; get; } = null;
 
     // positioning
     public bool CanYield { set; get; } = true;

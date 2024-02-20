@@ -46,7 +46,7 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
 
     // Sight
     public FOVCollider FOVCollider;
-    public float SightLength { get { return FOVCollider.Length * FOVCollider.transform.lossyScale.x; } }
+    //public float SightLength { get { return FOVCollider.Length * FOVCollider.transform.lossyScale.x; } }
 
 
     protected virtual void Awake()
@@ -84,11 +84,14 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
 
     public abstract void OnDetected(Collider collider); // use onDetected as for detection sensedState. onRemove is not working by some animation.
     protected virtual void DoDead() { }
-    public void HoldWeapon(bool shouldHold, InteractionObjGrabRig.State grabbingState)
+    public void HoldWeapon(bool shouldHold, InteractionObjLimbIKHandPositioner.HandPositioner.HoldingState grabbingState)
     {
         if (shouldHold)
         {
-            interactionManager.SetHold(Weapon, grabbingState);
+            if (Weapon is HumanWeapon)
+                interactionManager.SetHold(Weapon, grabbingState, (Weapon as HumanWeapon).humanFingerPositioner.LFingerPositioner, (Weapon as HumanWeapon).humanFingerPositioner.RFingerPositioner);
+            else
+                interactionManager.SetHold(Weapon, grabbingState, null, null);
         }
         else
         {
@@ -96,7 +99,7 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
         }
     }
 
-    public InteractionObjGrabRig.State GetHoldingState => interactionManager.GetHoldingState(Weapon);
+    public InteractionObjLimbIKHandPositioner.HandPositioner.HoldingState GetHoldingState => interactionManager.GetHoldingState();
 
     public void SetDamage(object section, object parts, float damage, out bool isDead)
     {
@@ -127,7 +130,7 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
         var time = 0f;
         while (time < maxTime && !conditionOfEndLoop())
         {
-            var isHit = IsHitToTarget(target, SightLength);
+            var isHit = IsHitToTarget(target);
             if (ShouldStopAfterCast.Invoke(isHit))
             {
                 yield break;
@@ -145,5 +148,6 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
 
         yield break;
     }
-    public bool IsHitToTarget(Transform target, float dist = 0f) => FOVCollider.transform.IsRayHitToTarget(target, dist, FOVCollider.FOVAngle);
+    //public bool IsHitToTarget(Transform target, float dist = 0f) => FOVCollider.transform.IsRayHitToTarget(target, dist, FOVCollider.FOVAngle);
+    public bool IsHitToTarget(Transform target) => FOVCollider.transform.IsRayHitToTarget(target, Vector3.Distance(target.position, FOVCollider.transform.position), FOVCollider.FOVAngle);
 }
