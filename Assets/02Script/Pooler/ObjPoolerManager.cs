@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,6 +7,12 @@ public class ObjPoolerManager : MonoBehaviour
 {
     public static ObjPoolerManager Instance { set; get; }
     List<ObjPooler> objPoolers = new List<ObjPooler>();
+
+    [Header("DistributedProcessingManager memory handle")]
+    object sectionObj = new object();
+    [SerializeField] float managingPoolerTimeUnit = 10f;
+    [SerializeField] float minAvailability = 0.5f;
+    [SerializeField] float decreasePoolerCapacity = 0.75f;
     private void Awake()
     {
         if (Instance == null)
@@ -44,5 +51,24 @@ public class ObjPoolerManager : MonoBehaviour
         newPooler.TargetObj = TargetObj;
 
         return newPooler;
+    }
+
+    IEnumerator ManagingPooler()
+    {
+        yield return new WaitForSeconds(managingPoolerTimeUnit);
+        Queue<Action> actions = new Queue<Action>();
+        objPoolers.ForEach(pooler =>
+        {
+            Action action = () =>
+            {
+                bool substandard = pooler.Availability < minAvailability;
+                pooler.ManagePoolerCapacity(decreasePoolerCapacity);
+            };
+
+            actions.Enqueue(action);
+        });
+
+        actions.Enqueue(() => StartCoroutine(ManagingPooler()));
+        DistributedProcessingManager.Instance.AddJob(sectionObj, actions);
     }
 }

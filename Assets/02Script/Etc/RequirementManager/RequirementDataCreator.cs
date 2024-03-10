@@ -56,7 +56,7 @@ public class RequirementDataManagerEditor : Editor
     {
         // 새 RequirementData ScriptableObject를 생성합니다.
         SkillRequirementData newRequirementData = ScriptableObject.CreateInstance<SkillRequirementData>();
-        newRequirementData.requirement = requirementType;
+        newRequirementData.requirementType = requirementType;
 
         string path = "Assets/";
         string requirementName = requirementType.ToString() + ".asset";

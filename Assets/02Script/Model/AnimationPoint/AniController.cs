@@ -21,6 +21,7 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
     protected LookAtIK lookAtIK;
     [SerializeField] private float IK_bodyThreshold = 0f;
     protected Coroutine DoTrackingBody { set; get; }
+    //[SerializeField] Transform normalAimTransform;
 
     // reserved Ani
     protected AnimationPoint reservedAP { set; get; }
@@ -117,6 +118,7 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
 
             if (ap.animationPointData.LookAtTransform == null)
             {
+                //aimIK.solver.transform = null;
                 aimIK.solver.target = null;
                 aimIK.solver.IKPositionWeight = 0;
                 aimIK.enabled = false;
@@ -234,8 +236,9 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
     {
         var rotationSpeed = 2f;
         var animationEnded = false;
+        //aimIK.solver.transform = ap.animationPointData.Weapon.AimTransform;
         aimIK.solver.target = ap.animationPointData.LookAtTransform;
-        aimIK.solver.IKPositionWeight = 1;
+        aimIK.solver.IKPositionWeight = 1f;
         aimIK.enabled = true;
         ap.animationPointData.whenAnimationEnd += () => { animationEnded = true; };
 
@@ -274,19 +277,15 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
     public void StopJob() { }
     protected virtual AnimationPoint GetTurnAroundAP(float degree) { return null; }
     protected abstract void StartAni(AnimationPoint actionPoint, bool shouldReturnAP = false);
-    protected void StartAniTimeCount(AnimationPoint ap, bool shouldReturnAP, StateModule stateModule, List<float> events)
+    protected void StartAniTimeCount(AnimationPoint ap, bool shouldReturnAP, StateModule stateModule, List<float> events, List<KeyValuePair<float, string>> exitEvent)
     {
-        StartCoroutine(DoAnimationTimeCount(ap, shouldReturnAP, stateModule, events));
+        StartCoroutine(DoAnimationTimeCount(ap, shouldReturnAP, stateModule, events, exitEvent));
     }
-    protected IEnumerator DoAnimationTimeCount(AnimationPoint ap, bool shouldReturnAP, StateModule stateModule, List<float> events)
+    protected IEnumerator DoAnimationTimeCount(AnimationPoint ap, bool shouldReturnAP, StateModule stateModule, List<float> events, List<KeyValuePair<float, string>> exitEvent)
     {
         if (ap.animationPointData.IsUnLimited) yield break;
 
         ap.animationPointData.whenAnimationStart?.Invoke();
-
-        List<KeyValuePair<float, string>> exitEvent = null;
-        if (ap.animationPointData.SkillData != null)
-            exitEvent = ap.GetExitAniEvent(ap.animationPointData.SkillData.keyName);
 
         var triggeredExitEvent = false;
 
@@ -297,7 +296,7 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
                 eventsCount < events.Count)
             {
                 var targetEvent = events[eventsCount];
-                if (targetEvent < time)
+                if (targetEvent <= time)
                 {
                     ap.animationPointData.EventTrigger?.Invoke(eventsCount);
                     eventsCount++;
@@ -323,8 +322,6 @@ public abstract class AniController : MonoBehaviour, IJobStarter<ModelAnimationP
         ap.animationPointData.whenDoneToAnimationReset?.Invoke();
 
         PlayingAni = null;
-
-        Debug.Log("ani end");
 
         if (IsAPReserved)
         {

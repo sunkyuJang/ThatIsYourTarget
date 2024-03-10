@@ -21,10 +21,8 @@ public class TargetManager : MonoBehaviour
         }
     }
 
-    IEnumerator Start()
+    private void Start()
     {
-        yield return new WaitUntil(() => personHandler.isStartPass);
-
         TargetPerson = personHandler.SetEnemy(targetCount);
     }
 

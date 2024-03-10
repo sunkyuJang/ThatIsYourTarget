@@ -4,36 +4,33 @@ using UnityEngine;
 
 public class HumanHandler : MonoBehaviour
 {
-    public List<Human> Persons { set; get; } = new List<Human>();
+    public List<Human> Humans { set; get; } = new List<Human>();
     public List<Material> belongKinds = new List<Material>();
     Material TargetColor { get { return belongKinds[0]; } }
     int NormalPersonStartFrom { get { return 1; } }
-    public bool isStartPass = false;
-    void Start()
+    private void Awake()
     {
         for (int i = 0; i < transform.childCount; i++)
         {
-            var person = transform.GetChild(i).GetComponent<Human>();
+            var human = transform.GetChild(i).GetComponent<Human>();
             //person.SetBelongTo(belongKinds[Random.Range(NormalPersonStartFrom, belongKinds.Count)]);
-            Persons.Add(person);
+            Humans.Add(human);
         }
-
-        isStartPass = true;
     }
 
     public List<Human> SetEnemy(int enemyCount)
     {
-        var nowPersonList = new List<Human>();
+        var nowHumanList = new List<Human>();
         for (int i = 0; i < enemyCount; i++)
         {
-            var index = Random.Range(0, Persons.Count);
-            var nowPerson = Persons[index];
-            Persons.RemoveAt(index);
-            nowPerson.belongTo = TargetColor;
-            nowPersonList.Add(nowPerson);
+            var index = Random.Range(0, Humans.Count);
+            var nowHuman = Humans[index];
+            Humans.RemoveAt(index);
+            nowHuman.belongTo = TargetColor;
+            nowHumanList.Add(nowHuman);
         }
-        Persons.AddRange(nowPersonList);
+        Humans.AddRange(nowHumanList);
 
-        return nowPersonList;
+        return nowHumanList;
     }
 }

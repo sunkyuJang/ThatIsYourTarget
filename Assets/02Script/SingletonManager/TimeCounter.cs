@@ -23,9 +23,13 @@ public class TimeCounter : MonoBehaviour
     }
     public TimeCountData SetTimeCounting(float maxTime, Action function, object sequenceKey = null, Func<object, bool> sequnceMatch = null)
     {
-        return SetTimeCounting(maxTime, maxTime, function, sequenceKey, sequnceMatch);
+        return GetAndSetTimeData(maxTime, maxTime, function, sequenceKey, sequnceMatch);
     }
-    TimeCountData SetTimeCounting(float maxTime, float timeUnit, Action function, object sequenceKey, Func<object, bool> sequnceMatch)
+    public TimeCountData SetTimeCounting(float maxTime, float timeUnit, Action function, object sequenceKey = null, Func<object, bool> sequnceMatch = null)
+    {
+        return GetAndSetTimeData(maxTime, timeUnit, function, sequenceKey, sequnceMatch);
+    }
+    TimeCountData GetAndSetTimeData(float maxTime, float timeUnit, Action function, object sequenceKey, Func<object, bool> sequnceMatch)
     {
         var find = countingList.Find(x => x.requestFunction.Equals(function));
         if (find != null)

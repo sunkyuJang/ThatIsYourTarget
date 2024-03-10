@@ -56,12 +56,11 @@ public class Patrol_HumanState : HumanState
 
     void TracingTarget()
     {
-        var position = GetAroundPositionCast(-30f, 30f, 60f, true);
-        var aph = GetAPHByPositions(position);
+        var position = prepareData.lastDetectedStandPosition;
+        var aph = GetAPHByPositions(new List<Vector3>() { position });
         SetAPH(aph, true);
 
         StartTracingTargetInSight(prepareData.target, () => aph.isAPHDone);
-        //StartCoroutine(DoTracingTarget(aph));
     }
     void LookAroundNearBy()
     {
@@ -71,26 +70,7 @@ public class Patrol_HumanState : HumanState
         SetAPH(aph, true);
 
         StartTracingTargetInSight(prepareData.target, () => aph.isAPHDone);
-        //StartCoroutine(DoTracingTarget(aph));
     }
-
-    IEnumerator DoTracingTarget(AnimationPointHandler aph)
-    {
-        while (!aph.isAPHDone)
-        {
-            var isInSight = IsInSight(prepareData.target);
-            if (isInSight)
-            {
-                SetState(StateKinds.Tracking, new PersonPrepareData(prepareData.target));
-                break;
-            }
-
-            yield return new WaitForFixedUpdate();
-        }
-
-        yield break;
-    }
-
     protected override bool ShouldStopAfterCast(bool isHit)
     {
         if (isHit)
@@ -101,7 +81,6 @@ public class Patrol_HumanState : HumanState
 
         return false;
     }
-
     AnimationPointHandler GetAPHByPositions(List<Vector3> positions)
     {
         if (positions.Count <= 0) return null;
@@ -116,7 +95,6 @@ public class Patrol_HumanState : HumanState
 
         return aph;
     }
-
     List<Vector3> GetAroundPositionCast(float startAngle, float angleUnit, float maxAngle, bool onlyFarOne)
     {
         var hitList = new List<Vector3>();
@@ -130,12 +108,6 @@ public class Patrol_HumanState : HumanState
         }
 
         return hitList;
-    }
-
-    Ray GetRay(float angle)
-    {
-        var rotatedDirection = Quaternion.Euler(0, angle, 0) * ActorTransform.forward;
-        return new Ray(ActorTransform.position, rotatedDirection);
     }
     public override void Exit()
     {

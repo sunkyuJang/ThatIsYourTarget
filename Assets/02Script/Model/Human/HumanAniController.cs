@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using JExtentioner;
 using UnityEngine;
@@ -45,8 +46,18 @@ public class HumanAniController : AniController
                 // walk animation should stop for other animation
                 SetWalkModule(AnimationPointHandler.WalkingState.Non);
 
-                var events = ap.GetAnimationEvent();
-                StartAniTimeCount(ap, shouldReturnAP, module, events);
+                List<float> events = null;
+                List<KeyValuePair<float, string>> exitEvent = null;
+                if (ap.animationPointData.SkillData == null)
+                {
+                    events = ap.GetAnimationEvent();
+                }
+                if (ap.animationPointData.SkillData != null)
+                {
+                    events = ap.GetAnimationEvent(ap.animationPointData.SkillData.keyName);
+                    exitEvent = ap.GetExitAniEvent(ap.animationPointData.SkillData.keyName);
+                }
+                StartAniTimeCount(ap, shouldReturnAP, module, events, exitEvent);
             }
         }
     }
@@ -118,7 +129,6 @@ public class HumanAniController : AniController
 
     protected override IEnumerator DoRotationCorrectly(Vector3 dir, float during)
     {
-        Debug.Log("during : " + during);
         var hip = animator.GetBoneTransform(HumanBodyBones.Hips);
         var hipForward = hip.up;
         transform.forward = hipForward.ExceptVector3Property(1);

@@ -86,16 +86,15 @@ public abstract class HumanState : StateModule
         Person.SetAPH(aph, needFuncAfterAPH ? AfterAPHDone : null);
     }
     protected virtual void AfterAPHDone() { }
-
-    // State
     public void SetState(StateKinds kinds, PersonPrepareData prepareData)
+    {
+        // Adding a delay to prevent multiple state changes within a single frame.
+        TimeCounter.Instance.SetTimeCounting(Time.fixedDeltaTime, () => { SetStateToPerson(kinds, prepareData); });
+    }
+    private void SetStateToPerson(StateKinds kinds, PersonPrepareData prepareData)
     {
         Person.HumanInfoUI.StateModule.text = "before : " + Person.ModuleHandler.GetPlayingModuleStateKind().ToString() + "\nNow :" + kinds.ToString();
         Person.SetState(ConvertStateKindToInt(kinds), prepareData);
-    }
-    protected void SetDelayingState(StateKinds kinds, PersonPrepareData prepareData)
-    {
-        TimeCounter.Instance.SetTimeCounting(Time.fixedDeltaTime, () => { SetState(kinds, prepareData); });
     }
     public void SetNormalState() => SetState(StateKinds.Normal, null);
     protected bool IsTargetModelSame(HumanState stateModule)

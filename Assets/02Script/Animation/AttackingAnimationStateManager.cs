@@ -224,6 +224,8 @@ public class AttackingAnimationStateManager : MonoBehaviour
             Debug.Log("some requireNodes are missing");
             string list = "";
             missingNode.ForEach(x => list += x + ", ");
+            Debug.Log(list);
+
         }
     }
 

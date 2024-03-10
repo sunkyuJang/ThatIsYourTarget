@@ -60,18 +60,18 @@ public partial class Human : Model
 
     bool ShouldRecongnize(Transform target) => target.GetComponent<Player>()?.belongTo == belongTo;
 
-    public override void OnDetected(Collider collider)
+    public override void OnDetected(Transform target)
     {
-        SetSensedState(collider, true);
+        SetSensedState(target, true);
     }
 
-    void SetSensedState(Collider collider, bool isContected)
+    void SetSensedState(Transform target, bool isContected)
     {
         var stateKind = HumanState.StateKinds.Sensed;
         var state = ModuleHandler.GetModule(stateKind);
         if (state != null)
         {
-            state.TryEnter(new Sensed_HumanState.SensedPrepareData(collider.transform, isContected));
+            state.TryEnter(new Sensed_HumanState.SensedPrepareData(target.transform, isContected));
         }
     }
 

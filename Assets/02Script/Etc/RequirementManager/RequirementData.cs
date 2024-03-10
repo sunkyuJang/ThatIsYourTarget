@@ -4,13 +4,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System.Reflection;
+using JExtentioner;
 [CreateAssetMenu(fileName = "SkillRequirementData", menuName = "Requirements/SkillRequirementData")]
 public class SkillRequirementData : ScriptableObject
 {
     public Model usingObj { set; get; }
     public float lastUsedTime { set; get; }
     public enum RequirementType { Obj, WeaponType, Ablity, SkillLearn, LastSkillUsed, CoolTime, Non }
-    [HideInInspector] public RequirementType requirement = RequirementType.Non;
+    [HideInInspector] public RequirementType requirementType = RequirementType.Non;
+    public static string GetRequirementTypeName { get { return "requirementType"; } } // this should be same with requirementType variable Name
 
     // obj
     [ConditionShowing((int)RequirementType.Obj)][SerializeField] private GameObject RequireOriginalPrefab;
@@ -42,7 +44,7 @@ public class SkillRequirementData : ScriptableObject
 
     public bool IsSatisfy()
     {
-        switch (requirement)
+        switch (requirementType)
         {
             case RequirementType.WeaponType:
                 return GetWeapon != null && weapon.GetWeaponType == requireWeaponType;
@@ -60,21 +62,22 @@ public class RequirementDataEditor : Editor
 {
     public override void OnInspectorGUI()
     {
-        var skillRequireData = target as SkillRequirementData;
-        RequirementDataDrawer.DrawRequirementData(new SerializedObject(skillRequireData));
+        RequirementDataDrawer.DrawRequirementData(target as SkillRequirementData);
     }
 }
 public static class RequirementDataDrawer
 {
-    public static void DrawRequirementData(SerializedObject serializedRequirementData)
+    public static void DrawRequirementData(SkillRequirementData skillData)
     {
+        SerializedObject serializedRequirementData = new SerializedObject(skillData);
+        var requirementVariableName = nameof(skillData.requirementType);
         // 'requirement' 속성 그리기
-        EditorGUILayout.PropertyField(serializedRequirementData.FindProperty("requirement"));
+        EditorGUILayout.PropertyField(serializedRequirementData.FindProperty(requirementVariableName));
 
         // 속성 순회하며 조건에 따라 그리기
         var property = serializedRequirementData.GetIterator();
         bool isInConditionalRegion = false;
-        int currentRequirement = serializedRequirementData.FindProperty("requirement").enumValueIndex;
+        int currentRequirement = serializedRequirementData.FindProperty(requirementVariableName).enumValueIndex;
 
         while (property.NextVisible(true))
         {
@@ -95,10 +98,12 @@ public static class RequirementDataDrawer
                 }
             }
 
-            if (!isInConditionalRegion || (isInConditionalRegion && currentRequirement == serializedRequirementData.FindProperty("requirement").enumValueIndex))
+            if (!isInConditionalRegion || (isInConditionalRegion && currentRequirement == serializedRequirementData.FindProperty(requirementVariableName).enumValueIndex))
             {
                 EditorGUILayout.PropertyField(property, true);
             }
         }
+
+        serializedRequirementData.ApplyModifiedProperties();
     }
 }

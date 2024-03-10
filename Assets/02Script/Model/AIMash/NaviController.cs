@@ -60,9 +60,6 @@ public class NaviController : MonoBehaviour, IJobStarter<ModelAnimationPlayerJob
     {
         if (job.ap != null)
         {
-            if (job.ap != null)
-                Debug.Log(job.ap.animationPointData.state);
-
             if (job.ap == playingAP) // looping
                 return;
 

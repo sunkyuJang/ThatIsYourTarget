@@ -54,8 +54,6 @@ public class Tracking_HumanState : HumanState
                 trackingAPData.whenAnimationStart += () => StartTracingTargetInSight(prepareData.target, () => isAphDone);
                 isAphDone = false;
                 SetAPH(aph, true);
-
-                Debug.Log("isIn");
             }
         }
     }

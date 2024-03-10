@@ -133,10 +133,10 @@ public class InteractionObjHolsterHandler : MonoBehaviour
             }
         }
 
-        if (shouldMatch && (keepingHolsters.Count != holdingHolsters.Count))
-        {
-            Debug.LogError("holster isn't match");
-        }
+        // if (shouldMatch && (keepingHolsters.Count != holdingHolsters.Count))
+        // {
+        //     Debug.Log("holster isn't match");
+        // }
 
         LoadAllItemFromHandler();
     }

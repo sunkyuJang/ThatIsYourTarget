@@ -5,7 +5,7 @@ using System.Linq;
 
 public class TestCode : MonoBehaviour, IObjDetectorConnector_OnDetected
 {
-    public void OnDetected(ObjDetector detector, Collider collider)
+    public void OnDetected(ObjDetector detector, Transform target)
     {
         var radius = 10f;
         var force = 1000f;

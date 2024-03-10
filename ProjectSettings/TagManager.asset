@@ -6,14 +6,12 @@ TagManager:
   tags:
   - Hand
   - HandPosition
-  - Person
   - PlayerHead
-  - PersonModel
   - Chair
   - Avoid
-  - clip
   - Human
   - HumanModel
+  - Weapon
   layers:
   - Default
   - TransparentFX

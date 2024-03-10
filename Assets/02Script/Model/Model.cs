@@ -80,9 +80,9 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
         ModelAPHJobManger.SetAPH(handler, nextActionFromState);
         ModelAPHJobManger.StartJob();
     }
-    public void OnDetected(ObjDetector detector, Collider collider) => OnDetected(collider);
+    public void OnDetected(ObjDetector detector, Transform target) => OnDetected(target);
 
-    public abstract void OnDetected(Collider collider); // use onDetected as for detection sensedState. onRemove is not working by some animation.
+    public abstract void OnDetected(Transform target); // use onDetected as for detection sensedState. onRemove is not working by some animation.
     protected virtual void DoDead() { }
     public void HoldWeapon(bool shouldHold, InteractionObjLimbIKHandPositioner.HandPositioner.HoldingState grabbingState)
     {

@@ -4,5 +4,5 @@ using UnityEngine;
 
 public interface IObjDetectorConnector_OnRemoved
 {
-    public void OnRemoved(ObjDetector detector, Collider collider);
+    public void OnRemoved(ObjDetector detector, Transform target);
 }

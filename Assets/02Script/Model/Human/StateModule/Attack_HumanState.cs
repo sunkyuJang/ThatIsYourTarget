@@ -17,25 +17,25 @@ public class Attack_HumanState : HumanState
     public override void EnterToException() { }
     protected override void StartModule()
     {
-        // if (Weapon == null)
-        // {
-        //     // cant attack
-        //     SetNormalState();
-        // }
+        if (Weapon == null)
+        {
+            // cant attack
+            SetNormalState();
+        }
 
-        // aphDoneState = APHDoneState.Attacking;
-        // if (Weapon.CanAttack(prepareData.target, out Weapon.CanAttackStateError attackError))
-        // {
-        //     SetAttack();
-        // }
-        // else if (attackError == global::Weapon.CanAttackStateError.OverMaxCount)
-        // {
-        //     // reloading
-        // }
-        // else if (attackError == global::Weapon.CanAttackStateError.Range)
-        // {
-        //     SetDelayingState(StateKinds.Tracking, prepareData);
-        // }
+        aphDoneState = APHDoneState.Attacking;
+        if (Weapon.CanAttack(prepareData.target, out Weapon.CanAttackStateError attackError))
+        {
+            SetAttack();
+        }
+        else if (attackError == global::Weapon.CanAttackStateError.Resource)
+        {
+            // reloading
+        }
+        else if (attackError == global::Weapon.CanAttackStateError.Range)
+        {
+            SetState(StateKinds.Tracking, prepareData);
+        }
     }
 
     void SetAttack()
@@ -44,13 +44,12 @@ public class Attack_HumanState : HumanState
 
         var AttackAP = aph.GetAnimationPoint<HumanAnimationPoint>(0);
         SetAPs(AttackAP, prepareData.target, HumanAniState.StateKind.Attack, 0, false, true);
-        AttackAP.animationPointData.EventTrigger = AttackTrigger; // for actual attack timing
         var skillToken = skillLoader.UseSkill();
         AttackAP.animationPointData.SkillData = skillToken.SkillData;
         AttackAP.animationPointData.CanAnimationCancle = false;
         skillToken.curLoopCount++;
 
-        AttackAP.animationPointData.EventTrigger += (int i) => { AttackTrigger(i); };
+        AttackAP.animationPointData.EventTrigger += (int i) => { AttackTrigger(AttackAP.animationPointData.SkillData, i); };
         AttackAP.animationPointData.LookAtTransform = prepareData.target;
         AttackAP.animationPointData.StoppingDistance = Weapon.range;
 
@@ -65,9 +64,9 @@ public class Attack_HumanState : HumanState
         SetAPH(aph, true);
     }
 
-    public void AttackTrigger(int num)
+    public void AttackTrigger(SkillData skillData, int num)
     {
-        Debug.Log("isIn");
+        //skillData.
     }
 
     protected override void AfterAPHDone()
@@ -77,12 +76,10 @@ public class Attack_HumanState : HumanState
             case APHDoneState.Attacking:
                 if (IsInSight(prepareData.target))
                 {
-                    Debug.Log("isin aph Done to attack");
                     StartModule();
                 }
                 else
                 {
-                    Debug.Log("isin aph Done to tracking");
                     SetState(StateKinds.Tracking, new PersonPrepareData(prepareData.target));
                 }
 

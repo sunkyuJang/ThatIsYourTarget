@@ -25,9 +25,9 @@ public class ConversationEntry : MonoBehaviour, IObjDetectorConnector_OnDetected
             x.isAPHEnd = false;
         });
     }
-    public void OnDetected(ObjDetector detector, Collider collider)
+    public void OnDetected(ObjDetector detector, Transform target)
     {
-        var physicalModelConnector = collider.GetComponent<PhysicalModelConnector>();
+        var physicalModelConnector = target.GetComponent<PhysicalModelConnector>();
         if (physicalModelConnector == null) return;
 
         var find = conversationEntryDatas.Find(x => x.physicalModelConnector == physicalModelConnector);

@@ -30,7 +30,7 @@ public class Player : Model
         throw new System.NotImplementedException();
     }
 
-    public override void OnDetected(Collider collider)
+    public override void OnDetected(Transform target)
     {
         throw new System.NotImplementedException();
     }

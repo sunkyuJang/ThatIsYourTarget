@@ -52,7 +52,7 @@ public class ObjDetector : MonoBehaviour
         if (IsFind(other))
         {
             SetTarget(other, true);
-            I_OnDetected?.OnDetected(this, other);
+            I_OnDetected?.OnDetected(this, other.transform);
         }
     }
 
@@ -61,14 +61,18 @@ public class ObjDetector : MonoBehaviour
         if (IsFind(other))
         {
             SetTarget(other, false);
-            I_OnRemoved?.OnRemoved(this, other);
+            I_OnRemoved?.OnRemoved(this, other.transform);
         }
     }
 
     protected bool IsFind(Collider other)
     {
-
         if (other.isTrigger && ignoreTriggerCollider) return false;
+        return IsFind(other.transform);
+    }
+
+    protected bool IsFind(Transform other)
+    {
         var nowString = shouldFindByName ? other.gameObject.name : other.tag;
         foreach (var item in targetTags)
         {

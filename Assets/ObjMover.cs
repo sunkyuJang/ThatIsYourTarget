@@ -9,7 +9,7 @@ public class ObjMover : MonoBehaviour, IObjDetectorConnector_OnDetected
     public GameObject Group;
     public NavMeshAgent agent;
     public bool isStarted = false;
-    public void OnDetected(ObjDetector detector, Collider collider)
+    public void OnDetected(ObjDetector detector, Transform target)
     {
         if (!isStarted)
         {
