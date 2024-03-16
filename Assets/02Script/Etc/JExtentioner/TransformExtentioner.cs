@@ -20,13 +20,13 @@ namespace JExtentioner
             var dir = from.GetDirection(to);
             dist = dist == 0f ? Vector3.Distance(from, to) : dist;
 
-            return Physics.RaycastAll(from, dir, dist, 0, QueryTriggerInteraction.Ignore);
+            return Physics.RaycastAll(from, dir, dist);
         }
 
         public static RaycastHit[] GetAllRayHIts(this Transform center, Vector3 dir, float dist = 0f)
         {
             var from = center.position;
-            return Physics.RaycastAll(from, dir, dist, 0, QueryTriggerInteraction.Ignore);
+            return Physics.RaycastAll(from, dir, dist);
         }
 
         public static bool IsRayHit(this Transform center, Transform target, out RaycastHit hit, float dist, float limitedAngle = 180f)

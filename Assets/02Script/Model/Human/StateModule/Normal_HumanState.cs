@@ -9,7 +9,7 @@ public class Normal_HumanState : HumanState
         return true;
     }
     public override void EnterToException() { }
-    protected override void StartModule()
+    protected override void OnStartModule()
     {
         // handle weapon state
         var aph = GetNewAPH(1, AnimationPointHandler.WalkingState.Walk);

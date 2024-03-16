@@ -4,5 +4,6 @@ using UnityEngine;
 
 public interface IPoolerConnector
 {
-    public void ResetObj();
+    public void WhenRetrieveFromPooler();
+    public void WhenStoreToPooler();
 }

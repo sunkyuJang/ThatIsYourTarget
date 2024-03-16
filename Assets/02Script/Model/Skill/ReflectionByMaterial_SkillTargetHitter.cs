@@ -5,22 +5,23 @@ using UnityEngine;
 using UnityEditor;
 using UnityEngine.Rendering;
 using System.Threading;
+using System;
 
 public class ReflectionByMaterial_SkillTargetHitter : SkillTargetHitter
 {
     [SerializeField] private SerializedDictionary<MaterialType.MaterialTypeEnum, ParticlePlayer> particlePlayer = new SerializedDictionary<MaterialType.MaterialTypeEnum, ParticlePlayer>();
-    protected override void PlayParticle()
+    protected override void PlayParticle(Action whenDone)
     {
         if (data.TargetTransformData != null
             && data.TargetTransformData.GetComponent<MaterialType>() == null
             && particlePlayer.ContainsKey(data.TargetTransformData.GetComponent<MaterialType>().TypeOfMaterial))
         {
             var materialType = data.TargetTransformData.GetComponent<MaterialType>().TypeOfMaterial;
-            particlePlayer[materialType].PlayParticle();
+            particlePlayer[materialType].PlayParticle(whenDone);
         }
         else
         {
-            basicParticlePlayer?.PlayParticle();
+            basicParticlePlayer?.PlayParticle(whenDone);
         }
     }
 

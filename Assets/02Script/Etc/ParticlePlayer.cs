@@ -53,7 +53,7 @@ public class ParticlePlayer : MonoBehaviour
                 if (timeRate > showUpStartNormal)
                 {
                     var rate = Mathf.InverseLerp(showUpStartNormal, showUpEndNormal, timeRate);
-                    decalProjector.fadeFactor = rate;
+                    if (decalProjector != null) decalProjector.fadeFactor = rate;
                 }
             }
             else
@@ -61,7 +61,7 @@ public class ParticlePlayer : MonoBehaviour
                 if (timeRate > showOffStartNormal)
                 {
                     var rate = 1 - Mathf.InverseLerp(showOffStartNormal, showOffEndNormal, timeRate);
-                    decalProjector.fadeFactor = rate;
+                    if (decalProjector != null) decalProjector.fadeFactor = rate;
                 }
             }
         }

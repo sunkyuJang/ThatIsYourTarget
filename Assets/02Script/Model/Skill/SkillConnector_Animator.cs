@@ -33,7 +33,7 @@ public class SkillConnector_AnimatorEditor : Editor
                 //var skillKeyName = GetCurrentStateMachineName(connector);
                 connector.skillData = CreateNewSkillData(connector.SkillName);
             }
-            EditorGUILayout.LabelField("*반드시 스테이트와 같은 이름으로 할 것.", redTextStyle);
+            EditorGUILayout.LabelField("*반드시 KeyName은 스테이트와 같은 이름으로 할 것.", redTextStyle);
             return;
         }
         var skillDataSerializeObj = new SerializedObject(connector.skillData);
@@ -46,7 +46,6 @@ public class SkillConnector_AnimatorEditor : Editor
         // 새 RequirementData ScriptableObject를 생성합니다.
         SkillData skillData = ScriptableObject.CreateInstance<SkillData>();
 
-        skillData.keyName = skillName;
         string path = "Assets/";
         string requirementName = skillName + "_SkillData" + ".asset";
 

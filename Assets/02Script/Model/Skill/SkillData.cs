@@ -7,24 +7,24 @@ using Unity.VisualScripting;
 [CreateAssetMenu(fileName = "SkillData", menuName = "Skill/SkillData")]
 public class SkillData : ScriptableObject
 {
-    [SerializeField] public string keyName;
-    [SerializeField] public string displayedName;
-    public enum SkillStartPoint { Model, Weapon }
-    public SkillStartPoint skillStartPoint = SkillStartPoint.Model;
-    public enum SkillType { Passive, Active, Non }
-    [SerializeField] private SkillType skillType = SkillType.Non;
-    public enum EffectTo { Dmg, MaxHP, Non }
-    [SerializeField] public EffectTo effectTo = EffectTo.Non;
-    public enum ElementalType { Normal, Non }
-    [SerializeField] private ElementalType elementalType = ElementalType.Non;
-    public enum AdditionalEffectType { Add, Multyply }
-    [SerializeField] public AdditionalEffectType additionalEffectType = AdditionalEffectType.Add;
-    [SerializeField] private float value = 0f;
-    public bool canLoop = false;
+    [field: SerializeField] public string KeyName { private set; get; } = "";
+    [field: SerializeField] public GameObject SkillTargetDetectorObj { private set; get; }
+    [field: SerializeField] public GameObject SkillTargetHitterObj { private set; get; }
+    public enum SkillEffectStartPointList { Model, Weapon, Non }
+    [field: SerializeField] public SkillEffectStartPointList SkillDetectorStartPoint { private set; get; } = SkillEffectStartPointList.Non;
+    [field: SerializeField] public SkillEffectStartPointList SkillHitterStartPoint { private set; get; } = SkillEffectStartPointList.Non;
+    public enum SkillTypeList { Passive, Active, Non }
+    [field: SerializeField] public SkillTypeList SkillType { private set; get; } = SkillTypeList.Non;
+    public enum EffectToList { Dmg, MaxHP, Non }
+    [field: SerializeField] public EffectToList EffectTo { private set; get; } = EffectToList.Non;
+    public enum ElementalTypeList { Normal, Non }
+    [field: SerializeField] public ElementalTypeList ElementalType { private set; get; } = ElementalTypeList.Non;
+    public enum AdditionalEffectTypeList { Add, Multyply }
+    [field: SerializeField] public AdditionalEffectTypeList AdditionalEffectType { private set; get; } = AdditionalEffectTypeList.Add;
+    [field: SerializeField] public float AdditionalEffectValue { private set; get; } = 0f;
+    [field: SerializeField] public bool CanLoop { private set; get; } = false;
 
     public RequirementDataManager requirementDataManager = new RequirementDataManager();
-    public GameObject SkillTargetDetectorObj;
-    public GameObject SkillTargetHitterObj;
 }
 
 [CustomEditor(typeof(SkillData))]
@@ -114,7 +114,7 @@ public static class SkillDataDrawer
         SkillRequirementData newRequirementData = ScriptableObject.CreateInstance<SkillRequirementData>();
 
         string path = "Assets/";
-        string requirementName = skillData.keyName + "_Requierment" + ".asset";
+        string requirementName = skillData.KeyName + "_Requierment" + ".asset";
 
         // 적절한 위치에 새 ScriptableObject를 저장합니다.
         string definePath = AssetDatabase.GenerateUniqueAssetPath(path + requirementName);

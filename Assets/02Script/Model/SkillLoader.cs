@@ -2,13 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor.Animations;
+using System;
 
 public abstract class SkillLoader
 {
-    public AnimatorController animatorController;
-    public AttackingAnimationStateManager attackingAnimationStateManager;
-    public Model usingModel;
-    public Dictionary<SkillData, SkillToken> usingSkill = new Dictionary<SkillData, SkillToken>();
+    protected AnimatorController animatorController;
+    protected AttackingAnimationStateManager attackingAnimationStateManager;
+    protected SkillManager skillManager { get { return attackingAnimationStateManager.skillManager; } }
+    protected Model usingModel;
+    protected Dictionary<SkillData, SkillToken> usingSkill = new Dictionary<SkillData, SkillToken>();
     public SkillLoader(AnimatorController animatorController, Model usingModel)
     {
         this.animatorController = animatorController;
@@ -25,7 +27,7 @@ public abstract class SkillLoader
     public List<SkillData> GetAvailableSkillData()
     {
         List<SkillData> avaliableSkills = new List<SkillData>();
-        var AllSkillData = attackingAnimationStateManager.skillManager.AllSkillData;
+        var AllSkillData = skillManager.AllSkillData;
 
         foreach (var skill in AllSkillData.Values)
         {
@@ -57,6 +59,10 @@ public abstract class SkillLoader
             SkillData = skillData,
             usingModel = usingModel,
             timeStemp = Time.time,
+            GetTargetDetector = skillManager.GetSkillTargetDetector,
+            RestoreTargetDetector = skillManager.RestoreSkillTargetDetector,
+            GetTargetHitter = skillManager.GetSKillTargetHitter,
+            RestoreTargetHitter = skillManager.RestoreSkillTargetHitter,
         };
 
         if (usingSkill.ContainsKey(skillData))
@@ -78,5 +84,9 @@ public abstract class SkillLoader
         public float timeStemp;
         public int curLoopCount;
         public int maxLoopCount;
+        public Func<SkillData, SkillTargetDetector> GetTargetDetector;
+        public Action<SkillData, SkillTargetDetector> RestoreTargetDetector;
+        public Func<SkillData, SkillTargetHitter> GetTargetHitter;
+        public Action<SkillData, SkillTargetHitter> RestoreTargetHitter;
     }
 }

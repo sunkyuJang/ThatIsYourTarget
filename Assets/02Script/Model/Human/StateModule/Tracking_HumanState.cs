@@ -19,7 +19,7 @@ public class Tracking_HumanState : HumanState
         return prepareData != null && Weapon != null;
     }
     public override void EnterToException() { }
-    protected override void StartModule()
+    protected override void OnStartModule()
     {
         if (ProcessTracingTarget == null)
         {
@@ -28,7 +28,7 @@ public class Tracking_HumanState : HumanState
                 if (GetHoldState != InteractionObjLimbIKHandPositioner.HandPositioner.HoldingState.Using)
                 {
                     state = State.UsingWeapon;
-                    var aph = GetNewAPH(1, AnimationPointHandler.WalkingState.Run);
+                    aph = GetNewAPH(1, AnimationPointHandler.WalkingState.Run);
                     SetAPsImmediate(aph.GetAnimationPoint(0), HumanAniState.StateKind.UsingWeapon, 0f);
                     aph.GetAnimationPoint(0).animationPointData.whenAnimationStart += () => HandleWeapon(HumanAniState.StateKind.UsingWeapon);
                     SetAPH(aph, true);
@@ -69,7 +69,7 @@ public class Tracking_HumanState : HumanState
             var dist = Vector3.Distance(ActorTransform.position, prepareData.target.position);
             if (dist < Weapon.range * 0.9f)
             {
-                SetAPs(ap, prepareData.target, HumanAniState.StateKind.Non, 0, false, true);
+                //SetAPs(ap, prepareData.target, HumanAniState.StateKind.Non, 0, false, true);
                 nextState = StateKinds.Attack;
                 AfterAPHDone();
                 return true;
@@ -84,8 +84,8 @@ public class Tracking_HumanState : HumanState
         else
         {
             nextState = StateKinds.Patrol;
-            SetAPs(ap, prepareData.lastDetectedStandPosition, HumanAniState.StateKind.Non, 0, false, true);
             ap.animationPointData.LookAtTransform = null;
+            //SetAPs(ap, prepareData.lastDetectedStandPosition, HumanAniState.StateKind.Non, 0, false, true);
             AfterAPHDone();
             return true;
         }
@@ -107,6 +107,7 @@ public class Tracking_HumanState : HumanState
             StartModule();
             return;
         }
+
         switch (nextState)
         {
             case StateKinds.Attack:

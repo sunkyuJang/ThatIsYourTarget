@@ -12,10 +12,6 @@ public abstract class SkillDetectorPoint : MonoBehaviour
     [SerializeField] private SkillDetectorPoint nextSkillDetectorStartPoint;
     [SerializeField] private float nextSkillPlayDelay = 0f;
 
-    [Header("skill sound")]
-    [SerializeField] private AudioSource audioSource;
-    [SerializeField] private float audioDelay = 0f;
-
     [Header("skill Effect")]
     [SerializeField] private ParticlePlayer particlePlayer;
     [SerializeField] private float effectDelay = 0f;
@@ -24,34 +20,38 @@ public abstract class SkillDetectorPoint : MonoBehaviour
     [SerializeField] private float startDelay = 0f;
     [SerializeField] protected bool shouldIncludeUser = false;
     [SerializeField] protected bool isMultipleTarget = false;
+    [SerializeField] protected bool isTargetIgnore = false;
     [SerializeField] protected List<string> targetTags = new List<string>();
 
-    public void StartDetection(Action<Transform> whenDetected, Transform user)
+    protected Coroutine Proc_StartDectection { set; get; } = null;
+
+    public void StartDetection(Action<List<RaycastHit>> whenDetected, Transform user, Action whenDone)
     {
-        if (skillDetectorPointData.doingStartDetetion != null)
-            StopCoroutine(skillDetectorPointData.doingStartDetetion);
+        if (Proc_StartDectection != null)
+            StopCoroutine(Proc_StartDectection);
 
         skillDetectorPointData = new SkillDetectorPointData
         {
             userTransfrom = user,
-            doingStartDetetion = StartCoroutine(DoStartDetection(whenDetected))
         };
+
+        Proc_StartDectection = StartCoroutine(DoStartDetection(whenDetected, whenDone));
     }
 
-    private IEnumerator DoStartDetection(Action<Transform> whenDetected)
+    private IEnumerator DoStartDetection(Action<List<RaycastHit>> whenDetected, Action whenDone)
     {
         if (startDelay > 0f)
             yield return new WaitForSeconds(startDelay);
 
-        TimeCounter.Instance.SetTimeCounting(audioDelay, () => { audioSource.Play(); });
-        TimeCounter.Instance.SetTimeCounting(effectDelay, () => { particlePlayer.PlayParticle(); });
+        TimeCounter.Instance.SetTimeCounting(effectDelay, () => { particlePlayer.PlayParticle(whenDone); });
 
         OnStartDection(whenDetected);
     }
 
     protected bool CanAddTarget(Transform target)
     {
-        if (!targetTags.Contains(target.tag)) return false;
+        if (!isTargetIgnore)
+            if (!targetTags.Contains(target.tag)) return false;
 
         if (!shouldIncludeUser && !skillDetectorPointData.isAlreadyFindUser)
         {
@@ -65,7 +65,7 @@ public abstract class SkillDetectorPoint : MonoBehaviour
         return true;
     }
 
-    protected abstract void OnStartDection(Action<Transform> whenDetected);
+    protected abstract void OnStartDection(Action<List<RaycastHit>> whenDetected);
     // protected abstract void OnStartEffect(Action<Transform> whenDetected);
     // protected abstract void OnStartSound(Action<Transform> whenDetected);
     // protected abstract void OnHitEffect(Action<Transform> whenDetected);
@@ -76,5 +76,4 @@ internal class SkillDetectorPointData
 {
     public bool isAlreadyFindUser = false;
     public Transform userTransfrom = null;
-    public Coroutine doingStartDetetion;
 }

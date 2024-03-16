@@ -10,7 +10,7 @@ public class HoldingWeapon_HumanState : HumanState
     {
         return prepareData != null;
     }
-    protected override void StartModule()
+    protected override void OnStartModule()
     {
         SetAPH(GetAttckAPHHandler(), true);
     }

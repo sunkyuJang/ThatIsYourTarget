@@ -12,17 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 121677e1f66777a44979bc71ae65695c, type: 3}
   m_Name: HandGunAttack_Normal_SkillData
   m_EditorClassIdentifier: 
-  keyName: HandGunAttack_Normal
-  displayedName: 
-  skillStartPoint: 1
-  skillType: 1
-  effectTo: 0
-  elementalType: 0
-  additionalEffectType: 0
-  value: 0
-  canLoop: 1
+  <KeyName>k__BackingField: HandGunAttack_Normal
+  <SkillTargetDetectorObj>k__BackingField: {fileID: 7271392579380520190, guid: 8ab180f0aa03c0c4a93eda11e6846830, type: 3}
+  <SkillTargetHitterObj>k__BackingField: {fileID: 4566412204273566934, guid: f91fe81218ac80549950a167b8b7686c, type: 3}
+  <SkillDetectorStartPoint>k__BackingField: 1
+  <SkillHitterStartPoint>k__BackingField: 2
+  <SkillType>k__BackingField: 1
+  <EffectTo>k__BackingField: 0
+  <ElementalType>k__BackingField: 0
+  <AdditionalEffectType>k__BackingField: 0
+  <AdditionalEffectValue>k__BackingField: 0
+  <CanLoop>k__BackingField: 0
   requirementDataManager:
     requirementDatas:
     - {fileID: 11400000, guid: 588da792c907e734581d31067af93dba, type: 2}
-  SkillTargetDetectorObj: {fileID: 7271392579380520190, guid: 8ab180f0aa03c0c4a93eda11e6846830, type: 3}
-  SkillTargetHitterObj: {fileID: 4566412204273566934, guid: f91fe81218ac80549950a167b8b7686c, type: 3}

@@ -38,7 +38,15 @@ public abstract class HumanState : StateModule
                                 stateKind == HumanAniState.StateKind.HoldingWeapon ? InteractionObjLimbIKHandPositioner.HandPositioner.HoldingState.Holding : InteractionObjLimbIKHandPositioner.HandPositioner.HoldingState.Using);
     new public PersonPrepareData prepareData { set { base.prepareData = value; } get { return base.prepareData as PersonPrepareData; } }
     protected HumanStateModuleHandler ModuleHandler { get { return Person.ModuleHandler; } }
+    protected bool stateLock = false;
 
+    protected override void StartModule()
+    {
+        stateLock = false;
+        OnStartModule();
+    }
+
+    protected abstract void OnStartModule();
     // Coroutine
     protected List<Coroutine> Coroutines { set; get; } = new List<Coroutine>();
     public Coroutine StartCoroutine(IEnumerator doFunction)
@@ -69,27 +77,18 @@ public abstract class HumanState : StateModule
     }
     protected void SetAPH(AnimationPointHandler aph = null, bool needFuncAfterAPH = false)
     {
-        // if (aph != null)
-        // {
-        //     for (int i = 0; i < aph.GetActionCount; i++)
-        //     {
-        //         var ap = aph.GetAnimationPoint(i);
-        //         if (SensedLockStateList.Contains((PersonAniState.StateKind)ap.animationPointData.state))
-        //         {
-        //             var sensed = ModuleHandler.GetModule<Sensed_PersonState>(StateKinds.Sensed);
-        //             ap.animationPointData.whenAnimationStart += () => sensed.SensedLock = true;
-        //             ap.animationPointData.whenAnimationEnd += () => sensed.SensedLock = false;
-        //         }
-        //     }
-        // }
-
         Person.SetAPH(aph, needFuncAfterAPH ? AfterAPHDone : null);
     }
     protected virtual void AfterAPHDone() { }
     public void SetState(StateKinds kinds, PersonPrepareData prepareData)
     {
         // Adding a delay to prevent multiple state changes within a single frame.
-        TimeCounter.Instance.SetTimeCounting(Time.fixedDeltaTime, () => { SetStateToPerson(kinds, prepareData); });
+        if (!stateLock)
+        {
+            TimeCounter.Instance.SetTimeCounting(Time.fixedDeltaTime, () => { SetStateToPerson(kinds, prepareData); });
+        }
+
+        stateLock = true;
     }
     private void SetStateToPerson(StateKinds kinds, PersonPrepareData prepareData)
     {

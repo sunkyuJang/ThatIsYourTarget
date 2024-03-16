@@ -9,7 +9,7 @@ using Unity.VisualScripting;
 [Serializable]
 public class RequirementDataManager
 {
-    [SerializeField] private List<SkillRequirementData> requirementDatas = new List<SkillRequirementData>();
+    [ReadOnly][SerializeField] private List<SkillRequirementData> requirementDatas = new List<SkillRequirementData>();
     public List<SkillRequirementData> RequirementDatas { get => requirementDatas; }
 
     public bool IsSatisfy(Model usingModel, float lastUsedTime)

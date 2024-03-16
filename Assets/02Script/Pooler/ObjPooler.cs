@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
+using Unity.XR.CoreUtils;
 using UnityEngine;
 
 public class ObjPooler : MonoBehaviour
@@ -33,7 +34,12 @@ public class ObjPooler : MonoBehaviour
     public void MakeNewOne()
     {
         for (int i = 0; i < makingCountInOneTime; i++)
-            instantiatedObj.Enqueue(Instantiate(TargetObj, transform).gameObject);
+        {
+            var obj = Instantiate(TargetObj, transform).gameObject;
+            var objConnector = obj.GetComponent<IPoolerConnector>();
+            if (objConnector != null) obj.GetComponent<IPoolerConnector>().WhenStoreToPooler();
+            instantiatedObj.Enqueue(obj);
+        }
     }
     public void MakeNewOne(int count)
     {
@@ -64,7 +70,7 @@ public class ObjPooler : MonoBehaviour
             MakeNewOne();
 
         var obj = instantiatedObj.Dequeue();
-        obj.GetComponent<IPoolerConnector>().ResetObj();
+        obj.GetComponent<IPoolerConnector>().WhenRetrieveFromPooler();
         return obj;
     }
 
@@ -75,7 +81,7 @@ public class ObjPooler : MonoBehaviour
 
     public void ReturnTargetObj(GameObject TargetObj)
     {
-        TargetObj.SetActive(false);
+        TargetObj.GetComponent<IPoolerConnector>()?.WhenStoreToPooler();
         TargetObj.transform.SetParent(transform);
         instantiatedObj.Enqueue(TargetObj);
     }

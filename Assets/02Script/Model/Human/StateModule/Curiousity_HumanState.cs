@@ -31,7 +31,7 @@ public class Curiousity_HumanState : HumanState
         //     SetState(StateKinds.HoldingWeapon, new PersonPrepareData(prepareData.target));
         // }
     }
-    protected override void StartModule()
+    protected override void OnStartModule()
     {
         if (procCountingIgnoreTime != null) return;
 

@@ -14,7 +14,7 @@ public class Attack_HumanAniState : HumanAniState
     {
         Animator.SetBool(UsingWeapon_HumanAniState.UsingWeapon, false);
         Animator.SetBool(Attack, true);
-        var node = attackingAnimationStateManager.GetStateCopyNode(ap.animationPointData.SkillData.keyName);
+        var node = attackingAnimationStateManager.GetStateCopyNode(ap.animationPointData.SkillData.KeyName);
         var path = attackConditionerHandler.GetAllTransitionPath(node.nowAnimation);
         path?.Invoke(Animator);
         ap.animationPointData.whenAnimationExitTime += () => { WhenAniExit(ap); };

@@ -25,7 +25,7 @@ public class SkillManager : MonoBehaviour
         foreach (var item in list)
         {
             if (item.skillData != null)
-                skills.Add(item.skillData.keyName, item.skillData);
+                skills.Add(item.skillData.KeyName, item.skillData);
         }
     }
 
@@ -70,6 +70,23 @@ public class SkillManager : MonoBehaviour
             return skillDetectors[skillData].GetNewOne<SkillTargetDetector>();
 
         return null;
+    }
+    public void RestoreSkillTargetDetector(SkillData skillData, SkillTargetDetector detector)
+    {
+        if (skillDetectors.ContainsKey(skillData))
+            skillDetectors[skillData].ReturnTargetObj(detector.gameObject);
+    }
+    public SkillTargetHitter GetSKillTargetHitter(SkillData skillData)
+    {
+        if (skillHitters.ContainsKey(skillData))
+            return skillHitters[skillData].GetNewOne<SkillTargetHitter>();
+
+        return null;
+    }
+    public void RestoreSkillTargetHitter(SkillData skillData, SkillTargetHitter hitter)
+    {
+        if (skillHitters.ContainsKey(skillData))
+            skillHitters[skillData].ReturnTargetObj(hitter.gameObject);
     }
 
     public class SkillToken

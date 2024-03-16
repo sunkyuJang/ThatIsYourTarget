@@ -24,7 +24,7 @@ public class Sensed_HumanState : HumanState
     }
 
     // whenever person sensed target, this func will running
-    protected override void StartModule()
+    protected override void OnStartModule()
     {
         var sensedData = prepareData as SensedPrepareData;
         var findData = sensedPrepareDatas.Find(x => x.target == sensedData.target);

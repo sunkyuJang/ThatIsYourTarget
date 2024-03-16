@@ -13,7 +13,7 @@ public class Dead_HumanState : HumanState
         return true;
     }
     public override void EnterToException() { }
-    protected override void StartModule()
+    protected override void OnStartModule()
     {
         var aph = GetNewAPH(1, AnimationPointHandler.WalkingState.Walk);
         SetAPsImmediate(aph.GetAnimationPoint(0), HumanAniState.StateKind.Dead, -1f);

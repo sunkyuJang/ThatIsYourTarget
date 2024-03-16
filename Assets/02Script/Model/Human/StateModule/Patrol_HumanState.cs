@@ -17,7 +17,7 @@ public class Patrol_HumanState : HumanState
         return prepareData != null;
     }
     public override void EnterToException() { }
-    protected override void StartModule()
+    protected override void OnStartModule()
     {
         var objForSection = new object();
         jobManager = new JobManager(objForSection, DoneJobManager);

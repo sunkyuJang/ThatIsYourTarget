@@ -4,17 +4,13 @@ using UnityEditor.Animations;
 using UnityEngine;
 
 [System.Serializable]
-public abstract class AnimationPoint : MonoBehaviour
+public abstract class AnimationPoint : MonoBehaviour, IPoolerConnector
 {
     public AnimatorController animatorController;
     public virtual bool HasAction { get { return true; } }
     public AnimationPointData animationPointData;
     public abstract bool ShouldPlaySamePosition { get; }
     public abstract void ReplaceExpectionState();
-    public void ResetData()
-    {
-        animationPointData = new AnimationPointData();
-    }
     public float GetAnimationClipLength(string stateName)
     {
         var state = AnimatorStateManager.Instance.GetStateInfo(animatorController, stateName);
@@ -85,9 +81,16 @@ public abstract class AnimationPoint : MonoBehaviour
     public abstract string GetStateName(int state);
     public abstract string GetRuntimeStateName(int state);
 
-    public void ResetObj()
+    public void WhenRetrieveFromPooler()
     {
-        ResetData();
+        animationPointData = new AnimationPointData();
+        gameObject.SetActive(true);
+    }
+
+
+    public void WhenStoreToPooler()
+    {
+        gameObject.SetActive(false);
     }
 }
 

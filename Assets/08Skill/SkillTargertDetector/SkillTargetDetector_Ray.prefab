@@ -85,6 +85,7 @@ MonoBehaviour:
   startDelay: 0
   shouldIncludeUser: 0
   isMultipleTarget: 0
+  isTargetIgnore: 1
   targetTags: []
   dist: 2
   distLimit: 5

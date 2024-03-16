@@ -8,24 +8,24 @@ using System.Linq;
 public class SkillTargetDetector : MonoBehaviour, IPoolerConnector
 {
     public enum HitMotionType { Ray, Cart, Non };
-    private HitMotionType hitMotionType = HitMotionType.Non;
+    //private HitMotionType hitMotionType = HitMotionType.Non;
     public SkillDetectorPoint skillDetecterPoint;
 
-    private Transform user;
-    private bool isUserAlreadyFound = false;
-
-    public void StartDetection(Vector3 position, Vector3 forward, Transform user, Action<Transform> whenDetected)
+    public void StartDetection(Vector3 position, Vector3 forward, Transform user, Action<List<RaycastHit>> whenDetected, Action whenDone)
     {
-        this.user = user;
         transform.position = position;
         transform.forward = forward;
 
-        skillDetecterPoint.StartDetection(whenDetected, user);
+        skillDetecterPoint.StartDetection(whenDetected, user, whenDone);
     }
 
-    public void ResetObj()
+    public void WhenRetrieveFromPooler()
     {
-        user = null;
-        isUserAlreadyFound = false;
+        gameObject.SetActive(true);
+    }
+
+    public void WhenStoreToPooler()
+    {
+        gameObject.SetActive(false);
     }
 }

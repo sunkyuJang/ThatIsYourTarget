@@ -12,23 +12,23 @@ public class SkillDetectorPoint_Ray : SkillDetectorPoint
     public float noiseStart = 100f;
     public float noiseRate = 0f;
 
-    protected override void OnStartDection(Action<Transform> whenDetected)
+    protected override void OnStartDection(Action<List<RaycastHit>> whenDetected)
     {
         var targets = transform.GetAllRayHIts(transform.forward, distLimit).ToList();
         targets.OrderBy(x => x.distance);
 
-        var list = new List<Transform>();
+        var list = new List<RaycastHit>();
         for (int i = 0; i < targets.Count; i++)
         {
             var target = targets[i];
             if (CanAddTarget(target.transform))
             {
-                list.Add(target.transform);
+                list.Add(target);
                 if (!isMultipleTarget) break;
             }
         }
 
-        list.ForEach(x => whenDetected?.Invoke(x));
+        list.ForEach(x => whenDetected?.Invoke(targets));
     }
 }
 

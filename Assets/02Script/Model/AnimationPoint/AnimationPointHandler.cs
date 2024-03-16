@@ -78,13 +78,18 @@ public class AnimationPointHandler : MonoBehaviour, IPoolerConnector
     {
         ResetIndex();
     }
+    public void WhenRetrieveFromPooler()
+    {
+        gameObject.SetActive(true);
+    }
 
-    public void ResetObj()
+    public void WhenStoreToPooler()
     {
         walkingState = WalkingState.Non;
         animationPoints.Clear();
         index = 0;
         shouldLoop = false;
+        gameObject.SetActive(false);
     }
 }
 

@@ -54,8 +54,8 @@ public class HumanAniController : AniController
                 }
                 if (ap.animationPointData.SkillData != null)
                 {
-                    events = ap.GetAnimationEvent(ap.animationPointData.SkillData.keyName);
-                    exitEvent = ap.GetExitAniEvent(ap.animationPointData.SkillData.keyName);
+                    events = ap.GetAnimationEvent(ap.animationPointData.SkillData.KeyName);
+                    exitEvent = ap.GetExitAniEvent(ap.animationPointData.SkillData.KeyName);
                 }
                 StartAniTimeCount(ap, shouldReturnAP, module, events, exitEvent);
             }
