@@ -1,15 +1,12 @@
 using System;
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 
 public class Attack_HumanState : HumanState
 {
     private enum APHDoneState { Attacking, Delaying, Non }
     private APHDoneState aphDoneState = APHDoneState.Non;
-    private DateTime lastEnteredTime;
-    private float minGraceTime = 0.5f;
+
     public Attack_HumanState(Human person) : base(person)
     {
 
@@ -27,11 +24,6 @@ public class Attack_HumanState : HumanState
             SetNormalState();
         }
 
-        var passedTime = DateTime.Now - TimeSpan.FromSeconds(minGraceTime);
-        if (DateTime.Now > lastEnteredTime + TimeSpan.FromSeconds(minGraceTime))
-        {
-            lastEnteredTime = DateTime.Now;
-        }
         aphDoneState = APHDoneState.Attacking;
         if (Weapon.CanAttack(prepareData.target, out Weapon.CanAttackStateError attackError))
         {
@@ -49,7 +41,6 @@ public class Attack_HumanState : HumanState
 
     void SetAttack()
     {
-        Debug.Log("isIn");
         var aph = GetNewAPH(1, AnimationPointHandler.WalkingState.Run);
 
         var AttackAP = aph.GetAnimationPoint<HumanAnimationPoint>(0);
@@ -131,19 +122,16 @@ public class Attack_HumanState : HumanState
             case APHDoneState.Attacking:
                 if (IsInSight(prepareData.target))
                 {
-                    Debug.Log("after done to attacking again");
-                    StartModule();
+                    OnStartModule();
                 }
                 else
                 {
-                    Debug.Log("after done to tracking");
                     SetState(StateKinds.Tracking, new PersonPrepareData(prepareData.target));
                 }
-
                 break;
 
             case APHDoneState.Delaying:
-                StartModule();
+                //TimeCounter.Instance.SetTimeCounting(minGraceTime, leftTime, () => OnStartModule());
                 break;
         }
 
