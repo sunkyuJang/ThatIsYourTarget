@@ -94,7 +94,7 @@ public class AnimationStateNode
     public bool isSubState;
     public string nowAnimation;
     public string beforeAnimation;
-    public SerializedDictionary<string, RequirementDataManager> nextAnimations = new SerializedDictionary<string, RequirementDataManager>();
+    public List<string> nextAnimations = new List<string>();
     public bool hasLoop;
     public SkillData skillData;
     [HideInInspector] public int loopIndex;
@@ -105,7 +105,7 @@ public class AnimationStateNode
     {
         this.isSubState = isSubState;
         this.nowAnimation = nowAnimation;
-        nextAnimations.ForEach(x => this.nextAnimations.Add(x, new RequirementDataManager()));
+        nextAnimations.ForEach(x => this.nextAnimations.Add(x));
         hasLoop = nextAnimations.Find(x =>
         {
             loopIndex++;

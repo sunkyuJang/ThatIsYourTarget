@@ -49,7 +49,7 @@ public class AttackingAnimationStateManager : MonoBehaviour
 
         foreach (var node in aniStateNode.Values)
         {
-            foreach (var nextAnimation in node.nextAnimations.Keys)
+            foreach (var nextAnimation in node.nextAnimations)
             {
                 var targetNode = GetStateNode(nextAnimation);
                 if (targetNode.nowAnimation != node.nowAnimation)

@@ -64,8 +64,17 @@ public class TimeCounter : MonoBehaviour
             data.requestFunction.Invoke();
         }
 
-        countingList.Remove(data);
+        StopTimeCounting(data);
         yield return null;
+    }
+
+    public void StopTimeCounting(TimeCountData timeCountData)
+    {
+        if (countingList.Contains(timeCountData))
+        {
+            StopCoroutine(timeCountData.processingTimeCounting);
+            countingList.Remove(timeCountData);
+        }
     }
 
     public class TimeCountData

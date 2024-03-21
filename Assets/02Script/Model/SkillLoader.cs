@@ -33,7 +33,7 @@ public abstract class SkillLoader
         {
             if (usingSkill.ContainsKey(skill))
             {
-                if (skill.requirementDataManager.IsSatisfy(usingModel, usingSkill[skill].timeStemp))
+                if (skill.IsSatisfy(usingModel, usingSkill[skill].timeStemp))
                 {
                     avaliableSkills.Add(skill);
                     usingSkill.Remove(skill);
@@ -41,7 +41,7 @@ public abstract class SkillLoader
             }
             else
             {
-                if (skill.requirementDataManager.IsSatisfy(usingModel, 0f))
+                if (skill.IsSatisfy(usingModel, 0f))
                     avaliableSkills.Add(skill);
             }
         }

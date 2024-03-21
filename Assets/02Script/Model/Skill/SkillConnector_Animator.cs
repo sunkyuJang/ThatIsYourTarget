@@ -15,6 +15,7 @@ public class SkillConnector_Animator : StateMachineBehaviour
 public class SkillConnector_AnimatorEditor : Editor
 {
     public bool foldDetail = true;
+    private SkillDataEditor skillDataEditor;
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
@@ -36,9 +37,12 @@ public class SkillConnector_AnimatorEditor : Editor
             EditorGUILayout.LabelField("*반드시 KeyName은 스테이트와 같은 이름으로 할 것.", redTextStyle);
             return;
         }
-        var skillDataSerializeObj = new SerializedObject(connector.skillData);
 
-        SkillDataDrawer.DrawSkillData(skillDataSerializeObj, connector.skillData);
+        if (skillDataEditor == null)
+        {
+            skillDataEditor = (SkillDataEditor)CreateEditor(connector.skillData, typeof(SkillDataEditor));
+        }
+        skillDataEditor?.OnInspectorGUI();
     }
 
     private SkillData CreateNewSkillData(string skillName)

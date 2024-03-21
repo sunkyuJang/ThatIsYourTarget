@@ -53,7 +53,7 @@ public class SkillManager : MonoBehaviour
             skillHitters.Add(skillData, ObjPoolerManager.Instance.GetPooler(skillData.SkillTargetHitterObj));
 
             var detectorPooler = skillDetectors[skillData];
-            var coolTimeRequirement = skillData.requirementDataManager.RequirementDatas.Find(x => x.requirementType == SkillRequirementData.RequirementType.CoolTime);
+            var coolTimeRequirement = skillData.requirementDatas.Find(x => x.requirementType == SkillRequirementData.RequirementType.CoolTime);
             var spareCount = coolTimeRequirement == null ? 5 : 1;
             detectorPooler.minimumMaintenanceCost = (int)math.round(count * spareCount * 0.75f);
             detectorPooler.MakeNewOne(detectorPooler.minimumMaintenanceCost);

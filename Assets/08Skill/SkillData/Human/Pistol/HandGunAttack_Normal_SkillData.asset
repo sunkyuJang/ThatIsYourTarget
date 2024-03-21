@@ -18,11 +18,17 @@ MonoBehaviour:
   <SkillDetectorStartPoint>k__BackingField: 1
   <SkillHitterStartPoint>k__BackingField: 2
   <SkillType>k__BackingField: 1
-  <EffectTo>k__BackingField: 0
-  <ElementalType>k__BackingField: 0
-  <AdditionalEffectType>k__BackingField: 0
-  <AdditionalEffectValue>k__BackingField: 0
   <CanLoop>k__BackingField: 0
-  requirementDataManager:
-    requirementDatas:
-    - {fileID: 11400000, guid: 588da792c907e734581d31067af93dba, type: 2}
+  effectingToBasicAbilities: []
+  effectingToRemainingAbility: []
+  requirementDatas:
+  - requirementType: 1
+    RequireOriginalPrefab: {fileID: 0}
+    requireWeaponType: 1
+    progress11: 0
+    progress12: 0
+    lastSkillUsed: {fileID: 0}
+    maxTime: 0
+  showEffecingToBasicAbilityDatas: 0
+  showEffecingToRemainingAbilityDatas: 1
+  propertyShowRequirementDatas: 1

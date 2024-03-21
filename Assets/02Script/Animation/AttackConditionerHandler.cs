@@ -41,7 +41,7 @@ public abstract class AttackConditionerHandler
     {
         var beforeNode = AttackingAniStateManager.GetStateNode(node.beforeAnimation);
         var count = 0;
-        foreach (var nextAniString in beforeNode.nextAnimations.Keys)
+        foreach (var nextAniString in beforeNode.nextAnimations)
         {
             if (nextAniString == node.nowAnimation)
             {
