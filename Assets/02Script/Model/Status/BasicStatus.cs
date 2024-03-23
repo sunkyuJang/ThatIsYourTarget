@@ -13,7 +13,8 @@ public class BasicStatus
     [field: SerializeField] public float originalVal { set; get; } = 0f;
     [field: SerializeField] public float additionalVal { set; get; } = 0f;
     [field: SerializeField] public float MultiplyVal { set; get; } = 0f;
-    [field: SerializeField] public float TotalVal { get { return (originalVal + additionalVal) + (originalVal + additionalVal) * MultiplyVal; } }
+    [field: SerializeField] public float FixedVal { get { return originalVal + additionalVal; } }
+    [field: SerializeField] public float TotalVal { get { return FixedVal + (FixedVal * MultiplyVal); } }
     [field: SerializeField] List<EffectingToBasicAbility> EffectingList { set; get; } = new List<EffectingToBasicAbility>();
 
     public BasicStatus(BasicStatusTypeList basicStatusType, float originalVal)

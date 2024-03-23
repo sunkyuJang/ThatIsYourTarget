@@ -20,7 +20,21 @@ MonoBehaviour:
   <SkillType>k__BackingField: 1
   <CanLoop>k__BackingField: 0
   effectingToBasicAbilities: []
-  effectingToRemainingAbility: []
+  effectingToRemainingAbility:
+  - abilityData:
+      <skillData>k__BackingField: {fileID: 11400000}
+      <ReferenceTypeFromCaster>k__BackingField: 0
+      <ReferenceTypeFromTarget>k__BackingField: 0
+      <BasicVal>k__BackingField: -2
+      <MultiplyVal>k__BackingField: 1
+      <RepeatTime>k__BackingField: 1
+      <Duration>k__BackingField: 0
+    <ModifiedVal>k__BackingField: 0
+    <ModifiedMultiplyVal>k__BackingField: 1
+    <ModifiedRepeatTime>k__BackingField: 1
+    <ModifiedDuration>k__BackingField: 0
+    <CountingTime>k__BackingField: 0
+    <RemainingStatusTypeTo>k__BackingField: 0
   requirementDatas:
   - requirementType: 1
     RequireOriginalPrefab: {fileID: 0}

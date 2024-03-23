@@ -12,15 +12,41 @@ public class AbilityHandler : MonoBehaviour
 {
     [field: SerializeField] public BasicAbility BasicAbility { set; get; } = new BasicAbility();
     [field: SerializeField] public RemainingAbility RemainingAbility { set; get; } = new RemainingAbility();
+    AbilityListener[] AbilityListner { set; get; }
 
     public void SetBasicAbility(EffectingToBasicAbility effectingToBasicAbility)
     {
 
     }
 
-    public void SetRemainingAbility(Ability effecingToRemainingAbility)
+    public void SetRemainingAbility(EffectingToRemainingAbility effecingToRemainingAbility)
     {
+        switch (effecingToRemainingAbility.abilityData.ReferenceTypeFromTarget)
+        {
+            case AbilityData.ReferenceTypeList.Non:
+                RemainingAbility.SetRemainingAbility(effecingToRemainingAbility);
+                break;
+            case AbilityData.ReferenceTypeList.Target:
+                CalcRemainigAbility(effecingToRemainingAbility);
+                break;
+        }
+    }
 
+    public void SetAbilityConnector(Transform actorTransform)
+    {
+        var rigidbodies = actorTransform.GetComponentsInChildren<Rigidbody>();
+        AbilityListner = new AbilityListener[rigidbodies.Length];
+        for (int i = 0; i < rigidbodies.Length; i++)
+        {
+            var item = rigidbodies[i];
+            AbilityListner[i] = item.gameObject.AddComponent<AbilityListener>();
+            AbilityListner[i].abilityHandler = this;
+        }
+    }
+
+    void CalcRemainigAbility(EffectingToRemainingAbility effecingToRemainingAbility)
+    {
+        RemainingAbility.SetRemainingAbility(effecingToRemainingAbility);
     }
 }
 

@@ -110,9 +110,15 @@ public class Attack_HumanState : HumanState
                         () => { skillToken.RestoreTargetHitter(skillToken.SkillData, hitter); });
                     break;
             }
+
+            // if (hit.transform.GetComponent<IDamageConnector>)
+            //     SetSkillAbility(skillToken.SkillData);
         });
+    }
 
-
+    private void SetSkillAbility(SkillData skillData)
+    {
+        throw new NotImplementedException();
     }
 
     protected override void AfterAPHDone()

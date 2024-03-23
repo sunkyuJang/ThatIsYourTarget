@@ -14,10 +14,10 @@ public class Weapon : InteractionObj, IObjCollisionDetectorConnector_OnCollision
     [SerializeField] public float dmg = 1;
     [SerializeField] public float range = 0;
     [SerializeField] public bool IsMelee { get { return range == 0; } }
-    [SerializeField] public float hitPower { set; get; } = 1;
+    [field: SerializeField] public float PhysicsForce { private set; get; } = 1;
 
     // 1 Cycle == 1 MaxCount
-    public enum CanAttackStateError { Resource, Range, Non }
+    public enum CanAttackStateError { Resource, Range, Durability, Non }
     [SerializeField] protected int curHitCount = 0;
     [SerializeField] protected int maxHitCountPerCycle = 0;
     public int LeftHitCount => maxHitCountPerCycle - curHitCount;
@@ -93,7 +93,7 @@ public class Weapon : InteractionObj, IObjCollisionDetectorConnector_OnCollision
                     {
                         var hipPoint = collision.contacts[0];
                         var targetRigidbody = collision.rigidbody;
-                        targetRigidbody?.AddForceAtPosition((hipPoint.point - transform.position).normalized * hitPower * 100, hipPoint.point, ForceMode.Impulse);
+                        targetRigidbody?.AddForceAtPosition((hipPoint.point - transform.position).normalized * PhysicsForce * 100, hipPoint.point, ForceMode.Impulse);
                     }
                 }
             }

@@ -42,7 +42,6 @@ public partial class Human : Model
     new private void Awake()
     {
         base.Awake();
-        HP = 10;
     }
     protected override IEnumerator Start()
     {

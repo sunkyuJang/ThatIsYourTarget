@@ -41,22 +41,28 @@ public class RemainingStatus
         {
             ability.CountingTime += ability.CountingUnit;
 
-            var timeData = TimeCounter.Instance.SetTimeCounting(ability.CountingUnit, () => ApplyAbility(ability));
-            ability.TimeCounterData = timeData;
-
+            var needInsertTimeData = false;
             var effectingAbility = EffectingList.Find(x => x.abilityData == ability.abilityData);
             if (effectingAbility != null)
             {
-                if (ability.CountingTime < ability.ModifiedDuration)
+                ability = effectingAbility;
+                if (!ability.IsTimeOut)
                 {
-                    effectingAbility.TimeCounterData = timeData;
+                    needInsertTimeData = true;
                 }
                 else
-                    EffectingList.Remove(effectingAbility);
+                    EffectingList.Remove(ability);
             }
             else
             {
                 EffectingList.Add(ability);
+                needInsertTimeData = true;
+            }
+
+            if (needInsertTimeData)
+            {
+                var timeData = TimeCounter.Instance.SetTimeCounting(ability.CountingUnit, () => ApplyAbility(ability));
+                ability.TimeCounterData = timeData;
             }
         }
     }

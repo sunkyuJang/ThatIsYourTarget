@@ -17,13 +17,6 @@ public class SkillData : ScriptableObject
     [field: SerializeField] public SkillEffectStartPointList SkillHitterStartPoint { private set; get; } = SkillEffectStartPointList.Non;
     public enum SkillTypeList { Passive, Active, Non }
     [field: SerializeField] public SkillTypeList SkillType { private set; get; } = SkillTypeList.Non;
-    // public enum EffectToList { Dmg, MaxHP, Non }
-    // [field: SerializeField] public EffectToList EffectTo { private set; get; } = EffectToList.Non;
-    // public enum ElementalTypeList { Normal, Non }
-    // [field: SerializeField] public ElementalTypeList ElementalType { private set; get; } = ElementalTypeList.Non;
-    // public enum AdditionalEffectTypeList { Add, Multyply }
-    // [field: SerializeField] public AdditionalEffectTypeList AdditionalEffectType { private set; get; } = AdditionalEffectTypeList.Add;
-    // [field: SerializeField] public float AdditionalEffectValue { private set; get; } = 0f;
     [field: SerializeField] public bool CanLoop { private set; get; } = false;
     public List<EffectingToBasicAbility> effectingToBasicAbilities = new List<EffectingToBasicAbility>();
     public List<EffectingToRemainingAbility> effectingToRemainingAbility = new List<EffectingToRemainingAbility>();

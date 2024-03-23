@@ -7,15 +7,14 @@ using UnityEngine;
 public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, IDamagePasser
 {
     public enum ModelKinds { Person, Player }
-    public float HP { set; get; } = 0;
     public int state { private set; get; } = 0;
     public Transform ActorTransform;
 
-    // DMG
+    // Ability
+    protected AbilityHandler abilityHandler;
     float IgnoreDmgTime { set; get; } = 2f;
     bool CanAcceptableDmg { set; get; } = true;
     [SerializeField] bool canDead = true;
-    DamageContorller DamageContorller { set; get; }
 
     //APH
     [SerializeField] public bool stayOnGaurd = false;
@@ -52,7 +51,8 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
     protected virtual void Awake()
     {
         ModelAnimationPlayer = new ModelAnimationPlayer(this, ActorTransform);
-        DamageContorller = new DamageContorller(this, ActorTransform);
+        abilityHandler = GetComponent<AbilityHandler>();
+        abilityHandler.SetAbilityConnector(ActorTransform);
         interactionManager = ActorTransform.GetComponent<InteractionObjHolsterHandler>();
         APHGroup = transform.Find("APHGroup");
         ModelAPHJobManger = new ModelAPHJobManger(this, null, null, APHGroup, ModelAnimationPlayer);
@@ -112,13 +112,11 @@ public abstract class Model : MonoBehaviour, IObjDetectorConnector_OnDetected, I
                 Action removeTimeData = () => { CanAcceptableDmg = true; };
                 TimeCounter.Instance.SetTimeCounting(IgnoreDmgTime, removeTimeData);
 
-                HP -= damage;
-
-                if (HP <= 0)
-                {
-                    isDead = true;
-                    DoDead();
-                }
+                // if (HP <= 0)
+                // {
+                //     isDead = true;
+                //     DoDead();
+                // }
             }
         }
     }

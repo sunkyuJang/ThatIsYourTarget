@@ -8,8 +8,15 @@ using UnityEngine.Rendering;
 public class RemainingAbility
 {
     [field: SerializeField] public List<RemainingStatus> RemainingStatusList { set; get; } = new List<RemainingStatus>();
-    public RemainingAbility()
+    public void SetRemainingAbility(EffectingToRemainingAbility remainingAbility)
     {
-
+        foreach (var status in RemainingStatusList)
+        {
+            if (remainingAbility.RemainingStatusTypeTo.Equals(status.RemainingStatusType))
+            {
+                status.AddingEffectingToAbility(remainingAbility);
+                break;
+            }
+        }
     }
 }

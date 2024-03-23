@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityEngine.Rendering;
+using NaughtyAttributes;
 
 [Serializable]
 public class EffectingToBasicAbility : Ability
@@ -26,6 +27,7 @@ public class Ability
     [field: SerializeField] public float ModifiedDuration { set; get; } = 0f;
     [field: SerializeField] public float CountingUnit { get { return ModifiedDuration / ModifiedRepeatTime; } }
     [field: SerializeField] public float CountingTime { set; get; } = 0f;
+    [field: SerializeField] public bool IsTimeOut { get { return CountingTime >= ModifiedDuration; } }
     [field: SerializeField] public TimeCounter.TimeCountData TimeCounterData { set; get; } = null;
 }
 [Serializable]
